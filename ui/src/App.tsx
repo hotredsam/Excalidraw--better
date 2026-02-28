@@ -20,7 +20,13 @@ function App() {
       setCanvasData(data);
     } catch (err: any) {
       console.error('Failed to open file:', err);
-      alert('Failed to open file: ' + (err.message || 'Unknown error'));
+      let message = 'Failed to open file.';
+      if (err.message.includes('No embedded Excalidraw scene found')) {
+        message = `The file "${file.name}" does not contain an embedded Excalidraw scene.`;
+      } else {
+        message += ' ' + err.message;
+      }
+      alert(message);
     }
   };
 

@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@excalibur/ipc": "workspace:*",
-    "@excalibur/plugin-sdk": "workspace:*",
     "@excalibur/shared": "workspace:*",
     "@excalidraw/excalidraw": "^0.18.0",
     "nanoid": "^5.1.6",

@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { CanvasShell } from './components/CanvasShell';
 import { ProfileSwitcher } from './components/ProfileSwitcher';
 import { SettingsModal } from './components/SettingsModal';
-import { Sidebar } from './components/Sidebar';
+import { WorkspaceSidebar } from './components/WorkspaceSidebar';
+
 import * as Shared from '@excalibur/shared';
 
 function App() {
@@ -19,13 +20,7 @@ function App() {
       setCanvasData(data);
     } catch (err: any) {
       console.error('Failed to open file:', err);
-      let message = 'Failed to open file.';
-      if (err.message.includes('No embedded Excalidraw scene found')) {
-        message = `The file "${file.name}" does not contain an embedded Excalidraw scene.`;
-      } else {
-        message += ' ' + err.message;
-      }
-      alert(message);
+      alert('Failed to open file: ' + (err.message || 'Unknown error'));
     }
   };
 
@@ -91,7 +86,7 @@ function App() {
       </header>
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        <Sidebar onOpenFile={handleOpenFile} />
+        <WorkspaceSidebar onOpenFile={handleOpenFile} />
         <main style={{ flex: 1, position: 'relative' }}>
           <CanvasShell initialData={canvasData} onSave={handleSave} />
         </main>

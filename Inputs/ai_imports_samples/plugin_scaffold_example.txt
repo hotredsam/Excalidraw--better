@@ -1,0 +1,19 @@
+TYPE: plugin_scaffold
+NAME: quick-export-presets
+VERSION: 0.1.0
+DESCRIPTION: Adds export presets + batch export UI.
+PERMISSIONS:
+  filesystem: workspace-only
+  network: none
+
+FEATURES:
+- Adds a toolbar button "Batch Export"
+- Adds settings panel for export presets
+- Adds command palette actions:
+  - Export current as PNG preset "web"
+  - Export current as PDF preset "print"
+- Writes exports into <workspace>/exports/ with safe naming
+
+NOTES:
+- Must not break Excalidraw exports
+- Must validate target paths and prevent traversal

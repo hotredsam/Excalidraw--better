@@ -1,0 +1,9 @@
+TYPE: docs_update
+TARGET: docs/AI_GUIDE.md
+CHANGE:
+- Add a section called "How to ask an AI to write a plugin"
+- Include 3 copy/paste prompts:
+  1) exporter plugin
+  2) template pack plugin
+  3) search index plugin
+- Include troubleshooting checklist for validation errors

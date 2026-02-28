@@ -1,0 +1,19 @@
+{
+  "type": "template_pack",
+  "name": "work_templates",
+  "version": "1.0.0",
+  "templates": [
+    {
+      "id": "meeting-notes",
+      "title": "Meeting Notes",
+      "description": "Agenda + notes + action items",
+      "tags": ["work", "notes"]
+    },
+    {
+      "id": "system-architecture",
+      "title": "System Architecture",
+      "description": "Boxes/arrows + legend + assumptions",
+      "tags": ["architecture", "diagram"]
+    }
+  ]
+}

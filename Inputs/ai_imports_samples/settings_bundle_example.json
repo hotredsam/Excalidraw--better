@@ -1,0 +1,13 @@
+{
+  "type": "settings_bundle",
+  "name": "my_defaults",
+  "version": "1.0.0",
+  "applyTo": "current_profile",
+  "settings": {
+    "autosave": true,
+    "autosaveIntervalSeconds": 15,
+    "defaultExportFormat": "png",
+    "confirmOnDelete": true,
+    "showGrid": false
+  }
+}

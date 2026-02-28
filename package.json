@@ -1,0 +1,17 @@
+{
+  "name": "excalibur-monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n \"shared,ipc,ui,app-watch,app\" -c \"blue,green,magenta,cyan,yellow\" \"pnpm --filter @excalibur/shared dev\" \"pnpm --filter @excalibur/ipc dev\" \"pnpm --filter @excalibur/ui dev\" \"pnpm --filter @excalibur/app build --watch\" \"wait-on http://localhost:5173 && pnpm --filter @excalibur/app dev\"",
+    "build": "pnpm run --filter \"@excalibur/*\" build",
+    "lint": "pnpm run --recursive lint",
+    "test": "pnpm run --recursive test"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^4.0.18",
+    "wait-on": "^7.0.0"
+  }
+}

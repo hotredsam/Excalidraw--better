@@ -16,6 +16,16 @@ export const SETTINGS_CHANNELS = {
   UPDATE: 'settings:update',
 } as const;
 
+export const WORKSPACE_CHANNELS = {
+  LIST: 'workspaces:list',
+  ADD: 'workspaces:add',
+  REMOVE: 'workspaces:remove',
+  SET_ACTIVE: 'workspaces:set-active',
+  GET_ACTIVE: 'workspaces:get-active',
+  LIST_FILES: 'workspaces:list-files',
+} as const;
+
 export type AppChannels = typeof APP_CHANNELS[keyof typeof APP_CHANNELS];
 export type ProfileChannels = typeof PROFILE_CHANNELS[keyof typeof PROFILE_CHANNELS];
 export type SettingsChannels = typeof SETTINGS_CHANNELS[keyof typeof SETTINGS_CHANNELS];
+export type WorkspaceChannels = typeof WORKSPACE_CHANNELS[keyof typeof WORKSPACE_CHANNELS];

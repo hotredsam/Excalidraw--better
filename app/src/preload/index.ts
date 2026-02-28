@@ -17,4 +17,11 @@ contextBridge.exposeInMainWorld('api', {
     get: () => ipcRenderer.invoke(SETTINGS_CHANNELS.GET),
     update: (partial: any) => ipcRenderer.invoke(SETTINGS_CHANNELS.UPDATE, partial),
   },
+  workspaces: {
+    list: () => ipcRenderer.invoke(WORKSPACE_CHANNELS.LIST),
+    add: () => ipcRenderer.invoke(WORKSPACE_CHANNELS.ADD),
+    remove: (id: string) => ipcRenderer.invoke(WORKSPACE_CHANNELS.REMOVE, { id }),
+    setActive: (id: string | null) => ipcRenderer.invoke(WORKSPACE_CHANNELS.SET_ACTIVE, { id }),
+    getActive: () => ipcRenderer.invoke(WORKSPACE_CHANNELS.GET_ACTIVE),
+  },
 });

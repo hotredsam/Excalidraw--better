@@ -1,12 +1,14 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, shell, dialog } from 'electron';
 import * as path from 'path';
-import { APP_CHANNELS, PROFILE_CHANNELS, SETTINGS_CHANNELS } from '@excalibur/ipc';
-import { AppPingSchema, ProfileSchema, ProfileListSchema, SettingsSchema } from '@excalibur/shared';
+import { APP_CHANNELS, PROFILE_CHANNELS, SETTINGS_CHANNELS, WORKSPACE_CHANNELS } from '@excalibur/ipc';
+import { AppPingSchema, ProfileSchema, ProfileListSchema, SettingsSchema, WorkspaceSchema, WorkspaceListSchema } from '@excalibur/shared';
 import { ProfileStore } from './profile';
 import { SettingsStore } from './settings';
+import { WorkspaceStore } from './workspace';
 
 let profileStore: ProfileStore;
 let settingsStore: SettingsStore;
+let workspaceStore: WorkspaceStore;
 
 async function initStores() {
   profileStore = new ProfileStore();
@@ -14,8 +16,12 @@ async function initStores() {
   
   const activeProfile = await profileStore.getActive();
   if (activeProfile) {
-    settingsStore = new SettingsStore(profileStore.getProfileDir(activeProfile.id));
+    const profileDir = profileStore.getProfileDir(activeProfile.id);
+    settingsStore = new SettingsStore(profileDir);
     await settingsStore.init();
+    
+    workspaceStore = new WorkspaceStore(profileDir);
+    await workspaceStore.init();
   }
 }
 
@@ -110,6 +116,40 @@ ipcMain.handle(SETTINGS_CHANNELS.GET, async () => {
 ipcMain.handle(SETTINGS_CHANNELS.UPDATE, async (_, partial) => {
   const settings = await settingsStore.update(partial);
   return SettingsSchema.parse(settings);
+});
+
+// Workspaces
+ipcMain.handle(WORKSPACE_CHANNELS.LIST, async () => {
+  const workspaces = await workspaceStore.list();
+  return WorkspaceListSchema.parse({ workspaces });
+});
+
+ipcMain.handle(WORKSPACE_CHANNELS.GET_ACTIVE, async () => {
+  const active = await workspaceStore.getActive();
+  return active ? WorkspaceSchema.parse(active) : null;
+});
+
+ipcMain.handle(WORKSPACE_CHANNELS.ADD, async (event) => {
+  const result = await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
+    properties: ['openDirectory'],
+  });
+
+  if (result.canceled || result.filePaths.length === 0) return null;
+
+  const dirPath = result.filePaths[0];
+  const name = path.basename(dirPath);
+  const workspace = await workspaceStore.add(name, dirPath);
+  return WorkspaceSchema.parse(workspace);
+});
+
+ipcMain.handle(WORKSPACE_CHANNELS.SET_ACTIVE, async (_, { id }) => {
+  await workspaceStore.setActive(id);
+  return { success: true };
+});
+
+ipcMain.handle(WORKSPACE_CHANNELS.REMOVE, async (_, { id }) => {
+  await workspaceStore.remove(id);
+  return { success: true };
 });
 
 app.whenReady().then(async () => {

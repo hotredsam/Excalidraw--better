@@ -27,6 +27,20 @@ export const SettingsSchema = z.object({
   showGrid: z.boolean().default(false),
 });
 
+export const WorkspaceSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  path: z.string(),
+  lastOpenedAt: z.number(),
+});
+
+export const WorkspaceListSchema = z.object({
+  workspaces: z.array(WorkspaceSchema),
+});
+
+export type Workspace = z.infer<typeof WorkspaceSchema>;
+export type WorkspaceList = z.infer<typeof WorkspaceListSchema>;
+
 export type Profile = z.infer<typeof ProfileSchema>;
 export type ProfileList = z.infer<typeof ProfileListSchema>;
 export type Settings = z.infer<typeof SettingsSchema>;

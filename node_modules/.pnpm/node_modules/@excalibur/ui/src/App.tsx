@@ -4,36 +4,38 @@ import { ProfileSwitcher } from './components/ProfileSwitcher';
 import { SettingsModal } from './components/SettingsModal';
 import { WorkspaceSidebar } from './components/WorkspaceSidebar';
 
-import { Workspace, FileInfo } from '@excalibur/shared';
+import * as Shared from '@excalibur/shared';
 
 function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [activeFile, setActiveFile] = useState<FileInfo | null>(null);
-  const [activeWorkspace, setActiveWorkspace] = useState<Workspace | null>(null);
-  const [canvasData, setCanvasData] = useState<any>(null);
+  const [activeFile, setActiveFile] = useState<Shared.FileInfo | null>(null);
+  const [activeWorkspace, setActiveWorkspace] = useState<Shared.Workspace | null>(null);
+  const [canvasData, setCanvasData] = useState<Shared.ExcalidrawFile | null>(null);
 
-  const handleOpenFile = async (workspace: Workspace, file: FileInfo) => {
+  const handleOpenFile = async (workspace: Shared.Workspace, file: Shared.FileInfo) => {
     try {
-      const content = await window.api.workspaces.readFile(workspace.id, file.path);
-      const data = JSON.parse(content);
+      const data = await window.api.workspaces.readExcalidrawFile(workspace.id, file.path);
       setActiveWorkspace(workspace);
       setActiveFile(file);
       setCanvasData(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to open file:', err);
+      alert('Failed to open file: ' + (err.message || 'Unknown error'));
     }
   };
 
   const handleSave = async (elements: any[], appState: any) => {
-    if (!activeWorkspace || !activeFile) return;
+    if (!activeWorkspace || !activeFile || !canvasData) return;
     
     try {
-      const content = JSON.stringify({ elements, appState }, null, 2);
+      const merged = Shared.mergeExcalidraw(canvasData, elements, appState);
+      const content = JSON.stringify(merged, null, 2);
       await window.api.workspaces.writeFile(activeWorkspace.id, activeFile.path, content);
+      setCanvasData(merged); // Update local state with merged data
       alert('Saved successfully!');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to save:', err);
-      alert('Save failed: ' + err);
+      alert('Save failed: ' + (err.message || 'Unknown error'));
     }
   };
 

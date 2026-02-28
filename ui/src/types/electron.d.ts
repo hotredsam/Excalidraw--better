@@ -26,6 +26,7 @@ declare global {
         getActive: () => Promise<Workspace | null>;
         listFiles: (workspaceId: string, subDir?: string) => Promise<FileInfo[]>;
         readFile: (workspaceId: string, filePath: string) => Promise<string>;
+        readExcalidrawFile: (workspaceId: string, filePath: string) => Promise<ExcalidrawFile>;
         writeFile: (workspaceId: string, filePath: string, content: string) => Promise<{ success: boolean }>;
         deleteFile: (workspaceId: string, filePath: string) => Promise<{ success: boolean }>;
       };

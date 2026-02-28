@@ -26,4 +26,5 @@ exports.WORKSPACE_CHANNELS = {
     READ_FILE: 'workspaces:read-file',
     WRITE_FILE: 'workspaces:write-file',
     DELETE_FILE: 'workspaces:delete-file',
+    READ_EXCALIDRAW_FILE: 'workspaces:read-excalidraw-file',
 };

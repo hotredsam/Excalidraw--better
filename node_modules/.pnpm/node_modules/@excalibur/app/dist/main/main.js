@@ -190,6 +190,17 @@ electron_1.ipcMain.handle(ipc_1.WORKSPACE_CHANNELS.LIST_FILES, async (_, { works
     return files;
 });
 const path_utils_1 = require("./path-utils");
+const excalidraw_utils_1 = require("./excalidraw-utils");
+electron_1.ipcMain.handle(ipc_1.WORKSPACE_CHANNELS.READ_EXCALIDRAW_FILE, async (_, { workspaceId, filePath }) => {
+    const workspaces = await workspaceStore.list();
+    const workspace = workspaces.find(w => w.id === workspaceId);
+    if (!workspace)
+        throw new Error('Workspace not found');
+    if (!(0, path_utils_1.isPathWithin)(workspace.path, filePath)) {
+        throw new Error('Access denied: Path outside workspace');
+    }
+    return await (0, excalidraw_utils_1.readExcalidrawFile)(filePath);
+});
 electron_1.ipcMain.handle(ipc_1.WORKSPACE_CHANNELS.READ_FILE, async (_, { workspaceId, filePath }) => {
     const workspaces = await workspaceStore.list();
     const workspace = workspaces.find(w => w.id === workspaceId);

@@ -160,7 +160,35 @@ export declare const FileInfoSchema: z.ZodObject<{
     mtime: number;
     extension?: string | undefined;
 }>;
+export declare const ExcalidrawFileSchema: z.ZodObject<{
+    type: z.ZodDefault<z.ZodString>;
+    version: z.ZodDefault<z.ZodOptional<z.ZodNumber>>;
+    source: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+    elements: z.ZodDefault<z.ZodArray<z.ZodAny, "many">>;
+    appState: z.ZodDefault<z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodAny>>>;
+    files: z.ZodDefault<z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodAny>>>;
+}, "passthrough", z.ZodTypeAny, z.objectOutputType<{
+    type: z.ZodDefault<z.ZodString>;
+    version: z.ZodDefault<z.ZodOptional<z.ZodNumber>>;
+    source: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+    elements: z.ZodDefault<z.ZodArray<z.ZodAny, "many">>;
+    appState: z.ZodDefault<z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodAny>>>;
+    files: z.ZodDefault<z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodAny>>>;
+}, z.ZodTypeAny, "passthrough">, z.objectInputType<{
+    type: z.ZodDefault<z.ZodString>;
+    version: z.ZodDefault<z.ZodOptional<z.ZodNumber>>;
+    source: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+    elements: z.ZodDefault<z.ZodArray<z.ZodAny, "many">>;
+    appState: z.ZodDefault<z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodAny>>>;
+    files: z.ZodDefault<z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodAny>>>;
+}, z.ZodTypeAny, "passthrough">>;
 export type FileInfo = z.infer<typeof FileInfoSchema>;
+export type ExcalidrawFile = z.infer<typeof ExcalidrawFileSchema>;
+/**
+ * Safely merge new scene data into an existing Excalidraw file object.
+ * Preserves all extra fields not in elements/appState.
+ */
+export declare const mergeExcalidraw: (existing: any, elements: any[], appState: any) => ExcalidrawFile;
 export type Profile = z.infer<typeof ProfileSchema>;
 export type ProfileList = z.infer<typeof ProfileListSchema>;
 export type Settings = z.infer<typeof SettingsSchema>;

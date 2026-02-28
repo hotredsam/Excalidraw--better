@@ -14,7 +14,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FileInfoSchema = exports.WorkspaceListSchema = exports.WorkspaceSchema = exports.SettingsSchema = exports.ProfileListSchema = exports.ProfileSchema = exports.AppPingSchema = void 0;
+exports.mergeExcalidraw = exports.ExcalidrawFileSchema = exports.FileInfoSchema = exports.WorkspaceListSchema = exports.WorkspaceSchema = exports.SettingsSchema = exports.ProfileListSchema = exports.ProfileSchema = exports.AppPingSchema = void 0;
 __exportStar(require("./config"), exports);
 const zod_1 = require("zod");
 exports.AppPingSchema = zod_1.z.object({
@@ -56,3 +56,27 @@ exports.FileInfoSchema = zod_1.z.object({
     mtime: zod_1.z.number(),
     extension: zod_1.z.string().optional(),
 });
+exports.ExcalidrawFileSchema = zod_1.z.object({
+    type: zod_1.z.string().default('excalidraw'),
+    version: zod_1.z.number().optional().default(2),
+    source: zod_1.z.string().optional().default('https://excalidraw.com'),
+    elements: zod_1.z.array(zod_1.z.any()).default([]),
+    appState: zod_1.z.record(zod_1.z.any()).optional().default({}),
+    files: zod_1.z.record(zod_1.z.any()).optional().default({}),
+}).passthrough();
+/**
+ * Safely merge new scene data into an existing Excalidraw file object.
+ * Preserves all extra fields not in elements/appState.
+ */
+const mergeExcalidraw = (existing, elements, appState) => {
+    const merged = {
+        ...existing,
+        elements,
+        appState: {
+            ...(existing.appState || {}),
+            ...appState
+        }
+    };
+    return exports.ExcalidrawFileSchema.parse(merged);
+};
+exports.mergeExcalidraw = mergeExcalidraw;

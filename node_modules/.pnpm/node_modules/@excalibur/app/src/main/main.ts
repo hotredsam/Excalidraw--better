@@ -181,6 +181,19 @@ ipcMain.handle(WORKSPACE_CHANNELS.LIST_FILES, async (_, { workspaceId, subDir = 
 });
 
 import { isPathWithin, isDangerousPath } from './path-utils';
+import { readExcalidrawFile } from './excalidraw-utils';
+
+ipcMain.handle(WORKSPACE_CHANNELS.READ_EXCALIDRAW_FILE, async (_, { workspaceId, filePath }) => {
+  const workspaces = await workspaceStore.list();
+  const workspace = workspaces.find(w => w.id === workspaceId);
+  if (!workspace) throw new Error('Workspace not found');
+
+  if (!isPathWithin(workspace.path, filePath)) {
+    throw new Error('Access denied: Path outside workspace');
+  }
+
+  return await readExcalidrawFile(filePath);
+});
 
 ipcMain.handle(WORKSPACE_CHANNELS.READ_FILE, async (_, { workspaceId, filePath }) => {
   const workspaces = await workspaceStore.list();

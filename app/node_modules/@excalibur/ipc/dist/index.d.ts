@@ -23,6 +23,7 @@ export declare const WORKSPACE_CHANNELS: {
     readonly READ_FILE: "workspaces:read-file";
     readonly WRITE_FILE: "workspaces:write-file";
     readonly DELETE_FILE: "workspaces:delete-file";
+    readonly READ_EXCALIDRAW_FILE: "workspaces:read-excalidraw-file";
 };
 export type AppChannels = typeof APP_CHANNELS[keyof typeof APP_CHANNELS];
 export type ProfileChannels = typeof PROFILE_CHANNELS[keyof typeof PROFILE_CHANNELS];

@@ -26,6 +26,7 @@ electron_1.contextBridge.exposeInMainWorld('api', {
         getActive: () => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.GET_ACTIVE),
         listFiles: (workspaceId, subDir) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.LIST_FILES, { workspaceId, subDir }),
         readFile: (workspaceId, filePath) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.READ_FILE, { workspaceId, filePath }),
+        readExcalidrawFile: (workspaceId, filePath) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.READ_EXCALIDRAW_FILE, { workspaceId, filePath }),
         writeFile: (workspaceId, filePath, content) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.WRITE_FILE, { workspaceId, filePath, content }),
         deleteFile: (workspaceId, filePath) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.DELETE_FILE, { workspaceId, filePath }),
     },

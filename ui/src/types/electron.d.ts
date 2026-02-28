@@ -30,6 +30,10 @@ declare global {
         writeFile: (workspaceId: string, filePath: string, content: string) => Promise<{ success: boolean }>;
         deleteFile: (workspaceId: string, filePath: string) => Promise<{ success: boolean }>;
       };
+      plugins: {
+        list: () => Promise<PluginList>;
+        setEnabled: (id: string, enabled: boolean) => Promise<{ success: boolean }>;
+      };
     };
   }
 }

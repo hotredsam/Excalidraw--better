@@ -17,9 +17,10 @@ Excalidraw allows exporting SVGs that contain the full scene data embedded withi
 -   **Write Support:** Currently, Excalibur treats SVGs as read-only for extraction. To save changes, you must save as a `.excalidraw` file or use the upcoming Export feature.
 
 ### 3. `.excalidraw.png` (Embedded Scene)
-Similar to SVG, Excalidraw PNGs can contain the scene data in a metadata chunk (usually `tEXt` or `zTXt`).
+Excalidraw PNGs contain the scene data in a metadata chunk.
 
--   **Read Support:** (Planned) Extraction of embedded data from PNGs is on the roadmap. Currently, these files are listed but cannot be opened for editing.
+-   **Read Support:** Excalibur supports extracting embedded scene data from `.png` files. It looks for the `Excalidraw` or `comment` keyword in `tEXt` or `zTXt` (compressed) chunks.
+-   **Write Support:** Currently read-only for extraction. Use the upcoming Export feature to generate new PNGs with embedded data.
 
 ## Safety & Integrity
 

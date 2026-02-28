@@ -62,11 +62,7 @@ export const ExcalidrawFileSchema = z.object({
 export type FileInfo = z.infer<typeof FileInfoSchema>;
 export type ExcalidrawFile = z.infer<typeof ExcalidrawFileSchema>;
 
-/**
- * Safely merge new scene data into an existing Excalidraw file object.
- * Preserves all extra fields not in elements/appState.
- */
-export const mergeExcalidraw = (existing: any, elements: any[], appState: any): ExcalidrawFile => {
+export function mergeExcalidraw(existing: any, elements: any[], appState: any): ExcalidrawFile {
   const merged = {
     ...existing,
     elements,
@@ -76,7 +72,7 @@ export const mergeExcalidraw = (existing: any, elements: any[], appState: any): 
     }
   };
   return ExcalidrawFileSchema.parse(merged);
-};
+}
 
 export type Profile = z.infer<typeof ProfileSchema>;
 export type ProfileList = z.infer<typeof ProfileListSchema>;

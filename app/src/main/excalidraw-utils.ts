@@ -1,6 +1,7 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { ExcalidrawFileSchema, ExcalidrawFile } from '@excalibur/shared';
+import { extractExcalidrawFromPng } from './png-excalidraw';
 
 export async function readExcalidrawFile(filePath: string): Promise<ExcalidrawFile> {
   const extension = path.extname(filePath).toLowerCase();
@@ -24,7 +25,15 @@ export async function readExcalidrawFile(filePath: string): Promise<ExcalidrawFi
   }
 
   if (extension === '.png') {
-    throw new Error('PNG embedded scene extraction not supported yet. Use .excalidraw or .svg files.');
+    const buffer = await fs.readFile(filePath);
+    try {
+      return extractExcalidrawFromPng(buffer);
+    } catch (err: any) {
+      if (err.name === 'PngExtractionError') {
+        throw new Error(err.message);
+      }
+      throw err;
+    }
   }
 
   throw new Error(`Unsupported file type: ${extension}`);

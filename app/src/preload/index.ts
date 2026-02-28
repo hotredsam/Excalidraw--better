@@ -23,5 +23,6 @@ contextBridge.exposeInMainWorld('api', {
     remove: (id: string) => ipcRenderer.invoke(WORKSPACE_CHANNELS.REMOVE, { id }),
     setActive: (id: string | null) => ipcRenderer.invoke(WORKSPACE_CHANNELS.SET_ACTIVE, { id }),
     getActive: () => ipcRenderer.invoke(WORKSPACE_CHANNELS.GET_ACTIVE),
+    listFiles: (workspaceId: string, subDir?: string) => ipcRenderer.invoke(WORKSPACE_CHANNELS.LIST_FILES, { workspaceId, subDir }),
   },
 });

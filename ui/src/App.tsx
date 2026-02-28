@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CanvasShell } from './components/CanvasShell';
 import { ProfileSwitcher } from './components/ProfileSwitcher';
 import { SettingsModal } from './components/SettingsModal';
+import { WorkspaceSidebar } from './components/WorkspaceSidebar';
 
 function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -16,7 +17,8 @@ function App() {
         display: 'flex',
         alignItems: 'center',
         padding: '0 var(--s-lg)',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        zIndex: 100
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-md)' }}>
           <h1 style={{ 
@@ -46,9 +48,12 @@ function App() {
         </div>
       </header>
 
-      <main style={{ flex: 1, position: 'relative' }}>
-        <CanvasShell />
-      </main>
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+        <WorkspaceSidebar />
+        <main style={{ flex: 1, position: 'relative' }}>
+          <CanvasShell />
+        </main>
+      </div>
 
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </div>

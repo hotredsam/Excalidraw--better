@@ -152,6 +152,33 @@ ipcMain.handle(WORKSPACE_CHANNELS.REMOVE, async (_, { id }) => {
   return { success: true };
 });
 
+ipcMain.handle(WORKSPACE_CHANNELS.LIST_FILES, async (_, { workspaceId, subDir = '' }) => {
+  const workspaces = await workspaceStore.list();
+  const workspace = workspaces.find(w => w.id === workspaceId);
+  if (!workspace) throw new Error('Workspace not found');
+
+  const targetDir = path.join(workspace.path, subDir);
+  const items = await fs.readdir(targetDir, { withFileTypes: true });
+  
+  const files = items.map(item => {
+    const fullPath = path.join(targetDir, item.name);
+    const stats = fs.statSync(fullPath);
+    return {
+      name: item.name,
+      path: fullPath,
+      isDirectory: item.isDirectory(),
+      size: stats.size,
+      mtime: stats.mtimeMs,
+      extension: path.extname(item.name).toLowerCase(),
+    };
+  }).filter(file => {
+    if (file.isDirectory) return true;
+    return ['.excalidraw', '.png', '.svg', '.json'].includes(file.extension || '');
+  });
+
+  return files;
+});
+
 app.whenReady().then(async () => {
   await initStores();
   createWindow();

@@ -30,4 +30,8 @@ electron_1.contextBridge.exposeInMainWorld('api', {
         writeFile: (workspaceId, filePath, content) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.WRITE_FILE, { workspaceId, filePath, content }),
         deleteFile: (workspaceId, filePath) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.DELETE_FILE, { workspaceId, filePath }),
     },
+    plugins: {
+        list: () => electron_1.ipcRenderer.invoke(ipc_1.PLUGIN_CHANNELS.LIST),
+        setEnabled: (id, enabled) => electron_1.ipcRenderer.invoke(ipc_1.PLUGIN_CHANNELS.SET_ENABLED, { id, enabled }),
+    },
 });

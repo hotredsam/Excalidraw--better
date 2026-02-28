@@ -3,6 +3,7 @@ import { CanvasShell } from './components/CanvasShell';
 import { ProfileSwitcher } from './components/ProfileSwitcher';
 import { SettingsModal } from './components/SettingsModal';
 import { Sidebar } from './components/Sidebar';
+import * as Shared from '@excalibur/shared';
 
 function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);

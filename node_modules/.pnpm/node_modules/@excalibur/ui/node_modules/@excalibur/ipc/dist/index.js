@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.WORKSPACE_CHANNELS = exports.SETTINGS_CHANNELS = exports.PROFILE_CHANNELS = exports.APP_CHANNELS = void 0;
+exports.PLUGIN_CHANNELS = exports.WORKSPACE_CHANNELS = exports.SETTINGS_CHANNELS = exports.PROFILE_CHANNELS = exports.APP_CHANNELS = void 0;
 exports.APP_CHANNELS = {
     PING: 'app:ping',
 };
@@ -27,4 +27,8 @@ exports.WORKSPACE_CHANNELS = {
     WRITE_FILE: 'workspaces:write-file',
     DELETE_FILE: 'workspaces:delete-file',
     READ_EXCALIDRAW_FILE: 'workspaces:read-excalidraw-file',
+};
+exports.PLUGIN_CHANNELS = {
+    LIST: 'plugins:list',
+    SET_ENABLED: 'plugins:set-enabled',
 };

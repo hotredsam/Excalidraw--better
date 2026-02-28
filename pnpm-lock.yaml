@@ -29,6 +29,9 @@ importers:
       '@excalibur/ipc':
         specifier: workspace:*
         version: link:../packages/ipc
+      '@excalibur/plugin-sdk':
+        specifier: workspace:*
+        version: link:../packages/plugin-sdk
       '@excalibur/shared':
         specifier: workspace:*
         version: link:../packages/shared
@@ -60,9 +63,27 @@ importers:
       '@types/pako':
         specifier: ^2.0.4
         version: 2.0.4
+      '@types/png-chunk-text':
+        specifier: ^1.0.3
+        version: 1.0.3
+      '@types/png-chunks-extract':
+        specifier: ^1.0.2
+        version: 1.0.2
+      '@types/pngjs':
+        specifier: ^6.0.5
+        version: 6.0.5
+      crc:
+        specifier: ^4.3.2
+        version: 4.3.2
       electron-builder:
         specifier: ^24.9.1
         version: 24.13.3(electron-builder-squirrel-windows@24.13.3)
+      png-chunks-encode:
+        specifier: ^1.0.0
+        version: 1.0.0
+      pngjs:
+        specifier: ^7.0.0
+        version: 7.0.0
       typescript:
         specifier: ^5.0.0
         version: 5.9.3
@@ -72,6 +93,12 @@ importers:
       '@excalibur/shared':
         specifier: workspace:*
         version: link:../shared
+    devDependencies:
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+
+  packages/plugin-sdk:
     devDependencies:
       typescript:
         specifier: ^5.0.0
@@ -92,6 +119,9 @@ importers:
       '@excalibur/ipc':
         specifier: workspace:*
         version: link:../packages/ipc
+      '@excalibur/plugin-sdk':
+        specifier: workspace:*
+        version: link:../packages/plugin-sdk
       '@excalibur/shared':
         specifier: workspace:*
         version: link:../packages/shared
@@ -1121,6 +1151,15 @@ packages:
   '@types/plist@3.0.5':
     resolution: {integrity: sha512-E6OCaRmAe4WDmWNsL/9RMqdkkzDCY1etutkflWk4c+AcjDU07Pcz1fQwTX0TQz+Pxqn9i4L1TU3UFpjnrcDgxA==}
 
+  '@types/png-chunk-text@1.0.3':
+    resolution: {integrity: sha512-7keEFz73uNJ9Ar1XMCNnHEXT9pICJnouMQCCYgBEmHMgdkXaQzSTmSvr6tUDSqgdEgmlRAxZd97wprgliyZoCg==}
+
+  '@types/png-chunks-extract@1.0.2':
+    resolution: {integrity: sha512-z6djfFIbrrddtunoMJBOPlyZrnmeuG1kkvHUNi2QfpOb+JMMLuLliHHTmMyRi7k7LiTAut0HbdGCF6ibDtQAHQ==}
+
+  '@types/pngjs@6.0.5':
+    resolution: {integrity: sha512-0k5eKfrA83JOZPppLtS2C7OUtyNAl2wKNxfyYl9Q5g9lPkgBl/9hNyAu6HuEH2J4XmIv2znEpkDd0SaZVxW6iQ==}
+
   '@types/prop-types@15.7.15':
     resolution: {integrity: sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==}
 
@@ -1467,6 +1506,15 @@ packages:
 
   crc@3.8.0:
     resolution: {integrity: sha512-iX3mfgcTMIq3ZKLIsVFAbv7+Mc10kxabAGQb8HvjA1o3T1PIYprbakQ65d3I+2HGHt6nSKkM9PYjgoJO2KcFBQ==}
+
+  crc@4.3.2:
+    resolution: {integrity: sha512-uGDHf4KLLh2zsHa8D8hIQ1H/HtFQhyHrc0uhHBcoKGol/Xnb+MPYfUMw7cvON6ze/GUESTudKayDcJC5HnJv1A==}
+    engines: {node: '>=12'}
+    peerDependencies:
+      buffer: '>=6.0.3'
+    peerDependenciesMeta:
+      buffer:
+        optional: true
 
   cross-env@7.0.3:
     resolution: {integrity: sha512-+/HKd6EgcQCJGh2PSjZuUitQBQynKor4wrFbRg4DtAgS1aWO+gU52xpH7M9ScGgXSYmAVS9bIJ8EzuaGw0oNAw==}
@@ -2469,6 +2517,10 @@ packages:
 
   png-chunks-extract@1.0.0:
     resolution: {integrity: sha512-ZiVwF5EJ0DNZyzAqld8BP1qyJBaGOFaq9zl579qfbkcmOwWLLO4I9L8i2O4j3HkI6/35i0nKG2n+dZplxiT89Q==}
+
+  pngjs@7.0.0:
+    resolution: {integrity: sha512-LKWqWJRhstyYo9pGvgor/ivk2w94eSjE3RGVuzLGlr3NmD8bf7RcYGze1mNdEHRP6TRP6rMuDHk5t44hnTRyow==}
+    engines: {node: '>=14.19.0'}
 
   points-on-curve@0.2.0:
     resolution: {integrity: sha512-0mYKnYYe9ZcqMCWhUjItv/oHjvgEsfKvnUTg8sAtnHr3GVy7rGkXCb6d5cSyqrWqL4k81b9CPg3urd+T7aop3A==}
@@ -3981,6 +4033,14 @@ snapshots:
       xmlbuilder: 15.1.1
     optional: true
 
+  '@types/png-chunk-text@1.0.3': {}
+
+  '@types/png-chunks-extract@1.0.2': {}
+
+  '@types/pngjs@6.0.5':
+    dependencies:
+      '@types/node': 25.3.2
+
   '@types/prop-types@15.7.15': {}
 
   '@types/react-dom@18.3.7(@types/react@18.3.28)':
@@ -4412,6 +4472,8 @@ snapshots:
     dependencies:
       buffer: 5.7.1
     optional: true
+
+  crc@4.3.2: {}
 
   cross-env@7.0.3:
     dependencies:
@@ -5566,6 +5628,8 @@ snapshots:
   png-chunks-extract@1.0.0:
     dependencies:
       crc-32: 0.3.0
+
+  pngjs@7.0.0: {}
 
   points-on-curve@0.2.0: {}
 

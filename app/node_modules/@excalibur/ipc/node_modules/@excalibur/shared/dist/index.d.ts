@@ -184,11 +184,81 @@ export declare const ExcalidrawFileSchema: z.ZodObject<{
 }, z.ZodTypeAny, "passthrough">>;
 export type FileInfo = z.infer<typeof FileInfoSchema>;
 export type ExcalidrawFile = z.infer<typeof ExcalidrawFileSchema>;
-/**
- * Safely merge new scene data into an existing Excalidraw file object.
- * Preserves all extra fields not in elements/appState.
- */
-export declare const mergeExcalidraw: (existing: any, elements: any[], appState: any) => ExcalidrawFile;
+export declare function mergeExcalidraw(existing: any, elements: any[], appState: any): ExcalidrawFile;
+export declare const PluginInfoSchema: z.ZodObject<{
+    id: z.ZodString;
+    name: z.ZodString;
+    version: z.ZodString;
+    description: z.ZodOptional<z.ZodString>;
+    author: z.ZodOptional<z.ZodString>;
+    enabled: z.ZodBoolean;
+    path: z.ZodString;
+}, "strip", z.ZodTypeAny, {
+    version: string;
+    path: string;
+    id: string;
+    name: string;
+    enabled: boolean;
+    description?: string | undefined;
+    author?: string | undefined;
+}, {
+    version: string;
+    path: string;
+    id: string;
+    name: string;
+    enabled: boolean;
+    description?: string | undefined;
+    author?: string | undefined;
+}>;
+export declare const PluginListSchema: z.ZodObject<{
+    plugins: z.ZodArray<z.ZodObject<{
+        id: z.ZodString;
+        name: z.ZodString;
+        version: z.ZodString;
+        description: z.ZodOptional<z.ZodString>;
+        author: z.ZodOptional<z.ZodString>;
+        enabled: z.ZodBoolean;
+        path: z.ZodString;
+    }, "strip", z.ZodTypeAny, {
+        version: string;
+        path: string;
+        id: string;
+        name: string;
+        enabled: boolean;
+        description?: string | undefined;
+        author?: string | undefined;
+    }, {
+        version: string;
+        path: string;
+        id: string;
+        name: string;
+        enabled: boolean;
+        description?: string | undefined;
+        author?: string | undefined;
+    }>, "many">;
+}, "strip", z.ZodTypeAny, {
+    plugins: {
+        version: string;
+        path: string;
+        id: string;
+        name: string;
+        enabled: boolean;
+        description?: string | undefined;
+        author?: string | undefined;
+    }[];
+}, {
+    plugins: {
+        version: string;
+        path: string;
+        id: string;
+        name: string;
+        enabled: boolean;
+        description?: string | undefined;
+        author?: string | undefined;
+    }[];
+}>;
+export type PluginInfo = z.infer<typeof PluginInfoSchema>;
+export type PluginList = z.infer<typeof PluginListSchema>;
 export type Profile = z.infer<typeof ProfileSchema>;
 export type ProfileList = z.infer<typeof ProfileListSchema>;
 export type Settings = z.infer<typeof SettingsSchema>;

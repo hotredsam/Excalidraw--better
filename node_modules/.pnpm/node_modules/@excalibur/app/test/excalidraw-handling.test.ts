@@ -24,6 +24,14 @@ describe('Excalidraw Handling', () => {
     expect(data.elements[0].type).toBe('rectangle');
   });
 
+  it('should extract scene from .excalidraw.png files', async () => {
+    const filePath = path.join(fixturesDir, 'sample.excalidraw.png');
+    const data = await readExcalidrawFile(filePath);
+    
+    expect(data.type).toBe('excalidraw');
+    expect(data.elements.length).toBe(1);
+  });
+
   it('should preserve unknown fields during merge', () => {
     const existing = {
       type: 'excalidraw',

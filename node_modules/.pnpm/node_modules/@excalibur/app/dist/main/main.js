@@ -41,9 +41,11 @@ const shared_1 = require("@excalibur/shared");
 const profile_1 = require("./profile");
 const settings_1 = require("./settings");
 const workspace_1 = require("./workspace");
+const plugins_1 = require("./plugins");
 let profileStore;
 let settingsStore;
 let workspaceStore;
+let pluginManager;
 async function initStores() {
     profileStore = new profile_1.ProfileStore();
     await profileStore.init();
@@ -54,6 +56,8 @@ async function initStores() {
         await settingsStore.init();
         workspaceStore = new workspace_1.WorkspaceStore(profileDir);
         await workspaceStore.init();
+        pluginManager = new plugins_1.PluginManager(profileDir);
+        await pluginManager.init();
     }
 }
 function createWindow() {
@@ -235,6 +239,15 @@ electron_1.ipcMain.handle(ipc_1.WORKSPACE_CHANNELS.DELETE_FILE, async (_, { work
         throw new Error('Access denied: Path outside workspace');
     }
     await electron_1.shell.trashItem(filePath);
+    return { success: true };
+});
+// Plugins
+electron_1.ipcMain.handle(ipc_1.PLUGIN_CHANNELS.LIST, async () => {
+    const plugins = await pluginManager.list();
+    return shared_1.PluginListSchema.parse({ plugins });
+});
+electron_1.ipcMain.handle(ipc_1.PLUGIN_CHANNELS.SET_ENABLED, async (_, { id, enabled }) => {
+    await pluginManager.setEnabled(id, enabled);
     return { success: true };
 });
 electron_1.app.whenReady().then(async () => {

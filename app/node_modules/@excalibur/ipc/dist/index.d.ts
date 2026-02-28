@@ -25,7 +25,12 @@ export declare const WORKSPACE_CHANNELS: {
     readonly DELETE_FILE: "workspaces:delete-file";
     readonly READ_EXCALIDRAW_FILE: "workspaces:read-excalidraw-file";
 };
+export declare const PLUGIN_CHANNELS: {
+    readonly LIST: "plugins:list";
+    readonly SET_ENABLED: "plugins:set-enabled";
+};
 export type AppChannels = typeof APP_CHANNELS[keyof typeof APP_CHANNELS];
 export type ProfileChannels = typeof PROFILE_CHANNELS[keyof typeof PROFILE_CHANNELS];
 export type SettingsChannels = typeof SETTINGS_CHANNELS[keyof typeof SETTINGS_CHANNELS];
 export type WorkspaceChannels = typeof WORKSPACE_CHANNELS[keyof typeof WORKSPACE_CHANNELS];
+export type PluginChannels = typeof PLUGIN_CHANNELS[keyof typeof PLUGIN_CHANNELS];

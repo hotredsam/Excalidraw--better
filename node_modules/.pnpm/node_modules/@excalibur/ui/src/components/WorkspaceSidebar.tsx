@@ -96,8 +96,23 @@ export const WorkspaceSidebar: React.FC<{ onOpenFile: (workspace: Workspace, fil
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                 onClick={() => activeWorkspace && !file.isDirectory && onOpenFile(activeWorkspace, file)}
               >
-                <span>{file.isDirectory ? '📁' : '📄'}</span>
-                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{file.name}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-sm)', flex: 1, overflow: 'hidden' }}>
+                  <span>{file.isDirectory ? '📁' : '📄'}</span>
+                  <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{file.name}</span>
+                </div>
+                {!file.isDirectory && (
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm(`Delete ${file.name} to Recycle Bin?`)) {
+                        window.api.workspaces.deleteFile(activeWorkspace!.id, file.path).then(() => refreshWorkspaces());
+                      }
+                    }}
+                    style={{ backgroundColor: 'transparent', color: 'var(--text-2)', padding: '2px', fontSize: '10px' }}
+                  >
+                    🗑️
+                  </button>
+                )}
               </div>
             ))}
             {files.length === 0 && activeWorkspace && <p style={{ fontSize: '12px', color: 'var(--text-2)' }}>No compatible files found.</p>}

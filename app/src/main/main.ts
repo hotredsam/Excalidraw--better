@@ -211,6 +211,19 @@ ipcMain.handle(WORKSPACE_CHANNELS.WRITE_FILE, async (_, { workspaceId, filePath,
   return { success: true };
 });
 
+ipcMain.handle(WORKSPACE_CHANNELS.DELETE_FILE, async (_, { workspaceId, filePath }) => {
+  const workspaces = await workspaceStore.list();
+  const workspace = workspaces.find(w => w.id === workspaceId);
+  if (!workspace) throw new Error('Workspace not found');
+
+  if (!isPathWithin(workspace.path, filePath)) {
+    throw new Error('Access denied: Path outside workspace');
+  }
+
+  await shell.trashItem(filePath);
+  return { success: true };
+});
+
 app.whenReady().then(async () => {
   await initStores();
   createWindow();

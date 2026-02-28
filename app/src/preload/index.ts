@@ -26,5 +26,6 @@ contextBridge.exposeInMainWorld('api', {
     listFiles: (workspaceId: string, subDir?: string) => ipcRenderer.invoke(WORKSPACE_CHANNELS.LIST_FILES, { workspaceId, subDir }),
     readFile: (workspaceId: string, filePath: string) => ipcRenderer.invoke(WORKSPACE_CHANNELS.READ_FILE, { workspaceId, filePath }),
     writeFile: (workspaceId: string, filePath: string, content: string) => ipcRenderer.invoke(WORKSPACE_CHANNELS.WRITE_FILE, { workspaceId, filePath, content }),
+    deleteFile: (workspaceId: string, filePath: string) => ipcRenderer.invoke(WORKSPACE_CHANNELS.DELETE_FILE, { workspaceId, filePath }),
   },
 });

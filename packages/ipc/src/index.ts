@@ -25,6 +25,7 @@ export const WORKSPACE_CHANNELS = {
   LIST_FILES: 'workspaces:list-files',
   READ_FILE: 'workspaces:read-file',
   WRITE_FILE: 'workspaces:write-file',
+  DELETE_FILE: 'workspaces:delete-file',
 } as const;
 
 export type AppChannels = typeof APP_CHANNELS[keyof typeof APP_CHANNELS];

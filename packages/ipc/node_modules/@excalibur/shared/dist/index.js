@@ -14,7 +14,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SettingsSchema = exports.ProfileListSchema = exports.ProfileSchema = exports.AppPingSchema = void 0;
+exports.FileInfoSchema = exports.WorkspaceListSchema = exports.WorkspaceSchema = exports.SettingsSchema = exports.ProfileListSchema = exports.ProfileSchema = exports.AppPingSchema = void 0;
 __exportStar(require("./config"), exports);
 const zod_1 = require("zod");
 exports.AppPingSchema = zod_1.z.object({
@@ -38,4 +38,21 @@ exports.SettingsSchema = zod_1.z.object({
     defaultExportFormat: zod_1.z.enum(['png', 'svg']).default('png'),
     confirmOnDelete: zod_1.z.boolean().default(true),
     showGrid: zod_1.z.boolean().default(false),
+});
+exports.WorkspaceSchema = zod_1.z.object({
+    id: zod_1.z.string(),
+    name: zod_1.z.string(),
+    path: zod_1.z.string(),
+    lastOpenedAt: zod_1.z.number(),
+});
+exports.WorkspaceListSchema = zod_1.z.object({
+    workspaces: zod_1.z.array(exports.WorkspaceSchema),
+});
+exports.FileInfoSchema = zod_1.z.object({
+    name: zod_1.z.string(),
+    path: zod_1.z.string(),
+    isDirectory: zod_1.z.boolean(),
+    size: zod_1.z.number(),
+    mtime: zod_1.z.number(),
+    extension: zod_1.z.string().optional(),
 });

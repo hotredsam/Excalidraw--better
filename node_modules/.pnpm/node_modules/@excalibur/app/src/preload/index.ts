@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { APP_CHANNELS, PROFILE_CHANNELS, SETTINGS_CHANNELS } from '@excalibur/ipc';
+import { APP_CHANNELS, PROFILE_CHANNELS, SETTINGS_CHANNELS, WORKSPACE_CHANNELS } from '@excalibur/ipc';
 
 contextBridge.exposeInMainWorld('api', {
   app: {

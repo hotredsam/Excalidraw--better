@@ -18,6 +18,17 @@ declare global {
         get: () => Promise<Settings>;
         update: (partial: Partial<Settings>) => Promise<Settings>;
       };
+      workspaces: {
+        list: () => Promise<WorkspaceList>;
+        add: () => Promise<Workspace | null>;
+        remove: (id: string) => Promise<{ success: boolean }>;
+        setActive: (id: string | null) => Promise<{ success: boolean }>;
+        getActive: () => Promise<Workspace | null>;
+        listFiles: (workspaceId: string, subDir?: string) => Promise<FileInfo[]>;
+        readFile: (workspaceId: string, filePath: string) => Promise<string>;
+        writeFile: (workspaceId: string, filePath: string, content: string) => Promise<{ success: boolean }>;
+        deleteFile: (workspaceId: string, filePath: string) => Promise<{ success: boolean }>;
+      };
     };
   }
 }

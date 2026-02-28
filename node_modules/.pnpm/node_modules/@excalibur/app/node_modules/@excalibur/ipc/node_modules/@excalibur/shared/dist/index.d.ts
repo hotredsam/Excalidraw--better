@@ -88,6 +88,79 @@ export declare const SettingsSchema: z.ZodObject<{
     confirmOnDelete?: boolean | undefined;
     showGrid?: boolean | undefined;
 }>;
+export declare const WorkspaceSchema: z.ZodObject<{
+    id: z.ZodString;
+    name: z.ZodString;
+    path: z.ZodString;
+    lastOpenedAt: z.ZodNumber;
+}, "strip", z.ZodTypeAny, {
+    path: string;
+    id: string;
+    name: string;
+    lastOpenedAt: number;
+}, {
+    path: string;
+    id: string;
+    name: string;
+    lastOpenedAt: number;
+}>;
+export declare const WorkspaceListSchema: z.ZodObject<{
+    workspaces: z.ZodArray<z.ZodObject<{
+        id: z.ZodString;
+        name: z.ZodString;
+        path: z.ZodString;
+        lastOpenedAt: z.ZodNumber;
+    }, "strip", z.ZodTypeAny, {
+        path: string;
+        id: string;
+        name: string;
+        lastOpenedAt: number;
+    }, {
+        path: string;
+        id: string;
+        name: string;
+        lastOpenedAt: number;
+    }>, "many">;
+}, "strip", z.ZodTypeAny, {
+    workspaces: {
+        path: string;
+        id: string;
+        name: string;
+        lastOpenedAt: number;
+    }[];
+}, {
+    workspaces: {
+        path: string;
+        id: string;
+        name: string;
+        lastOpenedAt: number;
+    }[];
+}>;
+export type Workspace = z.infer<typeof WorkspaceSchema>;
+export type WorkspaceList = z.infer<typeof WorkspaceListSchema>;
+export declare const FileInfoSchema: z.ZodObject<{
+    name: z.ZodString;
+    path: z.ZodString;
+    isDirectory: z.ZodBoolean;
+    size: z.ZodNumber;
+    mtime: z.ZodNumber;
+    extension: z.ZodOptional<z.ZodString>;
+}, "strip", z.ZodTypeAny, {
+    path: string;
+    name: string;
+    isDirectory: boolean;
+    size: number;
+    mtime: number;
+    extension?: string | undefined;
+}, {
+    path: string;
+    name: string;
+    isDirectory: boolean;
+    size: number;
+    mtime: number;
+    extension?: string | undefined;
+}>;
+export type FileInfo = z.infer<typeof FileInfoSchema>;
 export type Profile = z.infer<typeof ProfileSchema>;
 export type ProfileList = z.infer<typeof ProfileListSchema>;
 export type Settings = z.infer<typeof SettingsSchema>;

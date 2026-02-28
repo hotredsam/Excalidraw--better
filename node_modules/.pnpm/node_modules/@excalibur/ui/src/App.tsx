@@ -4,12 +4,42 @@ import { ProfileSwitcher } from './components/ProfileSwitcher';
 import { SettingsModal } from './components/SettingsModal';
 import { WorkspaceSidebar } from './components/WorkspaceSidebar';
 
+import { Workspace, FileInfo } from '@excalibur/shared';
+
 function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [activeFile, setActiveFile] = useState<FileInfo | null>(null);
+  const [activeWorkspace, setActiveWorkspace] = useState<Workspace | null>(null);
+  const [canvasData, setCanvasData] = useState<any>(null);
+
+  const handleOpenFile = async (workspace: Workspace, file: FileInfo) => {
+    try {
+      const content = await window.api.workspaces.readFile(workspace.id, file.path);
+      const data = JSON.parse(content);
+      setActiveWorkspace(workspace);
+      setActiveFile(file);
+      setCanvasData(data);
+    } catch (err) {
+      console.error('Failed to open file:', err);
+    }
+  };
+
+  const handleSave = async (elements: any[], appState: any) => {
+    if (!activeWorkspace || !activeFile) return;
+    
+    try {
+      const content = JSON.stringify({ elements, appState }, null, 2);
+      await window.api.workspaces.writeFile(activeWorkspace.id, activeFile.path, content);
+      alert('Saved successfully!');
+    } catch (err) {
+      console.error('Failed to save:', err);
+      alert('Save failed: ' + err);
+    }
+  };
 
   return (
     <div style={{ height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column' }}>
-      {/* Top Bar Shell */}
+      {/* ... header unchanged ... */}
       <header style={{ 
         height: '56px', 
         backgroundColor: 'var(--bg-1)', 
@@ -30,6 +60,11 @@ function App() {
           }}>
             EXCALIBUR
           </h1>
+          {activeFile && (
+            <span style={{ fontSize: '13px', color: 'var(--text-2)' }}>
+              / {activeFile.name}
+            </span>
+          )}
         </div>
         
         <div style={{ display: 'flex', gap: 'var(--s-md)', alignItems: 'center' }}>
@@ -49,9 +84,9 @@ function App() {
       </header>
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        <WorkspaceSidebar />
+        <WorkspaceSidebar onOpenFile={handleOpenFile} />
         <main style={{ flex: 1, position: 'relative' }}>
-          <CanvasShell />
+          <CanvasShell initialData={canvasData} onSave={handleSave} />
         </main>
       </div>
 

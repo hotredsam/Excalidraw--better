@@ -23,6 +23,8 @@ export const WORKSPACE_CHANNELS = {
   SET_ACTIVE: 'workspaces:set-active',
   GET_ACTIVE: 'workspaces:get-active',
   LIST_FILES: 'workspaces:list-files',
+  READ_FILE: 'workspaces:read-file',
+  WRITE_FILE: 'workspaces:write-file',
 } as const;
 
 export type AppChannels = typeof APP_CHANNELS[keyof typeof APP_CHANNELS];

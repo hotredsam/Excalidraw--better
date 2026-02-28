@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Workspace, FileInfo } from '@excalibur/shared';
 
-export const WorkspaceSidebar: React.FC = () => {
+export const WorkspaceSidebar: React.FC<{ onOpenFile: (workspace: Workspace, file: FileInfo) => void }> = ({ onOpenFile }) => {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [activeWorkspace, setActiveWorkspace] = useState<Workspace | null>(null);
   const [files, setFiles] = useState<FileInfo[]>([]);
@@ -94,6 +94,7 @@ export const WorkspaceSidebar: React.FC = () => {
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-2)')}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                onClick={() => activeWorkspace && !file.isDirectory && onOpenFile(activeWorkspace, file)}
               >
                 <span>{file.isDirectory ? '📁' : '📄'}</span>
                 <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{file.name}</span>

@@ -24,5 +24,7 @@ contextBridge.exposeInMainWorld('api', {
     setActive: (id: string | null) => ipcRenderer.invoke(WORKSPACE_CHANNELS.SET_ACTIVE, { id }),
     getActive: () => ipcRenderer.invoke(WORKSPACE_CHANNELS.GET_ACTIVE),
     listFiles: (workspaceId: string, subDir?: string) => ipcRenderer.invoke(WORKSPACE_CHANNELS.LIST_FILES, { workspaceId, subDir }),
+    readFile: (workspaceId: string, filePath: string) => ipcRenderer.invoke(WORKSPACE_CHANNELS.READ_FILE, { workspaceId, filePath }),
+    writeFile: (workspaceId: string, filePath: string, content: string) => ipcRenderer.invoke(WORKSPACE_CHANNELS.WRITE_FILE, { workspaceId, filePath, content }),
   },
 });

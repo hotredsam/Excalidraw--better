@@ -179,6 +179,38 @@ ipcMain.handle(WORKSPACE_CHANNELS.LIST_FILES, async (_, { workspaceId, subDir = 
   return files;
 });
 
+import { isPathWithin, isDangerousPath } from './path-utils';
+
+ipcMain.handle(WORKSPACE_CHANNELS.READ_FILE, async (_, { workspaceId, filePath }) => {
+  const workspaces = await workspaceStore.list();
+  const workspace = workspaces.find(w => w.id === workspaceId);
+  if (!workspace) throw new Error('Workspace not found');
+
+  if (!isPathWithin(workspace.path, filePath)) {
+    throw new Error('Access denied: Path outside workspace');
+  }
+
+  return await fs.readFile(filePath, 'utf-8');
+});
+
+ipcMain.handle(WORKSPACE_CHANNELS.WRITE_FILE, async (_, { workspaceId, filePath, content }) => {
+  const workspaces = await workspaceStore.list();
+  const workspace = workspaces.find(w => w.id === workspaceId);
+  if (!workspace) throw new Error('Workspace not found');
+
+  if (!isPathWithin(workspace.path, filePath)) {
+    throw new Error('Access denied: Path outside workspace');
+  }
+
+  if (isDangerousPath(filePath)) {
+    throw new Error('Access denied: Dangerous path');
+  }
+
+  await fs.ensureDir(path.dirname(filePath));
+  await fs.writeFile(filePath, content, 'utf-8');
+  return { success: true };
+});
+
 app.whenReady().then(async () => {
   await initStores();
   createWindow();

@@ -1,15 +1,17 @@
 import { app, BrowserWindow, ipcMain, shell, dialog } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { APP_CHANNELS, PROFILE_CHANNELS, SETTINGS_CHANNELS, WORKSPACE_CHANNELS } from '@excalibur/ipc';
-import { AppPingSchema, ProfileSchema, ProfileListSchema, SettingsSchema, WorkspaceSchema, WorkspaceListSchema } from '@excalibur/shared';
+import { APP_CHANNELS, PROFILE_CHANNELS, SETTINGS_CHANNELS, WORKSPACE_CHANNELS, PLUGIN_CHANNELS } from '@excalibur/ipc';
+import { AppPingSchema, ProfileSchema, ProfileListSchema, SettingsSchema, WorkspaceSchema, WorkspaceListSchema, PluginListSchema } from '@excalibur/shared';
 import { ProfileStore } from './profile';
 import { SettingsStore } from './settings';
 import { WorkspaceStore } from './workspace';
+import { PluginManager } from './plugins';
 
 let profileStore: ProfileStore;
 let settingsStore: SettingsStore;
 let workspaceStore: WorkspaceStore;
+let pluginManager: PluginManager;
 
 async function initStores() {
   profileStore = new ProfileStore();
@@ -23,6 +25,9 @@ async function initStores() {
     
     workspaceStore = new WorkspaceStore(profileDir);
     await workspaceStore.init();
+
+    pluginManager = new PluginManager(profileDir);
+    await pluginManager.init();
   }
 }
 
@@ -235,6 +240,17 @@ ipcMain.handle(WORKSPACE_CHANNELS.DELETE_FILE, async (_, { workspaceId, filePath
   }
 
   await shell.trashItem(filePath);
+  return { success: true };
+});
+
+// Plugins
+ipcMain.handle(PLUGIN_CHANNELS.LIST, async () => {
+  const plugins = await pluginManager.list();
+  return PluginListSchema.parse({ plugins });
+});
+
+ipcMain.handle(PLUGIN_CHANNELS.SET_ENABLED, async (_, { id, enabled }) => {
+  await pluginManager.setEnabled(id, enabled);
   return { success: true };
 });
 

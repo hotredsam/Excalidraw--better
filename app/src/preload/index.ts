@@ -29,4 +29,8 @@ contextBridge.exposeInMainWorld('api', {
     writeFile: (workspaceId: string, filePath: string, content: string) => ipcRenderer.invoke(WORKSPACE_CHANNELS.WRITE_FILE, { workspaceId, filePath, content }),
     deleteFile: (workspaceId: string, filePath: string) => ipcRenderer.invoke(WORKSPACE_CHANNELS.DELETE_FILE, { workspaceId, filePath }),
   },
+  plugins: {
+    list: () => ipcRenderer.invoke(PLUGIN_CHANNELS.LIST),
+    setEnabled: (id: string, enabled: boolean) => ipcRenderer.invoke(PLUGIN_CHANNELS.SET_ENABLED, { id, enabled }),
+  },
 });

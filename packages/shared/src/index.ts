@@ -74,6 +74,23 @@ export function mergeExcalidraw(existing: any, elements: any[], appState: any): 
   return ExcalidrawFileSchema.parse(merged);
 }
 
+export const PluginInfoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  version: z.string(),
+  description: z.string().optional(),
+  author: z.string().optional(),
+  enabled: z.boolean(),
+  path: z.string(),
+});
+
+export const PluginListSchema = z.object({
+  plugins: z.array(PluginInfoSchema),
+});
+
+export type PluginInfo = z.infer<typeof PluginInfoSchema>;
+export type PluginList = z.infer<typeof PluginListSchema>;
+
 export type Profile = z.infer<typeof ProfileSchema>;
 export type ProfileList = z.infer<typeof ProfileListSchema>;
 export type Settings = z.infer<typeof SettingsSchema>;

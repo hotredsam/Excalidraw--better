@@ -33,3 +33,16 @@ export type AppChannels = typeof APP_CHANNELS[keyof typeof APP_CHANNELS];
 export type ProfileChannels = typeof PROFILE_CHANNELS[keyof typeof PROFILE_CHANNELS];
 export type SettingsChannels = typeof SETTINGS_CHANNELS[keyof typeof SETTINGS_CHANNELS];
 export type WorkspaceChannels = typeof WORKSPACE_CHANNELS[keyof typeof WORKSPACE_CHANNELS];
+
+export const PLUGIN_CHANNELS = {
+  LIST: 'plugins:list',
+  SET_ENABLED: 'plugins:set-enabled',
+} as const;
+
+export const AI_IMPORT_CHANNELS = {
+  VALIDATE: 'ai-import:validate',
+  APPLY: 'ai-import:apply',
+} as const;
+
+export type PluginChannels = typeof PLUGIN_CHANNELS[keyof typeof PLUGIN_CHANNELS];
+export type AiImportChannels = typeof AI_IMPORT_CHANNELS[keyof typeof AI_IMPORT_CHANNELS];

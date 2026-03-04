@@ -1,28 +1,48 @@
 import { app, BrowserWindow, ipcMain, shell, dialog } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { APP_CHANNELS, PROFILE_CHANNELS, SETTINGS_CHANNELS, WORKSPACE_CHANNELS } from '@excalibur/ipc';
-import { AppPingSchema, ProfileSchema, ProfileListSchema, SettingsSchema, WorkspaceSchema, WorkspaceListSchema } from '@excalibur/shared';
+import { APP_CHANNELS, PROFILE_CHANNELS, SETTINGS_CHANNELS, WORKSPACE_CHANNELS, PLUGIN_CHANNELS, AI_IMPORT_CHANNELS } from '@excalibur/ipc';
+import { AppPingSchema, ProfileSchema, ProfileListSchema, SettingsSchema, WorkspaceSchema, WorkspaceListSchema, PluginInfoListSchema, AiPayloadSchema } from '@excalibur/shared';
 import { ProfileStore } from './profile';
 import { SettingsStore } from './settings';
 import { WorkspaceStore } from './workspace';
+import { PluginManager } from './plugins';
+import { AiImporter } from './ai-import';
 
 let profileStore: ProfileStore;
 let settingsStore: SettingsStore;
 let workspaceStore: WorkspaceStore;
+let pluginManager: PluginManager;
+let aiImporter: AiImporter;
 
 async function initStores() {
   profileStore = new ProfileStore();
   await profileStore.init();
-  
+
   const activeProfile = await profileStore.getActive();
   if (activeProfile) {
     const profileDir = profileStore.getProfileDir(activeProfile.id);
     settingsStore = new SettingsStore(profileDir);
     await settingsStore.init();
-    
+
     workspaceStore = new WorkspaceStore(profileDir);
     await workspaceStore.init();
+
+    pluginManager = new PluginManager(profileDir);
+    await pluginManager.init();
+    aiImporter = new AiImporter(profileDir);
+  } else {
+    // No active profile yet - create a minimal profile
+    const defaultProfile = await profileStore.create('Default');
+    await profileStore.setActive(defaultProfile.id);
+    const profileDir = profileStore.getProfileDir(defaultProfile.id);
+    settingsStore = new SettingsStore(profileDir);
+    await settingsStore.init();
+    workspaceStore = new WorkspaceStore(profileDir);
+    await workspaceStore.init();
+    pluginManager = new PluginManager(profileDir);
+    await pluginManager.init();
+    aiImporter = new AiImporter(profileDir);
   }
 }
 
@@ -93,19 +113,28 @@ ipcMain.handle(PROFILE_CHANNELS.RENAME, async (_, { id, name }) => {
 
 ipcMain.handle(PROFILE_CHANNELS.DELETE, async (_, { id }) => {
   await profileStore.delete(id);
-  // Re-init settings store for the new active profile
+  // Re-init both settings and workspace stores for the new active profile
   const active = await profileStore.getActive();
   if (active) {
-    settingsStore = new SettingsStore(profileStore.getProfileDir(active.id));
+    const profileDir = profileStore.getProfileDir(active.id);
+    settingsStore = new SettingsStore(profileDir);
     await settingsStore.init();
+    workspaceStore = new WorkspaceStore(profileDir);
+    await workspaceStore.init();
   }
   return { success: true };
 });
 
 ipcMain.handle(PROFILE_CHANNELS.SET_ACTIVE, async (_, { id }) => {
   await profileStore.setActive(id);
-  settingsStore = new SettingsStore(profileStore.getProfileDir(id));
+  const profileDir = profileStore.getProfileDir(id);
+  settingsStore = new SettingsStore(profileDir);
   await settingsStore.init();
+  workspaceStore = new WorkspaceStore(profileDir);
+  await workspaceStore.init();
+  pluginManager = new PluginManager(profileDir);
+  await pluginManager.init();
+  aiImporter = new AiImporter(profileDir);
   return { success: true };
 });
 
@@ -160,10 +189,10 @@ ipcMain.handle(WORKSPACE_CHANNELS.LIST_FILES, async (_, { workspaceId, subDir = 
 
   const targetDir = path.join(workspace.path, subDir);
   const items = await fs.readdir(targetDir, { withFileTypes: true });
-  
-  const files = items.map(item => {
+
+  const fileEntries = await Promise.all(items.map(async (item) => {
     const fullPath = path.join(targetDir, item.name);
-    const stats = fs.statSync(fullPath);
+    const stats = await fs.stat(fullPath);
     return {
       name: item.name,
       path: fullPath,
@@ -172,12 +201,44 @@ ipcMain.handle(WORKSPACE_CHANNELS.LIST_FILES, async (_, { workspaceId, subDir = 
       mtime: stats.mtimeMs,
       extension: path.extname(item.name).toLowerCase(),
     };
-  }).filter(file => {
+  }));
+
+  const files = fileEntries.filter(file => {
     if (file.isDirectory) return true;
     return ['.excalidraw', '.png', '.svg', '.json'].includes(file.extension || '');
   });
 
   return files;
+});
+
+// Plugins
+ipcMain.handle(PLUGIN_CHANNELS.LIST, async () => {
+  const plugins = await pluginManager.list();
+  return PluginInfoListSchema.parse({ plugins });
+});
+
+ipcMain.handle(PLUGIN_CHANNELS.SET_ENABLED, async (_, { id, enabled }) => {
+  await pluginManager.setEnabled(id, enabled);
+  return { success: true };
+});
+
+// AI Import
+ipcMain.handle(AI_IMPORT_CHANNELS.VALIDATE, (_, { content }) => {
+  return aiImporter.validate(content);
+});
+
+ipcMain.handle(AI_IMPORT_CHANNELS.APPLY, async (_, { payload }) => {
+  const result = await aiImporter.apply(payload);
+
+  // Special case: apply settings_bundle by merging into settings store
+  if (result.success) {
+    const parsed = AiPayloadSchema.safeParse(payload);
+    if (parsed.success && parsed.data.type === 'settings_bundle') {
+      await settingsStore.update(parsed.data.settings as any);
+    }
+  }
+
+  return result;
 });
 
 import { isPathWithin, isDangerousPath } from './path-utils';
@@ -239,7 +300,17 @@ ipcMain.handle(WORKSPACE_CHANNELS.DELETE_FILE, async (_, { workspaceId, filePath
 });
 
 app.whenReady().then(async () => {
-  await initStores();
+  try {
+    await initStores();
+  } catch (err) {
+    await dialog.showErrorBox(
+      'Startup Error',
+      `Failed to initialize Excalibur data stores. Your data may be corrupted.\n\n${err instanceof Error ? err.message : String(err)}`
+    );
+    app.quit();
+    return;
+  }
+
   createWindow();
 
   app.on('activate', () => {

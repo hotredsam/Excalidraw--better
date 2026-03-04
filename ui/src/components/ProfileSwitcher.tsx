@@ -5,6 +5,8 @@ export const ProfileSwitcher: React.FC = () => {
   const [activeProfile, setActiveProfile] = useState<Profile | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [newProfileName, setNewProfileName] = useState('');
 
   const loadData = async () => {
     const active = await window.api.profiles.getActive();
@@ -24,10 +26,11 @@ export const ProfileSwitcher: React.FC = () => {
   };
 
   const handleCreate = async () => {
-    const name = prompt('Profile Name:');
-    if (name) {
-      await window.api.profiles.create(name);
+    if (newProfileName.trim()) {
+      await window.api.profiles.create(newProfileName);
       await loadData();
+      setNewProfileName('');
+      setIsCreating(false);
     }
   };
 
@@ -53,24 +56,24 @@ export const ProfileSwitcher: React.FC = () => {
       </button>
 
       {isOpen && (
-        <div style={{ 
-          position: 'absolute', 
-          top: 'calc(100% + 8px)', 
-          right: 0, 
-          width: '200px', 
-          backgroundColor: 'var(--bg-2)', 
-          borderRadius: 'var(--r-md)', 
+        <div style={{
+          position: 'absolute',
+          top: 'calc(100% + 8px)',
+          right: 0,
+          width: '200px',
+          backgroundColor: 'var(--bg-2)',
+          borderRadius: 'var(--r-md)',
           border: '1px solid var(--border-0)',
           boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
           zIndex: 1000,
           padding: 'var(--s-sm) 0'
         }}>
           {profiles.map(p => (
-            <div 
+            <div
               key={p.id}
               onClick={() => handleSwitch(p.id)}
-              style={{ 
-                padding: 'var(--s-sm) var(--s-lg)', 
+              style={{
+                padding: 'var(--s-sm) var(--s-lg)',
                 cursor: 'pointer',
                 backgroundColor: p.id === activeProfile?.id ? 'var(--bg-3)' : 'transparent',
                 fontSize: '14px'
@@ -80,18 +83,82 @@ export const ProfileSwitcher: React.FC = () => {
             </div>
           ))}
           <div style={{ height: '1px', backgroundColor: 'var(--border-0)', margin: 'var(--s-sm) 0' }} />
-          <div 
-            onClick={handleCreate}
-            style={{ 
-              padding: 'var(--s-sm) var(--s-lg)', 
-              cursor: 'pointer',
-              color: 'var(--orange-600)',
-              fontSize: '14px',
-              fontWeight: 600
-            }}
-          >
-            + Create Profile
-          </div>
+          {!isCreating ? (
+            <div
+              onClick={() => setIsCreating(true)}
+              style={{
+                padding: 'var(--s-sm) var(--s-lg)',
+                cursor: 'pointer',
+                color: 'var(--orange-600)',
+                fontSize: '14px',
+                fontWeight: 600
+              }}
+            >
+              + Create Profile
+            </div>
+          ) : (
+            <div style={{ padding: 'var(--s-sm) var(--s-lg)', display: 'flex', flexDirection: 'column', gap: 'var(--s-sm)' }}>
+              <input
+                type="text"
+                placeholder="Profile name"
+                value={newProfileName}
+                onChange={(e) => setNewProfileName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleCreate();
+                  if (e.key === 'Escape') {
+                    setIsCreating(false);
+                    setNewProfileName('');
+                  }
+                }}
+                autoFocus
+                style={{
+                  backgroundColor: 'var(--bg-1)',
+                  color: 'var(--text-1)',
+                  border: '1px solid var(--border-0)',
+                  borderRadius: '4px',
+                  padding: '6px 8px',
+                  fontSize: '13px',
+                  outline: 'none'
+                }}
+              />
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button
+                  onClick={handleCreate}
+                  style={{
+                    flex: 1,
+                    backgroundColor: 'var(--orange-600)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '6px 8px',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    fontWeight: 600
+                  }}
+                >
+                  Create
+                </button>
+                <button
+                  onClick={() => {
+                    setIsCreating(false);
+                    setNewProfileName('');
+                  }}
+                  style={{
+                    flex: 1,
+                    backgroundColor: 'var(--bg-1)',
+                    color: 'var(--text-1)',
+                    border: '1px solid var(--border-0)',
+                    borderRadius: '4px',
+                    padding: '6px 8px',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

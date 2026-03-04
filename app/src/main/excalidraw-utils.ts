@@ -4,20 +4,24 @@ import { ExcalidrawFileSchema, ExcalidrawFile } from '@excalibur/shared';
 
 export async function readExcalidrawFile(filePath: string): Promise<ExcalidrawFile> {
   const extension = path.extname(filePath).toLowerCase();
-  
+
   if (extension === '.excalidraw' || extension === '.json') {
     const content = await fs.readFile(filePath, 'utf-8');
-    return ExcalidrawFileSchema.parse(JSON.parse(content));
+    try {
+      return ExcalidrawFileSchema.parse(JSON.parse(content));
+    } catch (err) {
+      throw new Error(`Failed to parse Excalidraw JSON file: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    }
   }
 
   if (extension === '.svg') {
     const content = await fs.readFile(filePath, 'utf-8');
-    const match = content.match(/<!-- excalidraw-state: (.*?) -->/);
+    const match = content.match(/<!-- excalidraw-state: ([\s\S]*?) -->/);
     if (match && match[1]) {
       try {
         return ExcalidrawFileSchema.parse(JSON.parse(match[1]));
       } catch (err) {
-        throw new Error('Failed to parse embedded Excalidraw data in SVG');
+        throw new Error(`Failed to parse embedded Excalidraw data in SVG: ${err instanceof Error ? err.message : 'Unknown error'}`);
       }
     }
     throw new Error('No embedded Excalidraw data found in SVG');

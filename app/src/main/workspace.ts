@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { nanoid } from 'nanoid';
+import { randomUUID } from 'crypto';
 import { Workspace, WorkspaceSchema, WorkspaceListSchema } from '@excalibur/shared';
 import { writeJsonAtomic } from './fs-utils';
 
@@ -37,16 +37,22 @@ export class WorkspaceStore {
 
   async add(name: string, dirPath: string): Promise<Workspace> {
     const existing = this.workspaces.find(w => w.path === dirPath);
-    if (existing) return existing;
+    if (existing) {
+      // Update lastOpenedAt when re-adding an existing workspace
+      const updated = { ...existing, lastOpenedAt: Date.now() };
+      this.workspaces = this.workspaces.map(w => w.id === existing.id ? updated : w);
+      await this.saveWorkspaces();
+      return updated;
+    }
 
     const workspace: Workspace = {
-      id: nanoid(),
+      id: randomUUID(),
       name,
       path: dirPath,
       lastOpenedAt: Date.now(),
     };
 
-    this.workspaces.push(workspace);
+    this.workspaces = [...this.workspaces, workspace];
     await this.saveWorkspaces();
     return workspace;
   }
@@ -66,8 +72,7 @@ export class WorkspaceStore {
     }
     this.activeWorkspaceId = id;
     if (id) {
-      const ws = this.workspaces.find(w => w.id === id);
-      if (ws) ws.lastOpenedAt = Date.now();
+      this.workspaces = this.workspaces.map(w => w.id === id ? { ...w, lastOpenedAt: Date.now() } : w);
     }
     await this.saveActive();
     await this.saveWorkspaces();

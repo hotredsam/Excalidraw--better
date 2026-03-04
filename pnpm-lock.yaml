@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      cross-env:
+        specifier: ^10.1.0
+        version: 10.1.0
     devDependencies:
       concurrently:
         specifier: ^8.2.0
@@ -41,18 +45,6 @@ importers:
       fs-extra:
         specifier: ^11.3.3
         version: 11.3.3
-      nanoid:
-        specifier: ^5.1.6
-        version: 5.1.6
-      pako:
-        specifier: ^2.1.0
-        version: 2.1.0
-      png-chunk-text:
-        specifier: ^1.0.0
-        version: 1.0.0
-      png-chunks-extract:
-        specifier: ^1.0.0
-        version: 1.0.0
       zod:
         specifier: ^3.22.4
         version: 3.25.76
@@ -60,30 +52,12 @@ importers:
       '@types/fs-extra':
         specifier: ^11.0.4
         version: 11.0.4
-      '@types/pako':
-        specifier: ^2.0.4
-        version: 2.0.4
-      '@types/png-chunk-text':
-        specifier: ^1.0.3
-        version: 1.0.3
-      '@types/png-chunks-extract':
-        specifier: ^1.0.2
-        version: 1.0.2
-      '@types/pngjs':
-        specifier: ^6.0.5
-        version: 6.0.5
-      crc:
-        specifier: ^4.3.2
-        version: 4.3.2
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.35
       electron-builder:
         specifier: ^24.9.1
         version: 24.13.3(electron-builder-squirrel-windows@24.13.3)
-      png-chunks-encode:
-        specifier: ^1.0.0
-        version: 1.0.0
-      pngjs:
-        specifier: ^7.0.0
-        version: 7.0.0
       typescript:
         specifier: ^5.0.0
         version: 5.9.3
@@ -113,15 +87,15 @@ importers:
       typescript:
         specifier: ^5.0.0
         version: 5.9.3
+      vitest:
+        specifier: ^4.0.18
+        version: 4.0.18(@types/node@25.3.2)
 
   ui:
     dependencies:
       '@excalibur/ipc':
         specifier: workspace:*
         version: link:../packages/ipc
-      '@excalibur/plugin-sdk':
-        specifier: workspace:*
-        version: link:../packages/plugin-sdk
       '@excalibur/shared':
         specifier: workspace:*
         version: link:../packages/shared
@@ -274,6 +248,9 @@ packages:
   '@electron/universal@1.5.1':
     resolution: {integrity: sha512-kbgXxyEauPJiQQUNG2VgUeyfQNFk6hBF11ISN2PNI6agUgPl55pv4eQmaqHzTAzchBvqZ2tQuRVaPStGf0mxGw==}
     engines: {node: '>=8.6'}
+
+  '@epic-web/invariant@1.0.0':
+    resolution: {integrity: sha512-lrTPqgvfFQtR/eY/qkIzp98OGdNJu0m5ji3q/nJI8v3SXkRKEnWiOxMmbvcSoAIzv/cGiuvRy57k4suKQSAdwA==}
 
   '@esbuild/aix-ppc64@0.27.3':
     resolution: {integrity: sha512-9fJMTNFTWZMh5qwrBItuziu834eOCUcEqymSH7pY+zoMVEZg3gcPuBNxH1EvfVYe9h0x/Ptw8KBzv7qxb7l8dg==}
@@ -1142,23 +1119,14 @@ packages:
   '@types/node@18.19.130':
     resolution: {integrity: sha512-GRaXQx6jGfL8sKfaIDD6OupbIHBr9jv7Jnaml9tB7l4v068PAOXqfcujMMo5PhbIs6ggR1XODELqahT2R8v0fg==}
 
+  '@types/node@20.19.35':
+    resolution: {integrity: sha512-Uarfe6J91b9HAUXxjvSOdiO2UPOKLm07Q1oh0JHxoZ1y8HoqxDAu3gVrsrOHeiio0kSsoVBt4wFrKOm0dKxVPQ==}
+
   '@types/node@25.3.2':
     resolution: {integrity: sha512-RpV6r/ij22zRRdyBPcxDeKAzH43phWVKEjL2iksqo1Vz3CuBUrgmPpPhALKiRfU7OMCmeeO9vECBMsV0hMTG8Q==}
 
-  '@types/pako@2.0.4':
-    resolution: {integrity: sha512-VWDCbrLeVXJM9fihYodcLiIv0ku+AlOa/TQ1SvYOaBuyrSKgEcro95LJyIsJ4vSo6BXIxOKxiJAat04CmST9Fw==}
-
   '@types/plist@3.0.5':
     resolution: {integrity: sha512-E6OCaRmAe4WDmWNsL/9RMqdkkzDCY1etutkflWk4c+AcjDU07Pcz1fQwTX0TQz+Pxqn9i4L1TU3UFpjnrcDgxA==}
-
-  '@types/png-chunk-text@1.0.3':
-    resolution: {integrity: sha512-7keEFz73uNJ9Ar1XMCNnHEXT9pICJnouMQCCYgBEmHMgdkXaQzSTmSvr6tUDSqgdEgmlRAxZd97wprgliyZoCg==}
-
-  '@types/png-chunks-extract@1.0.2':
-    resolution: {integrity: sha512-z6djfFIbrrddtunoMJBOPlyZrnmeuG1kkvHUNi2QfpOb+JMMLuLliHHTmMyRi7k7LiTAut0HbdGCF6ibDtQAHQ==}
-
-  '@types/pngjs@6.0.5':
-    resolution: {integrity: sha512-0k5eKfrA83JOZPppLtS2C7OUtyNAl2wKNxfyYl9Q5g9lPkgBl/9hNyAu6HuEH2J4XmIv2znEpkDd0SaZVxW6iQ==}
 
   '@types/prop-types@15.7.15':
     resolution: {integrity: sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==}
@@ -1507,14 +1475,10 @@ packages:
   crc@3.8.0:
     resolution: {integrity: sha512-iX3mfgcTMIq3ZKLIsVFAbv7+Mc10kxabAGQb8HvjA1o3T1PIYprbakQ65d3I+2HGHt6nSKkM9PYjgoJO2KcFBQ==}
 
-  crc@4.3.2:
-    resolution: {integrity: sha512-uGDHf4KLLh2zsHa8D8hIQ1H/HtFQhyHrc0uhHBcoKGol/Xnb+MPYfUMw7cvON6ze/GUESTudKayDcJC5HnJv1A==}
-    engines: {node: '>=12'}
-    peerDependencies:
-      buffer: '>=6.0.3'
-    peerDependenciesMeta:
-      buffer:
-        optional: true
+  cross-env@10.1.0:
+    resolution: {integrity: sha512-GsYosgnACZTADcmEyJctkJIoqAhHjttw7RsFrVoJNXbsWWqaq6Ym+7kZjq6mS45O0jij6vtiReppKQEtqWy6Dw==}
+    engines: {node: '>=20'}
+    hasBin: true
 
   cross-env@7.0.3:
     resolution: {integrity: sha512-+/HKd6EgcQCJGh2PSjZuUitQBQynKor4wrFbRg4DtAgS1aWO+gU52xpH7M9ScGgXSYmAVS9bIJ8EzuaGw0oNAw==}
@@ -2464,9 +2428,6 @@ packages:
   pako@2.0.3:
     resolution: {integrity: sha512-WjR1hOeg+kki3ZIOjaf4b5WVcay1jaliKSYiEaB1XzwhMQZJxRdQRv0V31EKBYlxb4T7SK3hjfc/jxyU64BoSw==}
 
-  pako@2.1.0:
-    resolution: {integrity: sha512-w+eufiZ1WuJYgPXbV/PO3NCMEc3xqylkKHzp8bxp1uW4qaSNQUkwmLLEc3kKsfz8lpV1F8Ht3U1Cm+9Srog2ug==}
-
   path-data-parser@0.1.0:
     resolution: {integrity: sha512-NOnmBpt5Y2RWbuv0LMzsayp3lVylAHLPUTut412ZA3l+C4uw4ZVkQbjShYCQ8TCpUMdPapr4YjUqLYD6v68j+w==}
 
@@ -2517,10 +2478,6 @@ packages:
 
   png-chunks-extract@1.0.0:
     resolution: {integrity: sha512-ZiVwF5EJ0DNZyzAqld8BP1qyJBaGOFaq9zl579qfbkcmOwWLLO4I9L8i2O4j3HkI6/35i0nKG2n+dZplxiT89Q==}
-
-  pngjs@7.0.0:
-    resolution: {integrity: sha512-LKWqWJRhstyYo9pGvgor/ivk2w94eSjE3RGVuzLGlr3NmD8bf7RcYGze1mNdEHRP6TRP6rMuDHk5t44hnTRyow==}
-    engines: {node: '>=14.19.0'}
 
   points-on-curve@0.2.0:
     resolution: {integrity: sha512-0mYKnYYe9ZcqMCWhUjItv/oHjvgEsfKvnUTg8sAtnHr3GVy7rGkXCb6d5cSyqrWqL4k81b9CPg3urd+T7aop3A==}
@@ -2877,6 +2834,9 @@ packages:
 
   undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
+
+  undici-types@6.21.0:
+    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
   undici-types@7.18.2:
     resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
@@ -3301,6 +3261,8 @@ snapshots:
       plist: 3.1.0
     transitivePeerDependencies:
       - supports-color
+
+  '@epic-web/invariant@1.0.0': {}
 
   '@esbuild/aix-ppc64@0.27.3':
     optional: true
@@ -3968,7 +3930,7 @@ snapshots:
     dependencies:
       '@types/http-cache-semantics': 4.2.0
       '@types/keyv': 3.1.4
-      '@types/node': 18.19.130
+      '@types/node': 20.19.35
       '@types/responselike': 1.0.3
 
   '@types/chai@5.2.3':
@@ -3995,21 +3957,21 @@ snapshots:
   '@types/fs-extra@11.0.4':
     dependencies:
       '@types/jsonfile': 6.1.4
-      '@types/node': 25.3.2
+      '@types/node': 20.19.35
 
   '@types/fs-extra@9.0.13':
     dependencies:
-      '@types/node': 25.3.2
+      '@types/node': 20.19.35
 
   '@types/http-cache-semantics@4.2.0': {}
 
   '@types/jsonfile@6.1.4':
     dependencies:
-      '@types/node': 25.3.2
+      '@types/node': 20.19.35
 
   '@types/keyv@3.1.4':
     dependencies:
-      '@types/node': 18.19.130
+      '@types/node': 20.19.35
 
   '@types/mdast@3.0.15':
     dependencies:
@@ -4021,25 +3983,20 @@ snapshots:
     dependencies:
       undici-types: 5.26.5
 
+  '@types/node@20.19.35':
+    dependencies:
+      undici-types: 6.21.0
+
   '@types/node@25.3.2':
     dependencies:
       undici-types: 7.18.2
-
-  '@types/pako@2.0.4': {}
+    optional: true
 
   '@types/plist@3.0.5':
     dependencies:
-      '@types/node': 25.3.2
+      '@types/node': 20.19.35
       xmlbuilder: 15.1.1
     optional: true
-
-  '@types/png-chunk-text@1.0.3': {}
-
-  '@types/png-chunks-extract@1.0.2': {}
-
-  '@types/pngjs@6.0.5':
-    dependencies:
-      '@types/node': 25.3.2
 
   '@types/prop-types@15.7.15': {}
 
@@ -4054,7 +4011,7 @@ snapshots:
 
   '@types/responselike@1.0.3':
     dependencies:
-      '@types/node': 18.19.130
+      '@types/node': 20.19.35
 
   '@types/unist@2.0.11': {}
 
@@ -4063,7 +4020,7 @@ snapshots:
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 18.19.130
+      '@types/node': 20.19.35
     optional: true
 
   '@vitejs/plugin-react@4.7.0(vite@4.5.14(@types/node@25.3.2)(sass@1.51.0))':
@@ -4473,7 +4430,10 @@ snapshots:
       buffer: 5.7.1
     optional: true
 
-  crc@4.3.2: {}
+  cross-env@10.1.0:
+    dependencies:
+      '@epic-web/invariant': 1.0.0
+      cross-spawn: 7.0.6
 
   cross-env@7.0.3:
     dependencies:
@@ -5579,8 +5539,6 @@ snapshots:
 
   pako@2.0.3: {}
 
-  pako@2.1.0: {}
-
   path-data-parser@0.1.0: {}
 
   path-is-absolute@1.0.1: {}
@@ -5628,8 +5586,6 @@ snapshots:
   png-chunks-extract@1.0.0:
     dependencies:
       crc-32: 0.3.0
-
-  pngjs@7.0.0: {}
 
   points-on-curve@0.2.0: {}
 
@@ -6010,7 +5966,10 @@ snapshots:
 
   undici-types@5.26.5: {}
 
-  undici-types@7.18.2: {}
+  undici-types@6.21.0: {}
+
+  undici-types@7.18.2:
+    optional: true
 
   unist-util-stringify-position@3.0.3:
     dependencies:

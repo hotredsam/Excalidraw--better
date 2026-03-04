@@ -42,27 +42,57 @@ export const SettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> =
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-lg)' }}>
           <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>Autosave</span>
-            <input 
-              type="checkbox" 
-              checked={settings.autosave} 
-              onChange={e => update({ autosave: e.target.checked })} 
+            <input
+              type="checkbox"
+              checked={settings.autosave}
+              onChange={e => update({ autosave: e.target.checked })}
+            />
+          </label>
+
+          <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: settings.autosave ? 1 : 0.5 }}>
+            <span>Autosave Interval (seconds)</span>
+            <input
+              type="number"
+              min="5"
+              max="300"
+              step="5"
+              disabled={!settings.autosave}
+              value={settings.autosaveIntervalSeconds}
+              onChange={e => update({ autosaveIntervalSeconds: Number(e.target.value) })}
+              style={{
+                backgroundColor: 'var(--bg-2)',
+                color: 'white',
+                border: '1px solid var(--border-0)',
+                borderRadius: '4px',
+                padding: '4px 8px',
+                width: '80px'
+              }}
+            />
+          </label>
+
+          <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>Show Grid</span>
+            <input
+              type="checkbox"
+              checked={settings.showGrid}
+              onChange={e => update({ showGrid: e.target.checked })}
             />
           </label>
 
           <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>Confirm on Delete</span>
-            <input 
-              type="checkbox" 
-              checked={settings.confirmOnDelete} 
-              onChange={e => update({ confirmOnDelete: e.target.checked })} 
+            <input
+              type="checkbox"
+              checked={settings.confirmOnDelete}
+              onChange={e => update({ confirmOnDelete: e.target.checked })}
             />
           </label>
 
           <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>Export Format</span>
-            <select 
+            <select
               value={settings.defaultExportFormat}
-              onChange={e => update({ defaultExportFormat: e.target.value as any })}
+              onChange={e => update({ defaultExportFormat: e.target.value as 'png' | 'svg' })}
               style={{ backgroundColor: 'var(--bg-2)', color: 'white', border: '1px solid var(--border-0)', borderRadius: '4px' }}
             >
               <option value="png">PNG</option>

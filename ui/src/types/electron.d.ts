@@ -1,10 +1,27 @@
-import { AppPing, Profile, ProfileList, Settings } from '@excalibur/shared';
+import {
+  AppPingSchema,
+  ProfileSchema,
+  ProfileListSchema,
+  SettingsSchema,
+  WorkspaceSchema,
+  WorkspaceListSchema,
+  FileInfoSchema,
+  ExcalidrawFileSchema,
+  Profile,
+  ProfileList,
+  Settings,
+  Workspace,
+  WorkspaceList,
+  FileInfo,
+  ExcalidrawFile,
+  PluginInfo,
+} from '@excalibur/shared';
 
 declare global {
   interface Window {
     api: {
       app: {
-        ping: () => Promise<AppPing>;
+        ping: () => Promise<ReturnType<typeof AppPingSchema.parse>>;
       };
       profiles: {
         list: () => Promise<ProfileList>;
@@ -29,6 +46,14 @@ declare global {
         readExcalidrawFile: (workspaceId: string, filePath: string) => Promise<ExcalidrawFile>;
         writeFile: (workspaceId: string, filePath: string, content: string) => Promise<{ success: boolean }>;
         deleteFile: (workspaceId: string, filePath: string) => Promise<{ success: boolean }>;
+      };
+      plugins: {
+        list: () => Promise<{ plugins: PluginInfo[] }>;
+        setEnabled: (id: string, enabled: boolean) => Promise<{ success: boolean }>;
+      };
+      aiImport: {
+        validate: (content: string) => Promise<{ valid: boolean; type?: string; payload?: unknown; errors?: string[] }>;
+        apply: (payload: unknown) => Promise<{ success: boolean; message: string }>;
       };
     };
   }

@@ -20,9 +20,6 @@ export const CanvasShell: React.FC<CanvasShellProps> = ({ initialData, onSave })
       <Excalidraw
         excalidrawAPI={(api) => (excalidrawRef.current = api)}
         initialData={initialData}
-        onChange={(elements, appState) => {
-          // Internal state handled by Excalidraw, but we can hook into it
-        }}
         theme="dark"
       />
       

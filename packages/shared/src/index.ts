@@ -66,7 +66,11 @@ export type ExcalidrawFile = z.infer<typeof ExcalidrawFileSchema>;
  * Safely merge new scene data into an existing Excalidraw file object.
  * Preserves all extra fields not in elements/appState.
  */
-export const mergeExcalidraw = (existing: any, elements: any[], appState: any): ExcalidrawFile => {
+export const mergeExcalidraw = (
+  existing: ExcalidrawFile,
+  elements: unknown[],
+  appState: Record<string, unknown>
+): ExcalidrawFile => {
   const merged = {
     ...existing,
     elements,
@@ -81,3 +85,66 @@ export const mergeExcalidraw = (existing: any, elements: any[], appState: any): 
 export type Profile = z.infer<typeof ProfileSchema>;
 export type ProfileList = z.infer<typeof ProfileListSchema>;
 export type Settings = z.infer<typeof SettingsSchema>;
+
+// Plugin types
+export const PluginInfoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  version: z.string(),
+  description: z.string().optional(),
+  author: z.string().optional(),
+  enabled: z.boolean(),
+  path: z.string(),
+});
+
+export const PluginInfoListSchema = z.object({
+  plugins: z.array(PluginInfoSchema),
+});
+
+export type PluginInfo = z.infer<typeof PluginInfoSchema>;
+export type PluginInfoList = z.infer<typeof PluginInfoListSchema>;
+
+// AI Import payload types
+const AiPluginScaffoldSchema = z.object({
+  type: z.literal('plugin_scaffold'),
+  id: z.string().regex(/^[a-zA-Z0-9_-]+$/, 'Plugin id must contain only alphanumeric characters, hyphens, or underscores').max(64),
+  name: z.string().max(128),
+  version: z.string().default('0.1.0'),
+  description: z.string().optional(),
+  entry: z.string().regex(/^[a-zA-Z0-9._-]+$/, 'Entry filename must be safe').max(64).default('index.js'),
+  code: z.string().max(1_000_000),
+  manifest: z.record(z.unknown()).optional(),
+});
+
+const AiTemplatePackSchema = z.object({
+  type: z.literal('template_pack'),
+  name: z.string(),
+  templates: z.array(z.object({
+    name: z.string(),
+    content: z.string(),
+  })).min(1),
+});
+
+const AiSettingsBundleSchema = z.object({
+  type: z.literal('settings_bundle'),
+  settings: z.record(z.unknown()),
+});
+
+const AiDocsUpdateSchema = z.object({
+  type: z.literal('docs_update'),
+  filename: z.string().regex(/^[a-zA-Z0-9._-]+$/, 'Filename must contain only alphanumeric characters, dots, hyphens, or underscores').max(255),
+  content: z.string().max(10_000_000),
+});
+
+export const AiPayloadSchema = z.discriminatedUnion('type', [
+  AiPluginScaffoldSchema,
+  AiTemplatePackSchema,
+  AiSettingsBundleSchema,
+  AiDocsUpdateSchema,
+]);
+
+export type AiPayload = z.infer<typeof AiPayloadSchema>;
+export type AiPluginScaffold = z.infer<typeof AiPluginScaffoldSchema>;
+export type AiTemplatePack = z.infer<typeof AiTemplatePackSchema>;
+export type AiSettingsBundle = z.infer<typeof AiSettingsBundleSchema>;
+export type AiDocsUpdate = z.infer<typeof AiDocsUpdateSchema>;

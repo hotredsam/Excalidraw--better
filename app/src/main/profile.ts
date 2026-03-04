@@ -1,7 +1,7 @@
 import { app } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { nanoid } from 'nanoid';
+import { randomUUID } from 'crypto';
 import { Profile, ProfileSchema, ProfileListSchema, APPDATA_DIR } from '@excalibur/shared';
 import { writeJsonAtomic } from './fs-utils';
 
@@ -50,14 +50,14 @@ export class ProfileStore {
   async create(name: string): Promise<Profile> {
     const now = Date.now();
     const profile: Profile = {
-      id: nanoid(),
+      id: randomUUID(),
       name,
       createdAt: now,
       updatedAt: now,
       lastOpenedAt: now,
     };
 
-    this.profiles.push(profile);
+    this.profiles = [...this.profiles, profile];
     await this.saveProfiles();
     await this.initProfileFolders(profile.id);
     return profile;
@@ -66,11 +66,11 @@ export class ProfileStore {
   async rename(id: string, name: string): Promise<Profile> {
     const profile = this.profiles.find(p => p.id === id);
     if (!profile) throw new Error(`Profile ${id} not found`);
-    
-    profile.name = name;
-    profile.updatedAt = Date.now();
+
+    const updatedProfile = { ...profile, name, updatedAt: Date.now() };
+    this.profiles = this.profiles.map(p => p.id === id ? updatedProfile : p);
     await this.saveProfiles();
-    return profile;
+    return updatedProfile;
   }
 
   async delete(id: string) {
@@ -89,9 +89,9 @@ export class ProfileStore {
   async setActive(id: string) {
     const profile = this.profiles.find(p => p.id === id);
     if (!profile) throw new Error(`Profile ${id} not found`);
-    
+
     this.activeProfileId = id;
-    profile.lastOpenedAt = Date.now();
+    this.profiles = this.profiles.map(p => p.id === id ? { ...p, lastOpenedAt: Date.now() } : p);
     await this.saveActive();
     await this.saveProfiles();
   }

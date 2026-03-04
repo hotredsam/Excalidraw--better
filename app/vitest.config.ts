@@ -5,6 +5,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    include: ['src/test/**/*.test.ts'],
+    exclude: ['dist/**', 'node_modules/**'],
     alias: {
       '@excalibur/shared': path.resolve(__dirname, '../packages/shared/src/index.ts'),
       '@excalibur/ipc': path.resolve(__dirname, '../packages/ipc/src/index.ts'),

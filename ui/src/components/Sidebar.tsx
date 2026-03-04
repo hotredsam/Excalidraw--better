@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { WorkspaceSidebar } from './WorkspaceSidebar';
 import { PluginSidebar } from './PluginSidebar';
+import { AiImportPanel } from './AiImportPanel';
 import { Workspace, FileInfo } from '@excalibur/shared';
 
 export const Sidebar: React.FC<{ onOpenFile: (workspace: Workspace, file: FileInfo) => void }> = ({ onOpenFile }) => {
-  const [activeTab, setActiveTab] = useState<'files' | 'plugins'>('files');
+  const [activeTab, setActiveTab] = useState<'files' | 'plugins' | 'ai-import'>('files');
 
   return (
     <div style={{ 
@@ -31,11 +32,11 @@ export const Sidebar: React.FC<{ onOpenFile: (workspace: Workspace, file: FileIn
         >
           Files
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab('plugins')}
-          style={{ 
-            flex: 1, 
-            padding: 'var(--s-md)', 
+          style={{
+            flex: 1,
+            padding: 'var(--s-md)',
             backgroundColor: activeTab === 'plugins' ? 'var(--bg-2)' : 'transparent',
             color: activeTab === 'plugins' ? 'var(--orange-600)' : 'var(--text-2)',
             borderRadius: 0,
@@ -45,14 +46,30 @@ export const Sidebar: React.FC<{ onOpenFile: (workspace: Workspace, file: FileIn
         >
           Plugins
         </button>
+        <button
+          onClick={() => setActiveTab('ai-import')}
+          style={{
+            flex: 1,
+            padding: 'var(--s-md)',
+            backgroundColor: activeTab === 'ai-import' ? 'var(--bg-2)' : 'transparent',
+            color: activeTab === 'ai-import' ? 'var(--orange-600)' : 'var(--text-2)',
+            borderRadius: 0,
+            fontSize: '12px',
+            textTransform: 'uppercase'
+          }}
+        >
+          AI
+        </button>
       </div>
 
       {/* Content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {activeTab === 'files' ? (
           <WorkspaceSidebar onOpenFile={onOpenFile} />
-        ) : (
+        ) : activeTab === 'plugins' ? (
           <PluginSidebar />
+        ) : (
+          <AiImportPanel />
         )}
       </div>
     </div>

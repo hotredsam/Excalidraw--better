@@ -6,6 +6,7 @@ export const WorkspaceSidebar: React.FC<{ onOpenFile: (workspace: Workspace, fil
   const [activeWorkspace, setActiveWorkspace] = useState<Workspace | null>(null);
   const [files, setFiles] = useState<FileInfo[]>([]);
   const [loading, setLoading] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<FileInfo | null>(null);
 
   const refreshWorkspaces = async () => {
     const list = await window.api.workspaces.list();
@@ -20,7 +21,7 @@ export const WorkspaceSidebar: React.FC<{ onOpenFile: (workspace: Workspace, fil
   const loadFiles = async (workspaceId: string) => {
     setLoading(true);
     try {
-      const workspaceFiles = await (window.api as any).workspaces.listFiles(workspaceId);
+      const workspaceFiles = await window.api.workspaces.listFiles(workspaceId);
       setFiles(workspaceFiles);
     } catch (err) {
       console.error(err);
@@ -80,38 +81,90 @@ export const WorkspaceSidebar: React.FC<{ onOpenFile: (workspace: Workspace, fil
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
             {files.map(file => (
-              <div 
-                key={file.path} 
-                style={{ 
-                  padding: '6px 8px', 
-                  borderRadius: '4px', 
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  backgroundColor: 'transparent',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--s-sm)'
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-2)')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                onClick={() => activeWorkspace && !file.isDirectory && onOpenFile(activeWorkspace, file)}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-sm)', flex: 1, overflow: 'hidden' }}>
-                  <span>{file.isDirectory ? '📁' : '📄'}</span>
-                  <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{file.name}</span>
+              <div key={file.path}>
+                <div
+                  style={{
+                    padding: '6px 8px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    backgroundColor: 'transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--s-sm)'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-2)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                  onClick={() => activeWorkspace && !file.isDirectory && onOpenFile(activeWorkspace, file)}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-sm)', flex: 1, overflow: 'hidden' }}>
+                    <span>{file.isDirectory ? '📁' : '📄'}</span>
+                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{file.name}</span>
+                  </div>
+                  {!file.isDirectory && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPendingDelete(file);
+                      }}
+                      style={{ backgroundColor: 'transparent', color: 'var(--text-2)', padding: '2px', fontSize: '10px' }}
+                    >
+                      🗑️
+                    </button>
+                  )}
                 </div>
-                {!file.isDirectory && (
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (confirm(`Delete ${file.name} to Recycle Bin?`)) {
-                        window.api.workspaces.deleteFile(activeWorkspace!.id, file.path).then(() => refreshWorkspaces());
-                      }
-                    }}
-                    style={{ backgroundColor: 'transparent', color: 'var(--text-2)', padding: '2px', fontSize: '10px' }}
-                  >
-                    🗑️
-                  </button>
+                {pendingDelete?.path === file.path && (
+                  <div style={{
+                    padding: '8px 8px',
+                    backgroundColor: 'var(--bg-2)',
+                    borderRadius: '4px',
+                    marginTop: '2px',
+                    fontSize: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--s-sm)'
+                  }}>
+                    <span style={{ flex: 1, color: 'var(--text-2)' }}>Delete {file.name}?</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (activeWorkspace) {
+                          window.api.workspaces.deleteFile(activeWorkspace.id, file.path).then(() => {
+                            setPendingDelete(null);
+                            refreshWorkspaces();
+                          });
+                        }
+                      }}
+                      style={{
+                        backgroundColor: '#dc2626',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '3px',
+                        padding: '3px 8px',
+                        fontSize: '11px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Confirm
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPendingDelete(null);
+                      }}
+                      style={{
+                        backgroundColor: 'var(--bg-3)',
+                        color: 'var(--text-1)',
+                        border: '1px solid var(--border-0)',
+                        borderRadius: '3px',
+                        padding: '3px 8px',
+                        fontSize: '11px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 )}
               </div>
             ))}

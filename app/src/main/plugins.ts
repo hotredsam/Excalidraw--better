@@ -56,7 +56,7 @@ export class PluginManager {
       }
     }
 
-    this.plugins = discovered;
+    this.plugins = [...discovered];
   }
 
   async list(): Promise<PluginInfo[]> {
@@ -66,10 +66,10 @@ export class PluginManager {
   async setEnabled(id: string, enabled: boolean) {
     const plugin = this.plugins.find(p => p.id === id);
     if (!plugin) throw new Error(`Plugin ${id} not found`);
-    
+
     if (plugin.enabled === enabled) return;
 
-    plugin.enabled = enabled;
+    this.plugins = this.plugins.map(p => p.id === id ? { ...p, enabled } : p);
     await this.saveStates();
     
     if (enabled) {
@@ -101,7 +101,7 @@ export class PluginManager {
       console.log(`Plugin loaded: ${info.name} (${info.id})`);
     } catch (err) {
       console.error(`Failed to load plugin entry ${entryPath}:`, err);
-      info.enabled = false;
+      this.plugins = this.plugins.map(p => p.id === info.id ? { ...p, enabled: false } : p);
       await this.saveStates();
     }
   }

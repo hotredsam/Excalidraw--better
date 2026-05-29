@@ -5,6 +5,8 @@ import { ProfileSwitcher } from './components/ProfileSwitcher';
 import { SettingsModal } from './components/SettingsModal';
 import { WorkspaceSidebar } from './components/WorkspaceSidebar';
 import { RightDrawer, DrawerTab } from './components/RightDrawer';
+import { CommandPalette } from './components/CommandPalette';
+import { PresentationMode } from './components/PresentationMode';
 import { ToastHost } from './components/ToastHost';
 import { toastError, toastInfo, toastSuccess } from './lib/toast';
 import * as Shared from '@excalibur/shared';
@@ -33,11 +35,21 @@ function App() {
   const [drawerTab, setDrawerTab] = useState<DrawerTab>('properties');
   const [contributions, setContributions] = useState<Contributions>(EMPTY_CONTRIB);
   const [sidebarReloadKey, setSidebarReloadKey] = useState(0);
-  const [templatesRefreshKey, setTemplatesRefreshKey] = useState(0);
+  const [searchSignal, setSearchSignal] = useState(0);
+  const [refreshKeys, setRefreshKeys] = useState({ templates: 0, recents: 0, libraries: 0, stats: 0 });
   const [settings, setSettings] = useState<Shared.Settings | null>(null);
+  const [profileName, setProfileName] = useState('You');
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [presentation, setPresentation] = useState<{ open: boolean; deck: Shared.SlideDeck; index: number }>({
+    open: false,
+    deck: { slides: [] },
+    index: 0,
+  });
 
   const apiRef = useRef<any>(null);
   const justLoaded = useRef(false);
+
+  const bump = (key: keyof typeof refreshKeys) => setRefreshKeys((k) => ({ ...k, [key]: k[key] + 1 }));
 
   const refreshContributions = useCallback(async () => {
     try {
@@ -50,6 +62,7 @@ function App() {
   useEffect(() => {
     refreshContributions();
     window.api.settings.get().then(setSettings).catch(() => {});
+    window.api.profiles.getActive().then((p) => p && setProfileName(p.name)).catch(() => {});
   }, [refreshContributions]);
 
   // ── Scene helpers ────────────────────────────────────────────────────
@@ -58,35 +71,67 @@ function App() {
     const elements = api ? api.getSceneElements() : canvasData?.elements ?? [];
     const appState = api ? api.getAppState() : canvasData?.appState ?? {};
     const files = api ? api.getFiles() : canvasData?.files ?? {};
-    // Canonical Excalidraw JSON, then preserve any extra top-level metadata.
     const canonical = JSON.parse(serializeAsJSON(elements, appState, files, 'local'));
     return { ...(canvasData || {}), ...canonical };
   }, [canvasData]);
 
-  const handleOpenFile = useCallback(async (workspace: Shared.Workspace, file: Shared.FileInfo) => {
+  const recordRecent = useCallback(async (workspace: Shared.Workspace, file: Shared.FileInfo) => {
     try {
-      const data = await window.api.workspaces.readExcalidrawFile(workspace.id, file.path);
-      justLoaded.current = true;
-      setActiveWorkspace(workspace);
-      setActiveFile(file);
-      setCanvasData(data);
-      setDirty(false);
-    } catch (err: any) {
-      const msg = String(err?.message || '');
-      if (msg.includes('No embedded Excalidraw scene') || msg.includes('No embedded Excalidraw data')) {
-        toastError(`"${file.name}" has no embedded Excalidraw scene.`);
-      } else {
-        toastError('Failed to open file: ' + msg);
-      }
+      await window.api.recents.add({
+        path: file.path,
+        name: file.name,
+        workspaceId: workspace.id,
+        workspaceName: workspace.name,
+        openedAt: Date.now(),
+      });
+      bump('recents');
+    } catch {
+      /* non-fatal */
     }
   }, []);
 
+  const handleOpenFile = useCallback(
+    async (workspace: Shared.Workspace, file: Shared.FileInfo) => {
+      try {
+        const data = await window.api.workspaces.readExcalidrawFile(workspace.id, file.path);
+        justLoaded.current = true;
+        setActiveWorkspace(workspace);
+        setActiveFile(file);
+        setCanvasData(data);
+        setDirty(false);
+        recordRecent(workspace, file);
+      } catch (err: any) {
+        const msg = String(err?.message || '');
+        if (msg.includes('No embedded Excalidraw scene') || msg.includes('No embedded Excalidraw data')) {
+          toastError(`"${file.name}" has no embedded Excalidraw scene.`);
+        } else {
+          toastError('Failed to open file: ' + msg);
+        }
+      }
+    },
+    [recordRecent],
+  );
+
+  const openRecent = useCallback(
+    async (r: Shared.RecentFile) => {
+      const { workspaces } = await window.api.workspaces.list();
+      const ws = workspaces.find((w) => w.id === r.workspaceId) || activeWorkspace;
+      if (!ws) return toastError('Workspace for this file is no longer available.');
+      await handleOpenFile(ws, {
+        name: r.name,
+        path: r.path,
+        isDirectory: false,
+        size: 0,
+        mtime: r.openedAt,
+        extension: '.' + r.name.split('.').pop(),
+      });
+    },
+    [activeWorkspace, handleOpenFile],
+  );
+
   // ── Save / Save As / New ─────────────────────────────────────────────
   const save = useCallback(async () => {
-    if (!activeWorkspace) {
-      toastError('Open a workspace first.');
-      return;
-    }
+    if (!activeWorkspace) return toastError('Open a workspace first.');
     if (!activeFile) return saveAs();
     try {
       const scene = buildScene();
@@ -100,10 +145,7 @@ function App() {
   }, [activeWorkspace, activeFile, buildScene]);
 
   const saveAs = useCallback(async () => {
-    if (!activeWorkspace) {
-      toastError('Open a workspace first.');
-      return;
-    }
+    if (!activeWorkspace) return toastError('Open a workspace first.');
     const name = prompt('Save as (name):', activeFile?.name?.replace(/\.[^.]+$/, '') || 'untitled');
     if (!name) return;
     try {
@@ -111,15 +153,17 @@ function App() {
       const fileName = name.endsWith('.excalidraw') ? name : `${name}.excalidraw`;
       const dest = `${activeWorkspace.path}/${fileName}`;
       await window.api.workspaces.writeFile(activeWorkspace.id, dest, JSON.stringify(scene, null, 2));
-      setActiveFile({ name: fileName, path: dest, isDirectory: false, size: 0, mtime: Date.now(), extension: '.excalidraw' });
+      const file = { name: fileName, path: dest, isDirectory: false, size: 0, mtime: Date.now(), extension: '.excalidraw' };
+      setActiveFile(file);
       setCanvasData(scene);
       setDirty(false);
       setSidebarReloadKey((k) => k + 1);
+      recordRecent(activeWorkspace, file);
       toastSuccess('Saved ' + fileName);
     } catch (err: any) {
       toastError('Save As failed: ' + (err?.message || ''));
     }
-  }, [activeWorkspace, activeFile, buildScene]);
+  }, [activeWorkspace, activeFile, buildScene, recordRecent]);
 
   const newDrawing = useCallback(() => {
     justLoaded.current = true;
@@ -139,7 +183,6 @@ function App() {
       const appState = { ...baseAppState, exportBackground: preset.background, exportScale: preset.scale };
       const files = api ? api.getFiles() : canvasData?.files ?? {};
       const scene = buildScene();
-
       const baseName = activeFile?.name?.replace(/\.[^.]+$/, '') || 'untitled';
       const fileName = (preset.nameTemplate || '{name}').replace('{name}', baseName).replace('{preset}', preset.id);
       const ext = preset.format === 'json' ? 'excalidraw' : preset.format;
@@ -147,12 +190,10 @@ function App() {
 
       if (preset.format === 'png') {
         const blob = await exportToBlob({ elements, appState, files, mimeType: 'image/png' });
-        const b64 = await blobToBase64(blob);
-        await window.api.workspaces.exportFile(activeWorkspace.id, dest, 'png', b64, scene);
+        await window.api.workspaces.exportFile(activeWorkspace.id, dest, 'png', await blobToBase64(blob), scene);
       } else if (preset.format === 'svg') {
         const svg = await exportToSvg({ elements, appState, files, exportPadding: 10 } as any);
-        const str = new XMLSerializer().serializeToString(svg);
-        await window.api.workspaces.exportFile(activeWorkspace.id, dest, 'svg', str, scene);
+        await window.api.workspaces.exportFile(activeWorkspace.id, dest, 'svg', new XMLSerializer().serializeToString(svg), scene);
       } else {
         await window.api.workspaces.exportFile(activeWorkspace.id, dest, 'json', '', scene);
       }
@@ -161,7 +202,29 @@ function App() {
     [activeWorkspace, activeFile, canvasData, buildScene],
   );
 
-  // ── Templates ────────────────────────────────────────────────────────
+  const exportMarkdown = useCallback(async () => {
+    if (!activeWorkspace) return toastError('Open a workspace first.');
+    const api = apiRef.current;
+    if (!api) return;
+    const elements = api.getSceneElements();
+    const files = api.getFiles();
+    const appState = { ...api.getAppState(), exportBackground: true };
+    const scene = buildScene();
+    const baseName = activeFile?.name?.replace(/\.[^.]+$/, '') || 'drawing';
+    const blob = await exportToBlob({ elements, appState, files, mimeType: 'image/png' });
+    await window.api.markdown.export(
+      activeWorkspace.id,
+      baseName,
+      { includeFrontmatter: true, imageFormat: 'png', title: baseName, tags: [] },
+      await blobToBase64(blob),
+      scene,
+      '',
+    );
+    setSidebarReloadKey((k) => k + 1);
+    toastSuccess('Exported markdown bundle to exports/');
+  }, [activeWorkspace, activeFile, buildScene]);
+
+  // ── Templates / libraries / images ─────────────────────────────────────
   const onUseTemplate = useCallback((tpl: Shared.StoredTemplate) => {
     justLoaded.current = true;
     setActiveFile(null);
@@ -175,39 +238,134 @@ function App() {
     return { title, scene: buildScene() };
   }, [buildScene]);
 
-  // ── Command dispatch (plugin toolbar/commands + native menu) ──────────
-  const runCommand = useCallback(
+  const insertLibrary = useCallback(async (id: string) => {
+    try {
+      const lib = await window.api.libraries.get(id);
+      const els = lib.libraryItems.flatMap((it: any) => it.elements || []);
+      if (!els.length) return toastInfo('That library has no items.');
+      const api = apiRef.current;
+      if (!api) return;
+      api.updateScene({ elements: [...api.getSceneElements(), ...els] });
+      setDirty(true);
+      toastSuccess(`Inserted ${els.length} element(s)`);
+    } catch (e: any) {
+      toastError(e?.message || 'Insert failed');
+    }
+  }, []);
+
+  const saveSelectionToLibrary = useCallback(async (id: string) => {
+    const api = apiRef.current;
+    if (!api) return;
+    const selected = api.getAppState().selectedElementIds || {};
+    const els = api.getSceneElements().filter((e: any) => selected[e.id]);
+    if (!els.length) return toastInfo('Select some elements on the canvas first.');
+    await window.api.libraries.addItems(id, [{ elements: els, status: 'published', created: Date.now() }]);
+    bump('libraries');
+    toastSuccess(`Saved ${els.length} element(s) to library`);
+  }, []);
+
+  const importImage = useCallback(async () => {
+    try {
+      const ins = await window.api.import.pickImage();
+      if (!ins) return;
+      const api = apiRef.current;
+      if (!api) return;
+      api.addFiles([ins.file]);
+      api.updateScene({ elements: [...api.getSceneElements(), ins.element] });
+      setDirty(true);
+      toastSuccess('Image inserted');
+    } catch (e: any) {
+      toastError(e?.message || 'Import failed');
+    }
+  }, []);
+
+  // ── Presentation ──────────────────────────────────────────────────────
+  const gotoSlide = useCallback((deck: Shared.SlideDeck, i: number) => {
+    const slide = deck.slides[i];
+    const api = apiRef.current;
+    if (slide && api?.scrollToContent) {
+      const el = api.getSceneElements().find((e: any) => e.id === slide.id);
+      if (el) {
+        try {
+          api.scrollToContent(el, { fitToViewport: true });
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+  }, []);
+
+  const startPresentation = useCallback(async () => {
+    const scene = buildScene();
+    let deck: Shared.SlideDeck;
+    if (activeWorkspace) {
+      // The main process derives slides (from frames) and merges presenter notes.
+      deck = await window.api.presentation.getDeck(activeWorkspace.id, activeFile?.path || 'scratch', scene);
+    } else {
+      deck = { slides: [] };
+    }
+    setPresentation({ open: true, deck, index: 0 });
+    gotoSlide(deck, 0);
+  }, [activeWorkspace, activeFile, buildScene, gotoSlide]);
+
+  // ── Command dispatch ────────────────────────────────────────────────────
+  const openDrawer = (tab: DrawerTab) => {
+    setDrawerOpen(true);
+    setDrawerTab(tab);
+  };
+
+  const dispatchCommand = useCallback(
     async (id: string) => {
       const presetFor = (pid: string) => contributions.exportPresets.find((p) => p.id === pid);
       try {
         switch (id) {
-          // Quick Export Presets plugin
+          case 'core.save': return save();
+          case 'core.save-as': return saveAs();
+          case 'core.new': return newDrawing();
+          case 'core.export': return openDrawer('properties');
+          case 'core.export-markdown': return exportMarkdown();
+          case 'core.search': return setSearchSignal((s) => s + 1);
+          case 'core.recents': return openDrawer('recents');
+          case 'core.toggle-properties': return openDrawer('properties');
+          case 'core.toggle-templates': return openDrawer('templates');
+          case 'core.toggle-libraries': return openDrawer('libraries');
+          case 'core.toggle-review': return openDrawer('review');
+          case 'core.toggle-stats': return openDrawer('stats');
+          case 'core.toggle-git': return openDrawer('git');
+          case 'core.toggle-plugins': openDrawer('plugins'); return refreshContributions();
+          case 'core.toggle-ai': return openDrawer('ai');
+          case 'core.presentation': return startPresentation();
+          case 'core.import-image': return importImage();
+          case 'core.settings': return setIsSettingsOpen(true);
+          case 'core.save-template': {
+            const data = await gatherTemplate();
+            if (data) {
+              await window.api.templates.save({ title: data.title, scene: data.scene });
+              bump('templates');
+              toastSuccess(`Saved template "${data.title}"`);
+            }
+            return;
+          }
+          // Plugin contributions
           case 'qep-batch-export': {
             if (!contributions.exportPresets.length) return toastInfo('No export presets available.');
             for (const p of contributions.exportPresets) await exportPreset(p);
             return toastSuccess(`Batch exported ${contributions.exportPresets.length} preset(s).`);
           }
           case 'qep-export-web':
-            return presetFor('web') ? (await exportPreset(presetFor('web')!), toastSuccess('Exported web PNG')) : undefined;
+            if (presetFor('web')) { await exportPreset(presetFor('web')!); toastSuccess('Exported web PNG'); }
+            return;
           case 'qep-export-print':
-            return presetFor('print') ? (await exportPreset(presetFor('print')!), toastSuccess('Exported print PNG')) : undefined;
+            if (presetFor('print')) { await exportPreset(presetFor('print')!); toastSuccess('Exported print PNG'); }
+            return;
           case 'qep-export-svg':
-            return presetFor('vector') ? (await exportPreset(presetFor('vector')!), toastSuccess('Exported SVG')) : undefined;
-          // Templates plugin
+            if (presetFor('vector')) { await exportPreset(presetFor('vector')!); toastSuccess('Exported SVG'); }
+            return;
           case 'tpl-gallery':
           case 'tpl-new-from':
-            setDrawerOpen(true);
-            setDrawerTab('templates');
-            return;
-          case 'tpl-save-current': {
-            const data = await gatherTemplate();
-            if (data) {
-              await window.api.templates.save({ title: data.title, scene: data.scene });
-              setTemplatesRefreshKey((k) => k + 1);
-              toastSuccess(`Saved template "${data.title}"`);
-            }
-            return;
-          }
+            return openDrawer('templates');
+          case 'tpl-save-current':
+            return dispatchCommand('core.save-template');
           default:
             toastInfo(`Command "${id}" has no host handler.`);
         }
@@ -215,35 +373,28 @@ function App() {
         toastError(e?.message || 'Command failed');
       }
     },
-    [contributions, exportPreset, gatherTemplate],
+    [contributions, save, saveAs, newDrawing, exportMarkdown, exportPreset, gatherTemplate, startPresentation, importImage, refreshContributions],
   );
 
   // ── Native menu + keyboard shortcuts ─────────────────────────────────
   const menuHandler = useCallback(
     (cmd: string) => {
-      switch (cmd) {
-        case 'save': return save();
-        case 'save-as': return saveAs();
-        case 'new': return newDrawing();
-        case 'open': return toastInfo('Pick a file from the sidebar to open it.');
-        case 'export': {
-          setDrawerOpen(true);
-          setDrawerTab('properties');
-          return;
-        }
-        case 'toggle-plugins':
-          setDrawerOpen(true);
-          setDrawerTab('plugins');
-          return refreshContributions();
-        case 'toggle-ai':
-          setDrawerOpen(true);
-          setDrawerTab('ai');
-          return;
-      }
+      const map: Record<string, string> = {
+        save: 'core.save',
+        'save-as': 'core.save-as',
+        new: 'core.new',
+        export: 'core.export',
+        'toggle-plugins': 'core.toggle-plugins',
+        'toggle-ai': 'core.toggle-ai',
+      };
+      if (cmd === 'open') return toastInfo('Pick a file from the sidebar to open it.');
+      if (map[cmd]) dispatchCommand(map[cmd]);
     },
-    [save, saveAs, newDrawing, refreshContributions],
+    [dispatchCommand],
   );
 
+  const dispatchRef = useRef(dispatchCommand);
+  dispatchRef.current = dispatchCommand;
   const menuRef = useRef(menuHandler);
   menuRef.current = menuHandler;
 
@@ -251,14 +402,21 @@ function App() {
     const unsub = window.api?.onMenuCommand?.((cmd) => menuRef.current(cmd));
     const onKey = (e: KeyboardEvent) => {
       const mod = e.ctrlKey || e.metaKey;
+      if (mod && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setPaletteOpen(true);
+        return;
+      }
       if (!mod) return;
       const k = e.key.toLowerCase();
-      if (k === 's' && e.shiftKey) { e.preventDefault(); menuRef.current('save-as'); }
-      else if (k === 's') { e.preventDefault(); menuRef.current('save'); }
-      else if (k === 'n') { e.preventDefault(); menuRef.current('new'); }
-      else if (k === 'p' && e.shiftKey) { e.preventDefault(); menuRef.current('toggle-plugins'); }
-      else if (k === 'p') { e.preventDefault(); menuRef.current('export'); }
-      else if (k === 'i') { e.preventDefault(); menuRef.current('toggle-ai'); }
+      const d = dispatchRef.current;
+      if (k === 's' && e.shiftKey) { e.preventDefault(); d('core.save-as'); }
+      else if (k === 's') { e.preventDefault(); d('core.save'); }
+      else if (k === 'n') { e.preventDefault(); d('core.new'); }
+      else if (k === 'p' && e.shiftKey) { e.preventDefault(); d('core.toggle-plugins'); }
+      else if (k === 'p') { e.preventDefault(); d('core.export'); }
+      else if (k === 'i') { e.preventDefault(); d('core.toggle-ai'); }
+      else if (k === 'f') { e.preventDefault(); d('core.search'); }
     };
     window.addEventListener('keydown', onKey);
     return () => {
@@ -269,7 +427,8 @@ function App() {
 
   const onAiApplied = useCallback(() => {
     refreshContributions();
-    setTemplatesRefreshKey((k) => k + 1);
+    bump('templates');
+    bump('libraries');
     setSidebarReloadKey((k) => k + 1);
   }, [refreshContributions]);
 
@@ -277,8 +436,7 @@ function App() {
     <button
       onClick={() => {
         if (tab === 'plugins') refreshContributions();
-        setDrawerOpen(true);
-        setDrawerTab(tab);
+        openDrawer(tab);
       }}
       className="btn-ghost"
       style={{ fontSize: 12, padding: '6px 12px', opacity: drawerOpen && drawerTab === tab ? 1 : 0.75 }}
@@ -289,65 +447,30 @@ function App() {
 
   return (
     <div style={{ height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column' }}>
-      <header
-        style={{
-          height: 56,
-          backgroundColor: 'var(--bg-1)',
-          borderBottom: '1px solid var(--border-0)',
-          display: 'flex',
-          alignItems: 'center',
-          padding: '0 var(--s-lg)',
-          justifyContent: 'space-between',
-          zIndex: 100,
-        }}
-      >
+      <header style={{ height: 56, backgroundColor: 'var(--bg-1)', borderBottom: '1px solid var(--border-0)', display: 'flex', alignItems: 'center', padding: '0 var(--s-lg)', justifyContent: 'space-between', zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-md)' }}>
-          <h1
-            style={{
-              fontSize: 18,
-              fontWeight: 800,
-              margin: 0,
-              background: 'var(--brand-gradient)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              letterSpacing: '-0.02em',
-            }}
-          >
+          <h1 style={{ fontSize: 18, fontWeight: 800, margin: 0, background: 'var(--brand-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.02em' }}>
             EXCALIBUR
           </h1>
-          {activeFile ? (
-            <span style={{ fontSize: 13, color: 'var(--text-2)' }}>
-              / {activeFile.name} {dirty && <span style={{ color: 'var(--orange-500)' }}>•</span>}
-            </span>
-          ) : (
-            <span style={{ fontSize: 13, color: 'var(--text-2)' }}>/ untitled {dirty && '•'}</span>
-          )}
+          <span style={{ fontSize: 13, color: 'var(--text-2)' }}>
+            / {activeFile?.name || 'untitled'} {dirty && <span style={{ color: 'var(--orange-500)' }}>•</span>}
+          </span>
         </div>
 
         <div style={{ display: 'flex', gap: 'var(--s-sm)', alignItems: 'center' }}>
-          <button className="btn-ghost" style={{ fontSize: 12, padding: '6px 12px' }} onClick={save}>
-            Save
+          <button className="btn-ghost" style={{ fontSize: 12, padding: '6px 12px' }} onClick={() => setPaletteOpen(true)} title="Command palette (Ctrl+K)">
+            ⌘ Commands
           </button>
-          {headerTab('templates', '▦ Templates')}
+          <button className="btn-ghost" style={{ fontSize: 12, padding: '6px 12px' }} onClick={save}>Save</button>
           {headerTab('plugins', '🧩 Plugins')}
-          {headerTab('ai', '✨ AI Import')}
+          {headerTab('ai', '✨ AI')}
           <ProfileSwitcher />
-          <button
-            onClick={() => setIsSettingsOpen(true)}
-            title="Settings"
-            style={{ backgroundColor: 'transparent', color: 'var(--text-2)', fontSize: 18, padding: 4 }}
-          >
-            ⚙️
-          </button>
+          <button onClick={() => setIsSettingsOpen(true)} title="Settings" style={{ backgroundColor: 'transparent', color: 'var(--text-2)', fontSize: 18, padding: 4 }}>⚙️</button>
         </div>
       </header>
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        <WorkspaceSidebar
-          onOpenFile={handleOpenFile}
-          reloadKey={sidebarReloadKey}
-          onWorkspaceChange={setActiveWorkspace}
-        />
+        <WorkspaceSidebar onOpenFile={handleOpenFile} reloadKey={sidebarReloadKey} onWorkspaceChange={setActiveWorkspace} focusSignal={searchSignal} />
         <main style={{ flex: 1, position: 'relative' }}>
           <CanvasShell
             initialData={canvasData}
@@ -361,7 +484,7 @@ function App() {
             }}
             onSave={save}
             toolbarItems={contributions.toolbar}
-            onToolbarAction={runCommand}
+            onToolbarAction={dispatchCommand}
             gridEnabled={settings?.showGrid}
           />
         </main>
@@ -376,29 +499,32 @@ function App() {
           onExport={exportPreset}
           onUseTemplate={onUseTemplate}
           onSaveCurrentTemplate={gatherTemplate}
-          templatesRefreshKey={templatesRefreshKey}
+          onOpenRecent={openRecent}
+          onInsertLibrary={insertLibrary}
+          onSaveSelectionToLibrary={saveSelectionToLibrary}
+          reviewAuthor={profileName}
+          refreshKeys={refreshKeys}
           onAiApplied={onAiApplied}
         />
       </div>
 
       {!drawerOpen && (
-        <button
-          onClick={() => setDrawerOpen(true)}
-          title="Open panel"
-          style={{
-            position: 'fixed',
-            right: 16,
-            top: 72,
-            zIndex: 200,
-            backgroundColor: 'var(--bg-2)',
-            border: '1px solid var(--border-0)',
-            color: 'var(--text-1)',
-            padding: '8px 10px',
-            boxShadow: 'var(--shadow-1)',
-          }}
-        >
+        <button onClick={() => setDrawerOpen(true)} title="Open panel" style={{ position: 'fixed', right: 16, top: 72, zIndex: 200, backgroundColor: 'var(--bg-2)', border: '1px solid var(--border-0)', color: 'var(--text-1)', padding: '8px 10px', boxShadow: 'var(--shadow-1)' }}>
           ◧
         </button>
+      )}
+
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} onRun={(id) => dispatchCommand(id)} />
+      {presentation.open && (
+        <PresentationMode
+          deck={presentation.deck}
+          index={presentation.index}
+          onIndex={(i) => {
+            setPresentation((p) => ({ ...p, index: i }));
+            gotoSlide(presentation.deck, i);
+          }}
+          onExit={() => setPresentation((p) => ({ ...p, open: false }))}
+        />
       )}
 
       <SettingsModal

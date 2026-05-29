@@ -13,7 +13,9 @@ export const WorkspaceSidebar: React.FC<{
   onOpenFile: (workspace: Workspace, file: FileInfo) => void;
   reloadKey?: number;
   onWorkspaceChange?: (ws: Workspace | null) => void;
-}> = ({ onOpenFile, reloadKey, onWorkspaceChange }) => {
+  focusSignal?: number;
+}> = ({ onOpenFile, reloadKey, onWorkspaceChange, focusSignal }) => {
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [activeWorkspace, setActiveWorkspace] = useState<Workspace | null>(null);
   const [files, setFiles] = useState<FileInfo[]>([]);
@@ -53,6 +55,10 @@ export const WorkspaceSidebar: React.FC<{
   useEffect(() => {
     refresh();
   }, [reloadKey]);
+
+  useEffect(() => {
+    if (focusSignal) searchInputRef.current?.focus();
+  }, [focusSignal]);
 
   // Debounced search.
   useEffect(() => {
@@ -205,6 +211,7 @@ export const WorkspaceSidebar: React.FC<{
           ))}
         </select>
         <input
+          ref={searchInputRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="🔍 Search name, text, tags…"

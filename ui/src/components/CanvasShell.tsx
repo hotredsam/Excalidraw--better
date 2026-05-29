@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Excalidraw } from '@excalidraw/excalidraw';
+import '@excalidraw/excalidraw/index.css';
 import { PluginCommand } from '@excalibur/shared';
 
 export interface CanvasShellProps {

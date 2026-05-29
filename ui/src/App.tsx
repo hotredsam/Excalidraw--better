@@ -10,6 +10,8 @@ import { PresentationMode } from './components/PresentationMode';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { KeyboardHelpOverlay } from './components/KeyboardHelpOverlay';
 import { ProfileManagerModal } from './components/ProfileManagerModal';
+import { StatusBar } from './components/StatusBar';
+import { ExportDialog } from './components/ExportDialog';
 import { ToastHost } from './components/ToastHost';
 import { toastError, toastInfo, toastSuccess } from './lib/toast';
 import * as Shared from '@excalibur/shared';
@@ -45,6 +47,8 @@ function App() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [profileMgrOpen, setProfileMgrOpen] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [elementCount, setElementCount] = useState(0);
   const [presentation, setPresentation] = useState<{ open: boolean; deck: Shared.SlideDeck; index: number }>({
     open: false,
     deck: { slides: [] },
@@ -378,7 +382,7 @@ function App() {
           case 'core.save': return save();
           case 'core.save-as': return saveAs();
           case 'core.new': return newDrawing();
-          case 'core.export': return openDrawer('properties');
+          case 'core.export': return setExportDialogOpen(true);
           case 'core.export-markdown': return exportMarkdown();
           case 'core.search': return setSearchSignal((s) => s + 1);
           case 'core.recents': return openDrawer('recents');
@@ -575,6 +579,8 @@ function App() {
             initialData={canvasData}
             onApiReady={(api) => (apiRef.current = api)}
             onChange={() => {
+              const count = apiRef.current?.getSceneElements?.()?.length ?? 0;
+              setElementCount(count);
               if (justLoaded.current) {
                 justLoaded.current = false;
                 return;
@@ -618,6 +624,15 @@ function App() {
         />
       </div>
 
+      <StatusBar
+        fileName={activeFile?.name ?? null}
+        dirty={dirty}
+        elementCount={elementCount}
+        autosave={!!settings?.autosave}
+        workspaceName={activeWorkspace?.name ?? null}
+        theme={resolvedTheme}
+      />
+
       {!drawerOpen && (
         <button onClick={() => setDrawerOpen(true)} title="Open panel" style={{ position: 'fixed', right: 16, top: 72, zIndex: 200, backgroundColor: 'var(--bg-2)', border: '1px solid var(--border-0)', color: 'var(--text-1)', padding: '8px 10px', boxShadow: 'var(--shadow-1)' }}>
           ◧
@@ -639,6 +654,12 @@ function App() {
 
       <KeyboardHelpOverlay open={helpOpen} onClose={() => setHelpOpen(false)} />
       <ProfileManagerModal isOpen={profileMgrOpen} onClose={() => setProfileMgrOpen(false)} />
+      <ExportDialog
+        open={exportDialogOpen}
+        onClose={() => setExportDialogOpen(false)}
+        onExport={exportPreset}
+        baseName={activeFile?.name?.replace(/\.[^.]+$/, '') || 'untitled'}
+      />
 
       <SettingsModal
         isOpen={isSettingsOpen}

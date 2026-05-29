@@ -733,6 +733,18 @@ function App() {
           onSaveSnippet={gatherSnippet}
           onApplyStyle={applyStyle}
           onSaveStyle={saveStyle}
+          getScene={buildScene}
+          onGoToFrame={(slideId) => {
+            const api = apiRef.current;
+            const el = api?.getSceneElements?.().find((e: any) => e.id === slideId);
+            if (el && api?.scrollToContent) {
+              try {
+                api.scrollToContent(el, { fitToViewport: true });
+              } catch {
+                /* ignore */
+              }
+            }
+          }}
           onOpenFile={handleOpenFile}
           reviewAuthor={profileName}
           refreshKeys={refreshKeys}

@@ -12,6 +12,7 @@ import { GitPanel } from './GitPanel';
 import { ReviewPanel } from './ReviewPanel';
 import { TagBrowser } from './TagBrowser';
 import { StylePresetsPanel } from './StylePresetsPanel';
+import { OutlinePanel } from './OutlinePanel';
 import type { StylePreset } from '@excalibur/shared';
 
 export type DrawerTab =
@@ -23,6 +24,7 @@ export type DrawerTab =
   | 'libraries'
   | 'snippets'
   | 'styles'
+  | 'outline'
   | 'tags'
   | 'review'
   | 'stats'
@@ -31,6 +33,7 @@ export type DrawerTab =
 const TABS: { id: DrawerTab; label: string; icon: string }[] = [
   { id: 'properties', label: 'Properties', icon: '⚙' },
   { id: 'recents', label: 'Recent', icon: '🕘' },
+  { id: 'outline', label: 'Outline', icon: '☰' },
   { id: 'templates', label: 'Templates', icon: '▦' },
   { id: 'snippets', label: 'Snippets', icon: '✂' },
   { id: 'styles', label: 'Styles', icon: '🎨' },
@@ -61,6 +64,8 @@ export interface RightDrawerProps {
   onSaveSnippet: () => Promise<{ title: string; elements: any[] } | null>;
   onApplyStyle: (preset: StylePreset) => void;
   onSaveStyle: () => Promise<void>;
+  getScene: () => any;
+  onGoToFrame: (slideId: string) => void;
   onOpenFile: (workspace: Workspace, file: FileInfo) => void;
   reviewAuthor: string;
   refreshKeys: { templates: number; recents: number; libraries: number; stats: number; snippets: number; styles: number };
@@ -116,6 +121,14 @@ export const RightDrawer: React.FC<RightDrawerProps> = (props) => {
         )}
         {props.tab === 'styles' && (
           <StylePresetsPanel onApply={props.onApplyStyle} onSaveCurrent={props.onSaveStyle} refreshKey={props.refreshKeys.styles} />
+        )}
+        {props.tab === 'outline' && (
+          <OutlinePanel
+            activeWorkspace={props.activeWorkspace}
+            activeFile={props.activeFile}
+            getScene={props.getScene}
+            onGoTo={props.onGoToFrame}
+          />
         )}
         {props.tab === 'tags' && (
           <TagBrowser activeWorkspace={props.activeWorkspace} onOpenFile={props.onOpenFile} refreshKey={props.refreshKeys.stats} />

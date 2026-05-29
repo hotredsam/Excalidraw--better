@@ -27,6 +27,8 @@ const drawerProps = (tab: DrawerTab) => ({
   onSaveSnippet: async () => null,
   onApplyStyle: () => {},
   onSaveStyle: async () => {},
+  getScene: () => ({ elements: [] }),
+  onGoToFrame: () => {},
   onOpenFile: () => {},
   reviewAuthor: 'You',
   refreshKeys: { templates: 0, recents: 0, libraries: 0, stats: 0, snippets: 0, styles: 0 },
@@ -45,7 +47,7 @@ describe('RightDrawer', () => {
   });
 
   it('renders each panel without crashing', async () => {
-    const tabs: DrawerTab[] = ['recents', 'templates', 'snippets', 'styles', 'libraries', 'tags', 'review', 'stats', 'git', 'plugins', 'ai'];
+    const tabs: DrawerTab[] = ['recents', 'outline', 'templates', 'snippets', 'styles', 'libraries', 'tags', 'review', 'stats', 'git', 'plugins', 'ai'];
     for (const tab of tabs) {
       const { unmount } = render(<RightDrawer {...drawerProps(tab)} />);
       // tab label is present in the bar

@@ -14,6 +14,7 @@ import { StatusBar } from './components/StatusBar';
 import { ExportDialog } from './components/ExportDialog';
 import { ToastHost } from './components/ToastHost';
 import { toastError, toastInfo, toastSuccess } from './lib/toast';
+import { NavigationHistory } from './lib/history';
 import * as Shared from '@excalibur/shared';
 
 const BLANK_SCENE = { type: 'excalidraw', version: 2, source: 'excalibur', elements: [], appState: {}, files: {} };
@@ -57,6 +58,9 @@ function App() {
 
   const apiRef = useRef<any>(null);
   const justLoaded = useRef(false);
+  const historyRef = useRef(new NavigationHistory<{ workspace: Shared.Workspace; file: Shared.FileInfo }>());
+  const navigating = useRef(false);
+  const [navTick, setNavTick] = useState(0);
 
   const bump = (key: keyof typeof refreshKeys) => setRefreshKeys((k) => ({ ...k, [key]: k[key] + 1 }));
 
@@ -109,6 +113,10 @@ function App() {
         setCanvasData(data);
         setDirty(false);
         recordRecent(workspace, file);
+        if (!navigating.current) {
+          historyRef.current.push({ workspace, file }, (a, b) => a.file.path === b.file.path);
+          setNavTick((t) => t + 1);
+        }
       } catch (err: any) {
         const msg = String(err?.message || '');
         if (msg.includes('No embedded Excalidraw scene') || msg.includes('No embedded Excalidraw data')) {
@@ -136,6 +144,21 @@ function App() {
       });
     },
     [activeWorkspace, handleOpenFile],
+  );
+
+  const navigate = useCallback(
+    async (dir: 'back' | 'forward') => {
+      const entry = dir === 'back' ? historyRef.current.back() : historyRef.current.forward();
+      if (!entry) return;
+      navigating.current = true;
+      try {
+        await handleOpenFile(entry.workspace, entry.file);
+      } finally {
+        navigating.current = false;
+        setNavTick((t) => t + 1);
+      }
+    },
+    [handleOpenFile],
   );
 
   // ── Save / Save As / New ─────────────────────────────────────────────
@@ -555,6 +578,24 @@ function App() {
           <h1 style={{ fontSize: 18, fontWeight: 800, margin: 0, background: 'var(--brand-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.02em' }}>
             EXCALIBUR
           </h1>
+          <div style={{ display: 'flex', gap: 2 }} data-nav={navTick}>
+            <button
+              onClick={() => navigate('back')}
+              disabled={!historyRef.current.canBack()}
+              title="Back"
+              style={{ background: 'transparent', color: 'var(--text-2)', padding: '2px 6px', fontSize: 14 }}
+            >
+              ◀
+            </button>
+            <button
+              onClick={() => navigate('forward')}
+              disabled={!historyRef.current.canForward()}
+              title="Forward"
+              style={{ background: 'transparent', color: 'var(--text-2)', padding: '2px 6px', fontSize: 14 }}
+            >
+              ▶
+            </button>
+          </div>
           <span style={{ fontSize: 13, color: 'var(--text-2)' }}>
             / {activeFile?.name || 'untitled'} {dirty && <span style={{ color: 'var(--orange-500)' }}>•</span>}
           </span>

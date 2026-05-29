@@ -36,6 +36,7 @@ import type {
   Snippet,
   SnippetSummary,
   ShortcutBinding,
+  WorkspaceConfig,
 } from '@excalibur/shared';
 
 type Ok = { success: boolean };
@@ -168,6 +169,10 @@ declare global {
         list: () => Promise<{ bindings: ShortcutBinding[] }>;
         set: (commandId: string, accelerator: string, force?: boolean) => Promise<{ bindings: ShortcutBinding[] }>;
         reset: (commandId?: string) => Promise<{ bindings: ShortcutBinding[] }>;
+      };
+      workspaceConfig: {
+        get: (workspaceId: string) => Promise<WorkspaceConfig>;
+        update: (workspaceId: string, partial: Partial<WorkspaceConfig>) => Promise<WorkspaceConfig>;
       };
       onMenuCommand: (cb: (cmd: string) => void) => () => void;
     };

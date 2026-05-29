@@ -122,6 +122,10 @@ electron_1.contextBridge.exposeInMainWorld('api', {
         set: (commandId, accelerator, force) => electron_1.ipcRenderer.invoke(ipc_1.SHORTCUT_CHANNELS.SET, { commandId, accelerator, force }),
         reset: (commandId) => electron_1.ipcRenderer.invoke(ipc_1.SHORTCUT_CHANNELS.RESET, { commandId }),
     },
+    workspaceConfig: {
+        get: (workspaceId) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CONFIG_CHANNELS.GET, { workspaceId }),
+        update: (workspaceId, partial) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CONFIG_CHANNELS.UPDATE, { workspaceId, partial }),
+    },
     // Menu/keyboard commands forwarded from the main process.
     onMenuCommand: (cb) => {
         const listener = (_e, cmd) => cb(cmd);

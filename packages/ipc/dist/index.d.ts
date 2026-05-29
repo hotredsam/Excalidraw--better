@@ -117,6 +117,10 @@ export declare const SHORTCUT_CHANNELS: {
     readonly SET: "shortcuts:set";
     readonly RESET: "shortcuts:reset";
 };
+export declare const WORKSPACE_CONFIG_CHANNELS: {
+    readonly GET: "workspace-config:get";
+    readonly UPDATE: "workspace-config:update";
+};
 export type AppChannels = typeof APP_CHANNELS[keyof typeof APP_CHANNELS];
 export type ProfileChannels = typeof PROFILE_CHANNELS[keyof typeof PROFILE_CHANNELS];
 export type SettingsChannels = typeof SETTINGS_CHANNELS[keyof typeof SETTINGS_CHANNELS];

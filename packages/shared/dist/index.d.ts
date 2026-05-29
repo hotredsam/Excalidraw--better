@@ -179,3 +179,4 @@ export * from './features';
 export * from './feature-utils';
 export * from './features2';
 export * from './feature-utils2';
+export * from './utils';

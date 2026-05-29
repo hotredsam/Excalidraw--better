@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 import { SearchResult, FileTags, extractSceneText } from '@excalibur/shared';
 import { extractExcalidrawFromPng } from './png-excalidraw';
+import { matchesAnyGlob } from './workspace-config';
 
 /**
  * Workspace search index.
@@ -30,9 +31,19 @@ export class SearchIndex {
   private entries: IndexEntry[] = [];
   private built = false;
   private cacheFile: string;
+  private excludes: string[] = [];
 
   constructor(private workspacePath: string) {
     this.cacheFile = path.join(workspacePath, '.excalibur', 'index.json');
+  }
+
+  /** Set glob patterns (workspace-relative) to skip during indexing. */
+  setExcludes(globs: string[]): void {
+    const next = globs || [];
+    if (JSON.stringify(next) !== JSON.stringify(this.excludes)) {
+      this.excludes = next;
+      this.built = false;
+    }
   }
 
   async ensureBuilt(force = false): Promise<void> {
@@ -79,6 +90,8 @@ export class SearchIndex {
     for (const item of items) {
       if (item.name.startsWith('.')) continue; // skip hidden + .excalibur
       const full = path.join(dir, item.name);
+      const rel = path.relative(this.workspacePath, full);
+      if (this.excludes.length && matchesAnyGlob(rel, this.excludes)) continue;
       if (item.isDirectory()) {
         await this.walk(full);
         continue;

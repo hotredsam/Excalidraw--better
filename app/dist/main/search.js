@@ -39,6 +39,7 @@ const path = __importStar(require("path"));
 const fs = __importStar(require("fs-extra"));
 const shared_1 = require("@excalibur/shared");
 const png_excalidraw_1 = require("./png-excalidraw");
+const workspace_config_1 = require("./workspace-config");
 /**
  * Workspace search index.
  *
@@ -57,9 +58,18 @@ class SearchIndex {
     entries = [];
     built = false;
     cacheFile;
+    excludes = [];
     constructor(workspacePath) {
         this.workspacePath = workspacePath;
         this.cacheFile = path.join(workspacePath, '.excalibur', 'index.json');
+    }
+    /** Set glob patterns (workspace-relative) to skip during indexing. */
+    setExcludes(globs) {
+        const next = globs || [];
+        if (JSON.stringify(next) !== JSON.stringify(this.excludes)) {
+            this.excludes = next;
+            this.built = false;
+        }
     }
     async ensureBuilt(force = false) {
         if (this.built && !force)
@@ -106,6 +116,9 @@ class SearchIndex {
             if (item.name.startsWith('.'))
                 continue; // skip hidden + .excalibur
             const full = path.join(dir, item.name);
+            const rel = path.relative(this.workspacePath, full);
+            if (this.excludes.length && (0, workspace_config_1.matchesAnyGlob)(rel, this.excludes))
+                continue;
             if (item.isDirectory()) {
                 await this.walk(full);
                 continue;

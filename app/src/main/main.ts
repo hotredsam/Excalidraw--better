@@ -22,6 +22,7 @@ import {
   IMPORT_CHANNELS,
   SNIPPET_CHANNELS,
   SHORTCUT_CHANNELS,
+  WORKSPACE_CONFIG_CHANNELS,
 } from '@excalibur/ipc';
 import {
   AppPingSchema,
@@ -61,6 +62,7 @@ import { buildCommandList } from './command-registry';
 import { SnippetStore } from './snippets';
 import { ShortcutStore } from './shortcuts';
 import { parseSvgToElements } from './svg-import';
+import { WorkspaceConfigStore } from './workspace-config';
 import { isPathWithin, isDangerousPath } from './path-utils';
 import { readExcalidrawFile } from './excalidraw-utils';
 import { getIndex } from './search';
@@ -378,7 +380,10 @@ ipcMain.handle(WORKSPACE_CHANNELS.CREATE_FOLDER, async (_, { workspaceId, dir, n
 // ── Search & tags ────────────────────────────────────────────────────────
 ipcMain.handle(WORKSPACE_CHANNELS.SEARCH, async (_, { workspaceId, query }) => {
   const workspace = await getWorkspaceOrThrow(workspaceId);
-  return await getIndex(workspace.path).search(query || '');
+  const config = await new WorkspaceConfigStore(workspace.path).get();
+  const index = getIndex(workspace.path);
+  index.setExcludes(config.excludeGlobs);
+  return await index.search(query || '');
 });
 ipcMain.handle(WORKSPACE_CHANNELS.GET_TAGS, async (_, { workspaceId }) => {
   const workspace = await getWorkspaceOrThrow(workspaceId);
@@ -655,6 +660,18 @@ ipcMain.handle(SHORTCUT_CHANNELS.SET, async (_, { commandId, accelerator, force 
 });
 ipcMain.handle(SHORTCUT_CHANNELS.RESET, async (_, { commandId }) => {
   return { bindings: await shortcutStore.reset(commandId) };
+});
+
+// ── Workspace config ───────────────────────────────────────────────────────
+ipcMain.handle(WORKSPACE_CONFIG_CHANNELS.GET, async (_, { workspaceId }) => {
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  return await new WorkspaceConfigStore(workspace.path).get();
+});
+ipcMain.handle(WORKSPACE_CONFIG_CHANNELS.UPDATE, async (_, { workspaceId, partial }) => {
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  const next = await new WorkspaceConfigStore(workspace.path).update(partial);
+  getIndex(workspace.path).setExcludes(next.excludeGlobs);
+  return next;
 });
 
 app.whenReady().then(async () => {

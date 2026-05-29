@@ -140,6 +140,11 @@ export const SHORTCUT_CHANNELS = {
   RESET: 'shortcuts:reset',
 } as const;
 
+export const WORKSPACE_CONFIG_CHANNELS = {
+  GET: 'workspace-config:get',
+  UPDATE: 'workspace-config:update',
+} as const;
+
 export type AppChannels = typeof APP_CHANNELS[keyof typeof APP_CHANNELS];
 export type ProfileChannels = typeof PROFILE_CHANNELS[keyof typeof PROFILE_CHANNELS];
 export type SettingsChannels = typeof SETTINGS_CHANNELS[keyof typeof SETTINGS_CHANNELS];

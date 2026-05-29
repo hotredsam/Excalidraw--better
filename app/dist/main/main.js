@@ -57,6 +57,7 @@ const command_registry_1 = require("./command-registry");
 const snippets_1 = require("./snippets");
 const shortcuts_1 = require("./shortcuts");
 const svg_import_1 = require("./svg-import");
+const workspace_config_1 = require("./workspace-config");
 const path_utils_1 = require("./path-utils");
 const excalidraw_utils_1 = require("./excalidraw-utils");
 const search_1 = require("./search");
@@ -355,7 +356,10 @@ electron_1.ipcMain.handle(ipc_1.WORKSPACE_CHANNELS.CREATE_FOLDER, async (_, { wo
 // ── Search & tags ────────────────────────────────────────────────────────
 electron_1.ipcMain.handle(ipc_1.WORKSPACE_CHANNELS.SEARCH, async (_, { workspaceId, query }) => {
     const workspace = await getWorkspaceOrThrow(workspaceId);
-    return await (0, search_1.getIndex)(workspace.path).search(query || '');
+    const config = await new workspace_config_1.WorkspaceConfigStore(workspace.path).get();
+    const index = (0, search_1.getIndex)(workspace.path);
+    index.setExcludes(config.excludeGlobs);
+    return await index.search(query || '');
 });
 electron_1.ipcMain.handle(ipc_1.WORKSPACE_CHANNELS.GET_TAGS, async (_, { workspaceId }) => {
     const workspace = await getWorkspaceOrThrow(workspaceId);
@@ -612,6 +616,17 @@ electron_1.ipcMain.handle(ipc_1.SHORTCUT_CHANNELS.SET, async (_, { commandId, ac
 });
 electron_1.ipcMain.handle(ipc_1.SHORTCUT_CHANNELS.RESET, async (_, { commandId }) => {
     return { bindings: await shortcutStore.reset(commandId) };
+});
+// ── Workspace config ───────────────────────────────────────────────────────
+electron_1.ipcMain.handle(ipc_1.WORKSPACE_CONFIG_CHANNELS.GET, async (_, { workspaceId }) => {
+    const workspace = await getWorkspaceOrThrow(workspaceId);
+    return await new workspace_config_1.WorkspaceConfigStore(workspace.path).get();
+});
+electron_1.ipcMain.handle(ipc_1.WORKSPACE_CONFIG_CHANNELS.UPDATE, async (_, { workspaceId, partial }) => {
+    const workspace = await getWorkspaceOrThrow(workspaceId);
+    const next = await new workspace_config_1.WorkspaceConfigStore(workspace.path).update(partial);
+    (0, search_1.getIndex)(workspace.path).setExcludes(next.excludeGlobs);
+    return next;
 });
 electron_1.app.whenReady().then(async () => {
     await initStores();

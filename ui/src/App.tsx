@@ -618,6 +618,7 @@ function App() {
           onSaveSelectionToLibrary={saveSelectionToLibrary}
           onInsertSnippet={insertSnippet}
           onSaveSnippet={gatherSnippet}
+          onOpenFile={handleOpenFile}
           reviewAuthor={profileName}
           refreshKeys={refreshKeys}
           onAiApplied={onAiApplied}

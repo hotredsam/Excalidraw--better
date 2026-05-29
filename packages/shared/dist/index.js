@@ -83,3 +83,4 @@ __exportStar(require("./feature-utils"), exports);
 __exportStar(require("./features2"), exports);
 __exportStar(require("./feature-utils2"), exports);
 __exportStar(require("./utils"), exports);
+__exportStar(require("./colors"), exports);

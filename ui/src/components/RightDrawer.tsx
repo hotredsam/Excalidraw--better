@@ -10,6 +10,7 @@ import { SnippetsPanel } from './SnippetsPanel';
 import { StatsPanel } from './StatsPanel';
 import { GitPanel } from './GitPanel';
 import { ReviewPanel } from './ReviewPanel';
+import { TagBrowser } from './TagBrowser';
 
 export type DrawerTab =
   | 'properties'
@@ -19,6 +20,7 @@ export type DrawerTab =
   | 'recents'
   | 'libraries'
   | 'snippets'
+  | 'tags'
   | 'review'
   | 'stats'
   | 'git';
@@ -29,6 +31,7 @@ const TABS: { id: DrawerTab; label: string; icon: string }[] = [
   { id: 'templates', label: 'Templates', icon: '▦' },
   { id: 'snippets', label: 'Snippets', icon: '✂' },
   { id: 'libraries', label: 'Libraries', icon: '📚' },
+  { id: 'tags', label: 'Tags', icon: '🏷' },
   { id: 'review', label: 'Review', icon: '💬' },
   { id: 'stats', label: 'Stats', icon: '📊' },
   { id: 'git', label: 'Git', icon: '⎇' },
@@ -52,6 +55,7 @@ export interface RightDrawerProps {
   onSaveSelectionToLibrary: (id: string) => void;
   onInsertSnippet: (id: string) => void;
   onSaveSnippet: () => Promise<{ title: string; elements: any[] } | null>;
+  onOpenFile: (workspace: Workspace, file: FileInfo) => void;
   reviewAuthor: string;
   refreshKeys: { templates: number; recents: number; libraries: number; stats: number; snippets: number };
   onAiApplied: () => void;
@@ -103,6 +107,9 @@ export const RightDrawer: React.FC<RightDrawerProps> = (props) => {
         )}
         {props.tab === 'libraries' && (
           <LibrariesPanel onInsertLibrary={props.onInsertLibrary} onSaveSelection={props.onSaveSelectionToLibrary} refreshKey={props.refreshKeys.libraries} />
+        )}
+        {props.tab === 'tags' && (
+          <TagBrowser activeWorkspace={props.activeWorkspace} onOpenFile={props.onOpenFile} refreshKey={props.refreshKeys.stats} />
         )}
         {props.tab === 'review' && <ReviewPanel activeWorkspace={props.activeWorkspace} activeFile={props.activeFile} author={props.reviewAuthor} />}
         {props.tab === 'stats' && <StatsPanel activeWorkspace={props.activeWorkspace} refreshKey={props.refreshKeys.stats} />}

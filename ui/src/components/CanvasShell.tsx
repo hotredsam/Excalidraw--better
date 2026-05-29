@@ -1,53 +1,82 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Excalidraw } from '@excalidraw/excalidraw';
+import { PluginCommand } from '@excalibur/shared';
 
 export interface CanvasShellProps {
   initialData?: any;
-  onSave?: (elements: any[], appState: any) => void;
+  onApiReady?: (api: any) => void;
+  onChange?: () => void;
+  onSave?: () => void;
+  toolbarItems?: PluginCommand[];
+  onToolbarAction?: (id: string) => void;
+  gridEnabled?: boolean;
 }
 
-export const CanvasShell: React.FC<CanvasShellProps> = ({ initialData, onSave }) => {
-  const excalidrawRef = useRef<any>(null);
+export const CanvasShell: React.FC<CanvasShellProps> = ({
+  initialData,
+  onApiReady,
+  onChange,
+  onSave,
+  toolbarItems = [],
+  onToolbarAction,
+  gridEnabled,
+}) => {
+  const apiRef = useRef<any>(null);
 
+  // Load a new scene whenever initialData changes (open file / new from template).
   useEffect(() => {
-    if (initialData && excalidrawRef.current) {
-      excalidrawRef.current.updateScene(initialData);
+    if (!apiRef.current) return;
+    const data = initialData ?? { elements: [], appState: {} };
+    apiRef.current.updateScene({
+      elements: data.elements ?? [],
+      appState: { ...(data.appState ?? {}), gridSize: gridEnabled ? 20 : null },
+    });
+    if (data.files && Object.keys(data.files).length) {
+      apiRef.current.addFiles(Object.values(data.files));
     }
-  }, [initialData]);
+  }, [initialData, gridEnabled]);
 
   return (
-    <div style={{ height: '100%', width: '100%' }}>
+    <div style={{ height: '100%', width: '100%', position: 'relative' }}>
       <Excalidraw
-        excalidrawAPI={(api) => (excalidrawRef.current = api)}
-        initialData={initialData}
-        onChange={(elements, appState) => {
-          // Internal state handled by Excalidraw, but we can hook into it
+        excalidrawAPI={(api: any) => {
+          apiRef.current = api;
+          onApiReady?.(api);
         }}
+        initialData={initialData}
+        onChange={() => onChange?.()}
         theme="dark"
       />
-      
-      {/* Absolute Save Button for Proof of Concept */}
-      <button 
-        onClick={() => {
-          if (excalidrawRef.current) {
-            const elements = excalidrawRef.current.getSceneElements();
-            const appState = excalidrawRef.current.getAppState();
-            onSave?.(elements, appState);
-          }
-        }}
-        style={{ 
-          position: 'absolute', 
-          bottom: '24px', 
-          right: '24px', 
-          zIndex: 10,
-          backgroundColor: 'var(--orange-600)',
-          color: 'white',
-          padding: 'var(--s-sm) var(--s-lg)',
-          boxShadow: 'var(--shadow-1)'
+
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 24,
+          right: 24,
+          zIndex: 5,
+          display: 'flex',
+          gap: 8,
+          alignItems: 'center',
         }}
       >
-        Save Changes
-      </button>
+        {toolbarItems.map((item) => (
+          <button
+            key={item.id}
+            className="btn-ghost"
+            onClick={() => onToolbarAction?.(item.id)}
+            style={{ fontSize: 12, boxShadow: 'var(--shadow-1)' }}
+          >
+            {item.title}
+          </button>
+        ))}
+        <button
+          onClick={() => onSave?.()}
+          className="btn-primary"
+          style={{ boxShadow: 'var(--glow-orange)' }}
+        >
+          Save
+        </button>
+      </div>
     </div>
   );
 };

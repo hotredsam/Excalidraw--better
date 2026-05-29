@@ -1,6 +1,6 @@
 {
   "name": "@excalibur/ui",
-  "private": true,
+  "private": false,
   "version": "0.1.0",
   "type": "module",
   "module": "./lib/index.js",
@@ -44,5 +44,9 @@
     "react-dom": "^18.2.0",
     "typescript": "^5.0.0",
     "vite": "^4.4.0"
-  }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT"
 }

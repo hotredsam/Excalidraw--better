@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "concurrently -n \"shared,ipc,core,ui,app-watch,app\" -c \"blue,green,red,magenta,cyan,yellow\" \"pnpm --filter @excalibur/shared dev\" \"pnpm --filter @excalibur/ipc dev\" \"pnpm --filter @excalibur/core dev\" \"pnpm --filter @excalibur/ui dev\" \"pnpm --filter @excalibur/app build --watch\" \"wait-on http://localhost:5173 && pnpm --filter @excalibur/app dev\"",
     "build": "pnpm run --filter \"@excalibur/*\" build",
-    "lint": "pnpm run --recursive lint",
+    "lint": "pnpm run --recursive lint && bash scripts/check-decoupling.sh",
     "test": "pnpm run --recursive test",
     "e2e": "playwright test -c e2e/playwright.config.ts"
   },

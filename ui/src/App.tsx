@@ -7,6 +7,9 @@ import { WorkspaceSidebar } from './components/WorkspaceSidebar';
 import { RightDrawer, DrawerTab } from './components/RightDrawer';
 import { CommandPalette } from './components/CommandPalette';
 import { PresentationMode } from './components/PresentationMode';
+import { WelcomeScreen } from './components/WelcomeScreen';
+import { KeyboardHelpOverlay } from './components/KeyboardHelpOverlay';
+import { ProfileManagerModal } from './components/ProfileManagerModal';
 import { ToastHost } from './components/ToastHost';
 import { toastError, toastInfo, toastSuccess } from './lib/toast';
 import * as Shared from '@excalibur/shared';
@@ -40,6 +43,8 @@ function App() {
   const [settings, setSettings] = useState<Shared.Settings | null>(null);
   const [profileName, setProfileName] = useState('You');
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [profileMgrOpen, setProfileMgrOpen] = useState(false);
   const [presentation, setPresentation] = useState<{ open: boolean; deck: Shared.SlideDeck; index: number }>({
     open: false,
     deck: { slides: [] },
@@ -171,6 +176,15 @@ function App() {
     setCanvasData({ ...BLANK_SCENE });
     setDirty(false);
     toastInfo('New drawing — use Save As to store it.');
+  }, []);
+
+  const openWorkspace = useCallback(async () => {
+    const ws = await window.api.workspaces.add();
+    if (ws) {
+      await window.api.workspaces.setActive(ws.id);
+      setActiveWorkspace(ws);
+      setSidebarReloadKey((k) => k + 1);
+    }
   }, []);
 
   // ── Export ───────────────────────────────────────────────────────────
@@ -461,6 +475,13 @@ function App() {
         setPaletteOpen(true);
         return;
       }
+      if (e.key === '?' && !mod) {
+        const tag = (e.target as HTMLElement)?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+        e.preventDefault();
+        setHelpOpen(true);
+        return;
+      }
       if (!mod) return;
       const k = e.key.toLowerCase();
       const d = dispatchRef.current;
@@ -542,7 +563,7 @@ function App() {
           <button className="btn-ghost" style={{ fontSize: 12, padding: '6px 12px' }} onClick={save}>Save</button>
           {headerTab('plugins', '🧩 Plugins')}
           {headerTab('ai', '✨ AI')}
-          <ProfileSwitcher />
+          <ProfileSwitcher onManage={() => setProfileMgrOpen(true)} />
           <button onClick={() => setIsSettingsOpen(true)} title="Settings" style={{ backgroundColor: 'transparent', color: 'var(--text-2)', fontSize: 18, padding: 4 }}>⚙️</button>
         </div>
       </header>
@@ -566,6 +587,14 @@ function App() {
             gridEnabled={settings?.showGrid}
             theme={resolvedTheme}
           />
+          {!activeFile && !canvasData && (
+            <WelcomeScreen
+              onNewDrawing={newDrawing}
+              onOpenWorkspace={openWorkspace}
+              onOpenCommands={() => setPaletteOpen(true)}
+              hasWorkspace={!!activeWorkspace}
+            />
+          )}
         </main>
         <RightDrawer
           open={drawerOpen}
@@ -607,6 +636,9 @@ function App() {
           onExit={() => setPresentation((p) => ({ ...p, open: false }))}
         />
       )}
+
+      <KeyboardHelpOverlay open={helpOpen} onClose={() => setHelpOpen(false)} />
+      <ProfileManagerModal isOpen={profileMgrOpen} onClose={() => setProfileMgrOpen(false)} />
 
       <SettingsModal
         isOpen={isSettingsOpen}

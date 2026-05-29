@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FileInfo, Workspace, ExportPreset } from '@excalibur/shared';
 import { toastError, toastSuccess } from '../lib/toast';
+import { BackupsPanel } from './BackupsPanel';
 
 const DEFAULT_PRESETS: ExportPreset[] = [
   { id: 'png', label: 'PNG (image)', format: 'png', scale: 1, background: true, darkMode: false, nameTemplate: '{name}' },
@@ -126,6 +127,8 @@ export const PropertiesPanel: React.FC<{
           Exports are written to <code>&lt;workspace&gt;/exports/</code> with the scene embedded.
         </p>
       </section>
+
+      {activeFile && <BackupsPanel activeFile={activeFile} />}
     </div>
   );
 };

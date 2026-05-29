@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Profile, ProfileList } from '@excalibur/shared';
 
-export const ProfileSwitcher: React.FC = () => {
+export const ProfileSwitcher: React.FC<{ onManage?: () => void }> = ({ onManage }) => {
   const [activeProfile, setActiveProfile] = useState<Profile | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -80,10 +80,10 @@ export const ProfileSwitcher: React.FC = () => {
             </div>
           ))}
           <div style={{ height: '1px', backgroundColor: 'var(--border-0)', margin: 'var(--s-sm) 0' }} />
-          <div 
+          <div
             onClick={handleCreate}
-            style={{ 
-              padding: 'var(--s-sm) var(--s-lg)', 
+            style={{
+              padding: 'var(--s-sm) var(--s-lg)',
               cursor: 'pointer',
               color: 'var(--orange-600)',
               fontSize: '14px',
@@ -92,6 +92,17 @@ export const ProfileSwitcher: React.FC = () => {
           >
             + Create Profile
           </div>
+          {onManage && (
+            <div
+              onClick={() => {
+                setIsOpen(false);
+                onManage();
+              }}
+              style={{ padding: 'var(--s-sm) var(--s-lg)', cursor: 'pointer', color: 'var(--text-2)', fontSize: '13px' }}
+            >
+              Manage profiles…
+            </div>
+          )}
         </div>
       )}
     </div>

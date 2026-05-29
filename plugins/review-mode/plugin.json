@@ -1,0 +1,11 @@
+{
+  "id": "review-mode",
+  "name": "Review Mode",
+  "version": "0.1.0",
+  "description": "Local-only review: leave comment pins on a drawing, reply, and resolve. No cloud, stored alongside the workspace.",
+  "author": "Excalibur (first-party)",
+  "permissions": { "filesystem": "workspace-only", "network": "none" },
+  "contributes": {
+    "commands": [{ "id": "core.toggle-review", "title": "Open Review panel" }]
+  }
+}

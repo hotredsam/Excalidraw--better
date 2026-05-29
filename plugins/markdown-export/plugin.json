@@ -1,0 +1,11 @@
+{
+  "id": "markdown-export",
+  "name": "Markdown Embed/Export",
+  "version": "0.1.0",
+  "description": "Export the current drawing as an image plus a Markdown file (with frontmatter) referencing it — ideal for note vaults.",
+  "author": "Excalibur (first-party)",
+  "permissions": { "filesystem": "workspace-only", "network": "none" },
+  "contributes": {
+    "commands": [{ "id": "core.export-markdown", "title": "Export as Markdown bundle" }]
+  }
+}

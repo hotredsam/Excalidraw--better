@@ -1,0 +1,12 @@
+{
+  "id": "presentation-mode",
+  "name": "Presentation Mode",
+  "version": "0.1.0",
+  "description": "Turn frames into an ordered slide deck with presenter notes and keyboard navigation.",
+  "author": "Excalibur (first-party)",
+  "permissions": { "filesystem": "workspace-only", "network": "none" },
+  "contributes": {
+    "toolbar": [{ "id": "core.presentation", "title": "▶ Present" }],
+    "commands": [{ "id": "core.presentation", "title": "Start presentation", "accelerator": "F5" }]
+  }
+}

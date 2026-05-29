@@ -1,0 +1,11 @@
+{
+  "id": "import-pack",
+  "name": "Import Pack",
+  "version": "0.1.0",
+  "description": "Import PNG/JPEG/SVG/WebP images onto the canvas as Excalidraw image elements.",
+  "author": "Excalibur (first-party)",
+  "permissions": { "filesystem": "workspace-only", "network": "none" },
+  "contributes": {
+    "commands": [{ "id": "core.import-image", "title": "Import image onto canvas" }]
+  }
+}

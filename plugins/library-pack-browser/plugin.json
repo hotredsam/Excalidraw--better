@@ -1,0 +1,20 @@
+{
+  "id": "library-pack-browser",
+  "name": "Library Pack Browser",
+  "version": "0.1.0",
+  "description": "Browse, import and manage Excalidraw .excalidrawlib libraries per profile; insert items or save a selection.",
+  "author": "Excalibur (first-party)",
+  "permissions": { "filesystem": "workspace-only", "network": "none" },
+  "contributes": {
+    "commands": [
+      { "id": "core.toggle-libraries", "title": "Open Libraries panel" }
+    ],
+    "panels": [
+      {
+        "id": "library-pack-about",
+        "title": "Library Pack Browser",
+        "body": "Manage `.excalidrawlib` packs from the **Libraries** panel: import packs, insert their items onto the canvas, or save the current selection into a library. Libraries are stored per profile."
+      }
+    ]
+  }
+}

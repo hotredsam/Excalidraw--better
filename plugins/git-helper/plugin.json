@@ -1,0 +1,18 @@
+{
+  "id": "git-helper",
+  "name": "Git Helper",
+  "version": "0.1.0",
+  "description": "Optional git integration for git-backed workspaces: status, stage-all, commit and recent history. Disabled by default.",
+  "author": "Excalibur (first-party)",
+  "permissions": { "filesystem": "workspace-only", "network": "none" },
+  "contributes": {
+    "commands": [{ "id": "core.toggle-git", "title": "Open Git panel" }],
+    "panels": [
+      {
+        "id": "git-helper-about",
+        "title": "Git Helper",
+        "body": "If your workspace is a git repository, the **Git** panel shows status and lets you commit exports. Operations run via `git` with no shell interpolation and are scoped to the workspace."
+      }
+    ]
+  }
+}

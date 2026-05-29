@@ -89,3 +89,4 @@ __exportStar(require("./styles"), exports);
 __exportStar(require("./text"), exports);
 __exportStar(require("./validation"), exports);
 __exportStar(require("./geometry"), exports);
+__exportStar(require("./scene-utils"), exports);

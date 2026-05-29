@@ -93,3 +93,4 @@ export * from './styles';
 export * from './text';
 export * from './validation';
 export * from './geometry';
+export * from './scene-utils';

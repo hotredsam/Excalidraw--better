@@ -90,6 +90,13 @@ describe('AIImportLane', () => {
     fireEvent.change(ta, { target: { value: '{ not json' } });
     expect(await screen.findByText('Validation failed')).toBeInTheDocument();
   });
+  it('shows a settings diff for a settings_bundle payload', async () => {
+    render(<AIImportLane />);
+    const ta = screen.getByPlaceholderText(/Paste payload/);
+    fireEvent.change(ta, { target: { value: '{"type":"settings_bundle","name":"x","settings":{"autosave":false}}' } });
+    expect(await screen.findByText('Changes')).toBeInTheDocument();
+    expect(screen.getByText('autosave')).toBeInTheDocument();
+  });
 });
 
 describe('ShortcutsEditor', () => {

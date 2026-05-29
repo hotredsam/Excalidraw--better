@@ -1,6 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { AiValidationResult } from '@excalibur/shared';
 import { toastError, toastSuccess } from '../lib/toast';
+import { diffObjects, formatValue, FieldChange } from '../lib/diff';
 
 const SAMPLE = `{
   "type": "template_pack",
@@ -16,6 +17,19 @@ export const AIImportLane: React.FC<{ onApplied?: () => void }> = ({ onApplied }
   const [result, setResult] = useState<AiValidationResult | null>(null);
   const [busy, setBusy] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [settingsDiff, setSettingsDiff] = useState<FieldChange[] | null>(null);
+
+  // For settings bundles, show exactly which settings would change.
+  useEffect(() => {
+    (async () => {
+      if (result?.ok && result.type === 'settings_bundle' && result.payload) {
+        const current = await window.api.settings.get();
+        setSettingsDiff(diffObjects(current as any, (result.payload as any).settings || {}));
+      } else {
+        setSettingsDiff(null);
+      }
+    })();
+  }, [result]);
 
   const validate = useCallback(async (text: string) => {
     setRaw(text);
@@ -119,6 +133,23 @@ export const AIImportLane: React.FC<{ onApplied?: () => void }> = ({ onApplied }
                   <li key={i}>{s}</li>
                 ))}
               </ul>
+
+              {settingsDiff && settingsDiff.length > 0 && (
+                <div style={{ marginTop: 'var(--s-md)' }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>
+                    Changes
+                  </div>
+                  {settingsDiff.map((c) => (
+                    <div key={c.key} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '1px 0' }}>
+                      <span style={{ color: 'var(--text-1)' }}>{c.key}</span>
+                      <span style={{ fontFamily: 'ui-monospace, monospace', color: 'var(--text-2)' }}>
+                        {formatValue(c.before)} → <span style={{ color: 'var(--orange-500)' }}>{formatValue(c.after)}</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <button
                 className="btn-primary"
                 disabled={busy}

@@ -17,4 +17,10 @@ if (!window.matchMedia) {
   });
 }
 
+// jsdom doesn't implement these dialogs; default to no-op/cancel so components
+// that call them in tests don't throw. Individual tests can spy/override.
+window.prompt = () => null;
+window.confirm = () => true;
+window.alert = () => undefined;
+
 afterEach(() => cleanup());

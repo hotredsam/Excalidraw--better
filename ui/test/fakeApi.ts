@@ -116,15 +116,16 @@ export function makeFakeApi(overrides: Partial<FakeState> = {}) {
     },
     ai: {
       validate: vi.fn(async (raw: string) => {
+        const known = ['settings_bundle', 'template_pack', 'plugin_scaffold', 'docs_update'];
         try {
           const obj = JSON.parse(raw);
-          if (obj.type === 'settings_bundle') return { ok: true, type: 'settings_bundle', payload: obj, summary: ['Settings bundle'], errors: [] };
-          return { ok: false, summary: [], errors: ['Unknown type'] };
+          if (known.includes(obj.type)) return { ok: true, type: obj.type, payload: obj, summary: [`Apply ${obj.type}`], errors: [] };
+          return { ok: false, summary: [], errors: ['Unknown or missing payload type'] };
         } catch {
-          return { ok: false, summary: [], errors: ['Bad JSON'] };
+          return { ok: false, summary: [], errors: ['Could not parse payload'] };
         }
       }),
-      apply: vi.fn(async () => ({ ok: true, type: 'settings_bundle', message: 'applied', changes: [] })),
+      apply: vi.fn(async (payload: any) => ({ ok: true, type: payload?.type || 'settings_bundle', message: 'applied', changes: [] })),
     },
     templates: {
       list: vi.fn(async () => ({ templates: Object.values(state.templates) })),

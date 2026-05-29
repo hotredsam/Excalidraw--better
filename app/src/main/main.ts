@@ -1,28 +1,86 @@
-import { app, BrowserWindow, ipcMain, shell, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, shell, dialog, Menu } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { APP_CHANNELS, PROFILE_CHANNELS, SETTINGS_CHANNELS, WORKSPACE_CHANNELS } from '@excalibur/ipc';
-import { AppPingSchema, ProfileSchema, ProfileListSchema, SettingsSchema, WorkspaceSchema, WorkspaceListSchema } from '@excalibur/shared';
+import {
+  APP_CHANNELS,
+  PROFILE_CHANNELS,
+  SETTINGS_CHANNELS,
+  WORKSPACE_CHANNELS,
+  PLUGIN_CHANNELS,
+  AI_CHANNELS,
+  TEMPLATE_CHANNELS,
+} from '@excalibur/ipc';
+import {
+  AppPingSchema,
+  ProfileSchema,
+  ProfileListSchema,
+  SettingsSchema,
+  WorkspaceSchema,
+  WorkspaceListSchema,
+  PluginListSchema,
+  validateRawPayload,
+  AiPayloadSchema,
+  TemplateListSchema,
+  Workspace,
+} from '@excalibur/shared';
 import { ProfileStore } from './profile';
 import { SettingsStore } from './settings';
 import { WorkspaceStore } from './workspace';
+import { PluginManager } from './plugins';
+import { TemplateStore } from './templates';
+import { isPathWithin, isDangerousPath } from './path-utils';
+import { readExcalidrawFile } from './excalidraw-utils';
+import { getIndex } from './search';
+import { embedSceneInPng, embedSceneInSvg, dataUrlToBuffer } from './export-utils';
+import { renameEntry, moveEntry, copyEntry, createExcalidrawFile, createFolder } from './file-ops';
+import { applyAiPayload } from './ai-import';
 
 let profileStore: ProfileStore;
 let settingsStore: SettingsStore;
 let workspaceStore: WorkspaceStore;
+let pluginManager: PluginManager;
+let templateStore: TemplateStore;
+
+function builtinPluginsDir(): string {
+  return app.isPackaged
+    ? path.join(process.resourcesPath, 'plugins')
+    : path.join(__dirname, '../../../plugins');
+}
+
+async function bindProfile(profileId: string) {
+  const profileDir = profileStore.getProfileDir(profileId);
+  settingsStore = new SettingsStore(profileDir);
+  await settingsStore.init();
+  workspaceStore = new WorkspaceStore(profileDir);
+  await workspaceStore.init();
+  pluginManager = new PluginManager(profileDir, builtinPluginsDir());
+  await pluginManager.init();
+  templateStore = new TemplateStore(profileDir);
+  await templateStore.init();
+}
 
 async function initStores() {
   profileStore = new ProfileStore();
   await profileStore.init();
-  
   const activeProfile = await profileStore.getActive();
   if (activeProfile) {
-    const profileDir = profileStore.getProfileDir(activeProfile.id);
-    settingsStore = new SettingsStore(profileDir);
-    await settingsStore.init();
-    
-    workspaceStore = new WorkspaceStore(profileDir);
-    await workspaceStore.init();
+    await bindProfile(activeProfile.id);
+  }
+}
+
+async function getWorkspaceOrThrow(workspaceId: string): Promise<Workspace> {
+  const workspaces = await workspaceStore.list();
+  const workspace = workspaces.find((w) => w.id === workspaceId);
+  if (!workspace) throw new Error('Workspace not found');
+  return workspace;
+}
+
+function assertWritable(workspace: Workspace, filePath: string) {
+  if (!isPathWithin(workspace.path, filePath)) {
+    throw new Error('Access denied: Path outside workspace');
+  }
+  if (isDangerousPath(filePath)) {
+    throw new Error('Access denied: Dangerous path');
   }
 }
 
@@ -30,8 +88,10 @@ function createWindow() {
   const isDev = process.env.NODE_ENV === 'development';
 
   const mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: 1280,
+    height: 832,
+    minWidth: 900,
+    minHeight: 600,
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
       contextIsolation: true,
@@ -43,205 +103,307 @@ function createWindow() {
 
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
-    // mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(__dirname, '../../ui/dist/index.html'));
   }
 
-  // Security: Deny navigation
-  mainWindow.webContents.on('will-navigate', (event) => {
-    event.preventDefault();
-  });
-
-  // Security: Open external links in browser
+  // Security: deny in-app navigation and route external links to the OS browser.
+  mainWindow.webContents.on('will-navigate', (event) => event.preventDefault());
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: 'deny' };
   });
+
+  buildMenu(mainWindow);
 }
 
-// IPC Handlers
+/**
+ * Native application menu with the spec'd keyboard accelerators. Each item
+ * forwards a lightweight `menu:command` event to the renderer, which performs
+ * the action against the active canvas.
+ */
+function buildMenu(win: BrowserWindow) {
+  const send = (cmd: string) => win.webContents.send('menu:command', cmd);
+  const template: Electron.MenuItemConstructorOptions[] = [
+    {
+      label: 'File',
+      submenu: [
+        { label: 'Open File…', accelerator: 'CmdOrCtrl+O', click: () => send('open') },
+        { label: 'New Drawing', accelerator: 'CmdOrCtrl+N', click: () => send('new') },
+        { type: 'separator' },
+        { label: 'Save', accelerator: 'CmdOrCtrl+S', click: () => send('save') },
+        { label: 'Save As…', accelerator: 'CmdOrCtrl+Shift+S', click: () => send('save-as') },
+        { label: 'Export…', accelerator: 'CmdOrCtrl+P', click: () => send('export') },
+        { type: 'separator' },
+        { role: process.platform === 'darwin' ? 'close' : 'quit' },
+      ],
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' }, { role: 'redo' }, { type: 'separator' },
+        { role: 'cut' }, { role: 'copy' }, { role: 'paste' }, { role: 'selectAll' },
+      ],
+    },
+    {
+      label: 'View',
+      submenu: [
+        { label: 'Toggle Plugins Panel', accelerator: 'CmdOrCtrl+Shift+P', click: () => send('toggle-plugins') },
+        { label: 'Toggle AI Import', accelerator: 'CmdOrCtrl+I', click: () => send('toggle-ai') },
+        { type: 'separator' },
+        { role: 'reload' }, { role: 'toggleDevTools' }, { role: 'togglefullscreen' },
+      ],
+    },
+  ];
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
+
+// ── App ──────────────────────────────────────────────────────────────────
 ipcMain.handle(APP_CHANNELS.PING, async () => {
-  const response = {
-    ok: true,
-    version: app.getVersion(),
-    platform: process.platform,
-  };
-  return AppPingSchema.parse(response);
+  return AppPingSchema.parse({ ok: true, version: app.getVersion(), platform: process.platform });
 });
 
-// Profiles
+// ── Profiles ─────────────────────────────────────────────────────────────
 ipcMain.handle(PROFILE_CHANNELS.LIST, async () => {
-  const profiles = await profileStore.list();
-  return ProfileListSchema.parse({ profiles });
+  return ProfileListSchema.parse({ profiles: await profileStore.list() });
 });
-
 ipcMain.handle(PROFILE_CHANNELS.GET_ACTIVE, async () => {
   const active = await profileStore.getActive();
   return active ? ProfileSchema.parse(active) : null;
 });
-
 ipcMain.handle(PROFILE_CHANNELS.CREATE, async (_, { name }) => {
-  const profile = await profileStore.create(name);
-  return ProfileSchema.parse(profile);
+  return ProfileSchema.parse(await profileStore.create(name));
 });
-
 ipcMain.handle(PROFILE_CHANNELS.RENAME, async (_, { id, name }) => {
-  const profile = await profileStore.rename(id, name);
-  return ProfileSchema.parse(profile);
+  return ProfileSchema.parse(await profileStore.rename(id, name));
 });
-
 ipcMain.handle(PROFILE_CHANNELS.DELETE, async (_, { id }) => {
   await profileStore.delete(id);
-  // Re-init settings store for the new active profile
   const active = await profileStore.getActive();
-  if (active) {
-    settingsStore = new SettingsStore(profileStore.getProfileDir(active.id));
-    await settingsStore.init();
-  }
+  if (active) await bindProfile(active.id);
   return { success: true };
 });
-
 ipcMain.handle(PROFILE_CHANNELS.SET_ACTIVE, async (_, { id }) => {
   await profileStore.setActive(id);
-  settingsStore = new SettingsStore(profileStore.getProfileDir(id));
-  await settingsStore.init();
+  await bindProfile(id);
   return { success: true };
 });
 
-// Settings
-ipcMain.handle(SETTINGS_CHANNELS.GET, async () => {
-  return SettingsSchema.parse(settingsStore.get());
-});
-
+// ── Settings ─────────────────────────────────────────────────────────────
+ipcMain.handle(SETTINGS_CHANNELS.GET, async () => SettingsSchema.parse(settingsStore.get()));
 ipcMain.handle(SETTINGS_CHANNELS.UPDATE, async (_, partial) => {
-  const settings = await settingsStore.update(partial);
-  return SettingsSchema.parse(settings);
+  return SettingsSchema.parse(await settingsStore.update(partial));
 });
 
-// Workspaces
+// ── Workspaces ───────────────────────────────────────────────────────────
 ipcMain.handle(WORKSPACE_CHANNELS.LIST, async () => {
-  const workspaces = await workspaceStore.list();
-  return WorkspaceListSchema.parse({ workspaces });
+  return WorkspaceListSchema.parse({ workspaces: await workspaceStore.list() });
 });
-
 ipcMain.handle(WORKSPACE_CHANNELS.GET_ACTIVE, async () => {
   const active = await workspaceStore.getActive();
   return active ? WorkspaceSchema.parse(active) : null;
 });
-
 ipcMain.handle(WORKSPACE_CHANNELS.ADD, async (event) => {
   const result = await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
     properties: ['openDirectory'],
   });
-
   if (result.canceled || result.filePaths.length === 0) return null;
-
   const dirPath = result.filePaths[0];
-  const name = path.basename(dirPath);
-  const workspace = await workspaceStore.add(name, dirPath);
+  const workspace = await workspaceStore.add(path.basename(dirPath), dirPath);
   return WorkspaceSchema.parse(workspace);
 });
-
 ipcMain.handle(WORKSPACE_CHANNELS.SET_ACTIVE, async (_, { id }) => {
   await workspaceStore.setActive(id);
   return { success: true };
 });
-
 ipcMain.handle(WORKSPACE_CHANNELS.REMOVE, async (_, { id }) => {
   await workspaceStore.remove(id);
   return { success: true };
 });
 
 ipcMain.handle(WORKSPACE_CHANNELS.LIST_FILES, async (_, { workspaceId, subDir = '' }) => {
-  const workspaces = await workspaceStore.list();
-  const workspace = workspaces.find(w => w.id === workspaceId);
-  if (!workspace) throw new Error('Workspace not found');
-
+  const workspace = await getWorkspaceOrThrow(workspaceId);
   const targetDir = path.join(workspace.path, subDir);
-  const items = await fs.readdir(targetDir, { withFileTypes: true });
-  
-  const files = items.map(item => {
-    const fullPath = path.join(targetDir, item.name);
-    const stats = fs.statSync(fullPath);
-    return {
-      name: item.name,
-      path: fullPath,
-      isDirectory: item.isDirectory(),
-      size: stats.size,
-      mtime: stats.mtimeMs,
-      extension: path.extname(item.name).toLowerCase(),
-    };
-  }).filter(file => {
-    if (file.isDirectory) return true;
-    return ['.excalidraw', '.png', '.svg', '.json'].includes(file.extension || '');
-  });
-
-  return files;
-});
-
-import { isPathWithin, isDangerousPath } from './path-utils';
-import { readExcalidrawFile } from './excalidraw-utils';
-
-ipcMain.handle(WORKSPACE_CHANNELS.READ_EXCALIDRAW_FILE, async (_, { workspaceId, filePath }) => {
-  const workspaces = await workspaceStore.list();
-  const workspace = workspaces.find(w => w.id === workspaceId);
-  if (!workspace) throw new Error('Workspace not found');
-
-  if (!isPathWithin(workspace.path, filePath)) {
+  if (!isPathWithin(workspace.path, targetDir) && path.resolve(targetDir) !== path.resolve(workspace.path)) {
     throw new Error('Access denied: Path outside workspace');
   }
+  const items = await fs.readdir(targetDir, { withFileTypes: true });
+  return items
+    .filter((item) => !item.name.startsWith('.'))
+    .map((item) => {
+      const fullPath = path.join(targetDir, item.name);
+      const stats = fs.statSync(fullPath);
+      return {
+        name: item.name,
+        path: fullPath,
+        isDirectory: item.isDirectory(),
+        size: stats.size,
+        mtime: stats.mtimeMs,
+        extension: path.extname(item.name).toLowerCase(),
+      };
+    })
+    .filter((file) =>
+      file.isDirectory ? true : ['.excalidraw', '.png', '.svg', '.json'].includes(file.extension || ''),
+    )
+    .sort((a, b) => Number(b.isDirectory) - Number(a.isDirectory) || a.name.localeCompare(b.name));
+});
 
+ipcMain.handle(WORKSPACE_CHANNELS.READ_EXCALIDRAW_FILE, async (_, { workspaceId, filePath }) => {
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  if (!isPathWithin(workspace.path, filePath)) throw new Error('Access denied: Path outside workspace');
   return await readExcalidrawFile(filePath);
 });
 
 ipcMain.handle(WORKSPACE_CHANNELS.READ_FILE, async (_, { workspaceId, filePath }) => {
-  const workspaces = await workspaceStore.list();
-  const workspace = workspaces.find(w => w.id === workspaceId);
-  if (!workspace) throw new Error('Workspace not found');
-
-  if (!isPathWithin(workspace.path, filePath)) {
-    throw new Error('Access denied: Path outside workspace');
-  }
-
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  if (!isPathWithin(workspace.path, filePath)) throw new Error('Access denied: Path outside workspace');
   return await fs.readFile(filePath, 'utf-8');
 });
 
 ipcMain.handle(WORKSPACE_CHANNELS.WRITE_FILE, async (_, { workspaceId, filePath, content }) => {
-  const workspaces = await workspaceStore.list();
-  const workspace = workspaces.find(w => w.id === workspaceId);
-  if (!workspace) throw new Error('Workspace not found');
-
-  if (!isPathWithin(workspace.path, filePath)) {
-    throw new Error('Access denied: Path outside workspace');
-  }
-
-  if (isDangerousPath(filePath)) {
-    throw new Error('Access denied: Dangerous path');
-  }
-
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  assertWritable(workspace, filePath);
   await fs.ensureDir(path.dirname(filePath));
   await fs.writeFile(filePath, content, 'utf-8');
+  getIndex(workspace.path).invalidate();
+  return { success: true };
+});
+
+ipcMain.handle(WORKSPACE_CHANNELS.WRITE_BINARY_FILE, async (_, { workspaceId, filePath, base64 }) => {
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  assertWritable(workspace, filePath);
+  await fs.ensureDir(path.dirname(filePath));
+  await fs.writeFile(filePath, dataUrlToBuffer(base64));
+  getIndex(workspace.path).invalidate();
   return { success: true };
 });
 
 ipcMain.handle(WORKSPACE_CHANNELS.DELETE_FILE, async (_, { workspaceId, filePath }) => {
-  const workspaces = await workspaceStore.list();
-  const workspace = workspaces.find(w => w.id === workspaceId);
-  if (!workspace) throw new Error('Workspace not found');
-
-  if (!isPathWithin(workspace.path, filePath)) {
-    throw new Error('Access denied: Path outside workspace');
-  }
-
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  if (!isPathWithin(workspace.path, filePath)) throw new Error('Access denied: Path outside workspace');
   await shell.trashItem(filePath);
+  getIndex(workspace.path).invalidate();
   return { success: true };
+});
+
+// ── File management ──────────────────────────────────────────────────────
+ipcMain.handle(WORKSPACE_CHANNELS.RENAME_FILE, async (_, { workspaceId, filePath, newName }) => {
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  const res = await renameEntry(workspace.path, filePath, newName);
+  getIndex(workspace.path).invalidate();
+  return res;
+});
+ipcMain.handle(WORKSPACE_CHANNELS.MOVE_FILE, async (_, { workspaceId, filePath, destDir }) => {
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  const res = await moveEntry(workspace.path, filePath, destDir);
+  getIndex(workspace.path).invalidate();
+  return res;
+});
+ipcMain.handle(WORKSPACE_CHANNELS.COPY_FILE, async (_, { workspaceId, filePath, destDir }) => {
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  const res = await copyEntry(workspace.path, filePath, destDir);
+  getIndex(workspace.path).invalidate();
+  return res;
+});
+ipcMain.handle(WORKSPACE_CHANNELS.CREATE_FILE, async (_, { workspaceId, dir, name }) => {
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  const res = await createExcalidrawFile(workspace.path, dir ?? workspace.path, name);
+  getIndex(workspace.path).invalidate();
+  return res;
+});
+ipcMain.handle(WORKSPACE_CHANNELS.CREATE_FOLDER, async (_, { workspaceId, dir, name }) => {
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  return await createFolder(workspace.path, dir ?? workspace.path, name);
+});
+
+// ── Search & tags ────────────────────────────────────────────────────────
+ipcMain.handle(WORKSPACE_CHANNELS.SEARCH, async (_, { workspaceId, query }) => {
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  return await getIndex(workspace.path).search(query || '');
+});
+ipcMain.handle(WORKSPACE_CHANNELS.GET_TAGS, async (_, { workspaceId }) => {
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  return await getIndex(workspace.path).getTags();
+});
+ipcMain.handle(WORKSPACE_CHANNELS.SET_TAGS, async (_, { workspaceId, filePath, tags }) => {
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  if (!isPathWithin(workspace.path, filePath)) throw new Error('Access denied: Path outside workspace');
+  return await getIndex(workspace.path).setTags(filePath, tags);
+});
+
+// ── Export (scene-embedded PNG / SVG / JSON) ─────────────────────────────
+ipcMain.handle(
+  WORKSPACE_CHANNELS.EXPORT_FILE,
+  async (_, { workspaceId, filePath, format, data, scene }) => {
+    const workspace = await getWorkspaceOrThrow(workspaceId);
+    assertWritable(workspace, filePath);
+    await fs.ensureDir(path.dirname(filePath));
+    if (format === 'png') {
+      await fs.writeFile(filePath, embedSceneInPng(dataUrlToBuffer(data), scene));
+    } else if (format === 'svg') {
+      await fs.writeFile(filePath, embedSceneInSvg(data, scene), 'utf-8');
+    } else {
+      await fs.writeFile(filePath, JSON.stringify(scene, null, 2), 'utf-8');
+    }
+    getIndex(workspace.path).invalidate();
+    return { success: true, path: filePath };
+  },
+);
+
+// ── Plugins ──────────────────────────────────────────────────────────────
+ipcMain.handle(PLUGIN_CHANNELS.LIST, async () => {
+  return PluginListSchema.parse({ plugins: await pluginManager.list() });
+});
+ipcMain.handle(PLUGIN_CHANNELS.GET_CONTRIBUTIONS, async () => {
+  return await pluginManager.getContributions();
+});
+ipcMain.handle(PLUGIN_CHANNELS.INSTALL_FROM_FOLDER, async (event) => {
+  const result = await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
+    properties: ['openDirectory'],
+    title: 'Select a plugin folder (must contain plugin.json)',
+  });
+  if (result.canceled || result.filePaths.length === 0) return null;
+  return await pluginManager.installFromFolder(result.filePaths[0]);
+});
+ipcMain.handle(PLUGIN_CHANNELS.ENABLE, async (_, { id }) => {
+  await pluginManager.setEnabled(id, true);
+  return { success: true };
+});
+ipcMain.handle(PLUGIN_CHANNELS.DISABLE, async (_, { id }) => {
+  await pluginManager.setEnabled(id, false);
+  return { success: true };
+});
+ipcMain.handle(PLUGIN_CHANNELS.UNINSTALL, async (_, { id }) => {
+  await pluginManager.uninstall(id);
+  return { success: true };
+});
+
+// ── AI Import ────────────────────────────────────────────────────────────
+ipcMain.handle(AI_CHANNELS.VALIDATE, async (_, { raw }) => {
+  return validateRawPayload(raw || '');
+});
+ipcMain.handle(AI_CHANNELS.APPLY, async (_, { payload }) => {
+  const parsed = AiPayloadSchema.parse(payload);
+  const active = await profileStore.getActive();
+  if (!active) throw new Error('No active profile');
+  const profileDir = profileStore.getProfileDir(active.id);
+  return await applyAiPayload(profileDir, parsed, (partial) => settingsStore.update(partial).then(() => {}));
+});
+
+// ── Templates ────────────────────────────────────────────────────────────
+ipcMain.handle(TEMPLATE_CHANNELS.LIST, async () => {
+  return TemplateListSchema.parse({ templates: await templateStore.list() });
+});
+ipcMain.handle(TEMPLATE_CHANNELS.APPLY, async (_, { id }) => {
+  return await templateStore.get(id);
+});
+ipcMain.handle(TEMPLATE_CHANNELS.SAVE, async (_, input) => {
+  return await templateStore.save(input);
 });
 
 app.whenReady().then(async () => {
   await initStores();
   createWindow();
-
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });

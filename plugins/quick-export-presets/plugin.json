@@ -1,0 +1,27 @@
+{
+  "id": "quick-export-presets",
+  "name": "Quick Export Presets",
+  "version": "0.1.0",
+  "description": "One-click export presets for web, print and archival, plus batch export of the current drawing.",
+  "author": "Excalibur (first-party)",
+  "permissions": {
+    "filesystem": "workspace-only",
+    "network": "none"
+  },
+  "contributes": {
+    "toolbar": [
+      { "id": "qep-batch-export", "title": "Batch Export" }
+    ],
+    "commands": [
+      { "id": "qep-export-web", "title": "Export current as PNG (web)" },
+      { "id": "qep-export-print", "title": "Export current as PNG (print @3x)" },
+      { "id": "qep-export-svg", "title": "Export current as SVG (vector)" }
+    ],
+    "exportPresets": [
+      { "id": "web", "label": "Web (PNG @1x)", "format": "png", "scale": 1, "background": true, "nameTemplate": "{name}-web" },
+      { "id": "print", "label": "Print (PNG @3x)", "format": "png", "scale": 3, "background": true, "nameTemplate": "{name}-print" },
+      { "id": "vector", "label": "Vector (SVG)", "format": "svg", "scale": 1, "background": true, "nameTemplate": "{name}" },
+      { "id": "archival", "label": "Archival (JSON)", "format": "json", "scale": 1, "background": false, "nameTemplate": "{name}" }
+    ]
+  }
+}

@@ -7,6 +7,8 @@ export const AppPingSchema = z.object({
   platform: z.string(),
 });
 
+export type AppPing = z.infer<typeof AppPingSchema>;
+
 export const ProfileSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -19,13 +21,8 @@ export const ProfileListSchema = z.object({
   profiles: z.array(ProfileSchema),
 });
 
-export const SettingsSchema = z.object({
-  autosave: z.boolean().default(true),
-  autosaveIntervalSeconds: z.number().default(15),
-  defaultExportFormat: z.enum(['png', 'svg']).default('png'),
-  confirmOnDelete: z.boolean().default(true),
-  showGrid: z.boolean().default(false),
-});
+export { SettingsSchema } from './settings-schema';
+import { SettingsSchema } from './settings-schema';
 
 export const WorkspaceSchema = z.object({
   id: z.string(),
@@ -76,4 +73,12 @@ export function mergeExcalidraw(existing: any, elements: any[], appState: any): 
 
 export type Profile = z.infer<typeof ProfileSchema>;
 export type ProfileList = z.infer<typeof ProfileListSchema>;
-export type Settings = z.infer<typeof SettingsSchema>;
+export type { Settings } from './settings-schema';
+
+// Re-export feature modules. These appear after the core schemas above so that
+// modules importing from './index' (e.g. ai-import needs SettingsSchema) see a
+// fully-initialised binding despite the circular reference.
+export * from './plugins';
+export * from './ai-import';
+export * from './search';
+export * from './templates';

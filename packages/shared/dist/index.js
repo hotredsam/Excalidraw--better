@@ -14,7 +14,8 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.mergeExcalidraw = exports.ExcalidrawFileSchema = exports.FileInfoSchema = exports.WorkspaceListSchema = exports.WorkspaceSchema = exports.SettingsSchema = exports.ProfileListSchema = exports.ProfileSchema = exports.AppPingSchema = void 0;
+exports.ExcalidrawFileSchema = exports.FileInfoSchema = exports.WorkspaceListSchema = exports.WorkspaceSchema = exports.SettingsSchema = exports.ProfileListSchema = exports.ProfileSchema = exports.AppPingSchema = void 0;
+exports.mergeExcalidraw = mergeExcalidraw;
 __exportStar(require("./config"), exports);
 const zod_1 = require("zod");
 exports.AppPingSchema = zod_1.z.object({
@@ -32,13 +33,8 @@ exports.ProfileSchema = zod_1.z.object({
 exports.ProfileListSchema = zod_1.z.object({
     profiles: zod_1.z.array(exports.ProfileSchema),
 });
-exports.SettingsSchema = zod_1.z.object({
-    autosave: zod_1.z.boolean().default(true),
-    autosaveIntervalSeconds: zod_1.z.number().default(15),
-    defaultExportFormat: zod_1.z.enum(['png', 'svg']).default('png'),
-    confirmOnDelete: zod_1.z.boolean().default(true),
-    showGrid: zod_1.z.boolean().default(false),
-});
+var settings_schema_1 = require("./settings-schema");
+Object.defineProperty(exports, "SettingsSchema", { enumerable: true, get: function () { return settings_schema_1.SettingsSchema; } });
 exports.WorkspaceSchema = zod_1.z.object({
     id: zod_1.z.string(),
     name: zod_1.z.string(),
@@ -64,11 +60,7 @@ exports.ExcalidrawFileSchema = zod_1.z.object({
     appState: zod_1.z.record(zod_1.z.any()).optional().default({}),
     files: zod_1.z.record(zod_1.z.any()).optional().default({}),
 }).passthrough();
-/**
- * Safely merge new scene data into an existing Excalidraw file object.
- * Preserves all extra fields not in elements/appState.
- */
-const mergeExcalidraw = (existing, elements, appState) => {
+function mergeExcalidraw(existing, elements, appState) {
     const merged = {
         ...existing,
         elements,
@@ -78,5 +70,11 @@ const mergeExcalidraw = (existing, elements, appState) => {
         }
     };
     return exports.ExcalidrawFileSchema.parse(merged);
-};
-exports.mergeExcalidraw = mergeExcalidraw;
+}
+// Re-export feature modules. These appear after the core schemas above so that
+// modules importing from './index' (e.g. ai-import needs SettingsSchema) see a
+// fully-initialised binding despite the circular reference.
+__exportStar(require("./plugins"), exports);
+__exportStar(require("./ai-import"), exports);
+__exportStar(require("./search"), exports);
+__exportStar(require("./templates"), exports);

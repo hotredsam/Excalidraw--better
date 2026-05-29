@@ -5,14 +5,15 @@ export declare const AppPingSchema: z.ZodObject<{
     version: z.ZodString;
     platform: z.ZodString;
 }, "strip", z.ZodTypeAny, {
-    ok: boolean;
     version: string;
+    ok: boolean;
     platform: string;
 }, {
-    ok: boolean;
     version: string;
+    ok: boolean;
     platform: string;
 }>;
+export type AppPing = z.infer<typeof AppPingSchema>;
 export declare const ProfileSchema: z.ZodObject<{
     id: z.ZodString;
     name: z.ZodString;
@@ -69,25 +70,7 @@ export declare const ProfileListSchema: z.ZodObject<{
         lastOpenedAt: number;
     }[];
 }>;
-export declare const SettingsSchema: z.ZodObject<{
-    autosave: z.ZodDefault<z.ZodBoolean>;
-    autosaveIntervalSeconds: z.ZodDefault<z.ZodNumber>;
-    defaultExportFormat: z.ZodDefault<z.ZodEnum<["png", "svg"]>>;
-    confirmOnDelete: z.ZodDefault<z.ZodBoolean>;
-    showGrid: z.ZodDefault<z.ZodBoolean>;
-}, "strip", z.ZodTypeAny, {
-    autosave: boolean;
-    autosaveIntervalSeconds: number;
-    defaultExportFormat: "png" | "svg";
-    confirmOnDelete: boolean;
-    showGrid: boolean;
-}, {
-    autosave?: boolean | undefined;
-    autosaveIntervalSeconds?: number | undefined;
-    defaultExportFormat?: "png" | "svg" | undefined;
-    confirmOnDelete?: boolean | undefined;
-    showGrid?: boolean | undefined;
-}>;
+export { SettingsSchema } from './settings-schema';
 export declare const WorkspaceSchema: z.ZodObject<{
     id: z.ZodString;
     name: z.ZodString;
@@ -148,16 +131,16 @@ export declare const FileInfoSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     path: string;
     name: string;
+    mtime: number;
     isDirectory: boolean;
     size: number;
-    mtime: number;
     extension?: string | undefined;
 }, {
     path: string;
     name: string;
+    mtime: number;
     isDirectory: boolean;
     size: number;
-    mtime: number;
     extension?: string | undefined;
 }>;
 export declare const ExcalidrawFileSchema: z.ZodObject<{
@@ -184,11 +167,11 @@ export declare const ExcalidrawFileSchema: z.ZodObject<{
 }, z.ZodTypeAny, "passthrough">>;
 export type FileInfo = z.infer<typeof FileInfoSchema>;
 export type ExcalidrawFile = z.infer<typeof ExcalidrawFileSchema>;
-/**
- * Safely merge new scene data into an existing Excalidraw file object.
- * Preserves all extra fields not in elements/appState.
- */
-export declare const mergeExcalidraw: (existing: any, elements: any[], appState: any) => ExcalidrawFile;
+export declare function mergeExcalidraw(existing: any, elements: any[], appState: any): ExcalidrawFile;
 export type Profile = z.infer<typeof ProfileSchema>;
 export type ProfileList = z.infer<typeof ProfileListSchema>;
-export type Settings = z.infer<typeof SettingsSchema>;
+export type { Settings } from './settings-schema';
+export * from './plugins';
+export * from './ai-import';
+export * from './search';
+export * from './templates';

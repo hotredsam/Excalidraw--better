@@ -1,0 +1,27 @@
+{
+  "id": "templates-system",
+  "name": "Templates & Snippets",
+  "version": "0.1.0",
+  "description": "A gallery of reusable drawing templates. Insert a template as a new drawing or save the current canvas as a template.",
+  "author": "Excalibur (first-party)",
+  "permissions": {
+    "filesystem": "workspace-only",
+    "network": "none"
+  },
+  "contributes": {
+    "toolbar": [
+      { "id": "tpl-gallery", "title": "Templates" }
+    ],
+    "commands": [
+      { "id": "tpl-new-from", "title": "New drawing from template…" },
+      { "id": "tpl-save-current", "title": "Save current canvas as template…" }
+    ],
+    "panels": [
+      {
+        "id": "tpl-about",
+        "title": "Templates & Snippets",
+        "body": "Pick a starting point from the **Templates** panel, or save your current drawing as a reusable template. Templates are stored per-profile and can be seeded by the AI Import Lane (`template_pack` payloads)."
+      }
+    ]
+  }
+}

@@ -37,6 +37,7 @@ exports.readExcalidrawFile = readExcalidrawFile;
 const fs = __importStar(require("fs-extra"));
 const path = __importStar(require("path"));
 const shared_1 = require("@excalibur/shared");
+const png_excalidraw_1 = require("./png-excalidraw");
 async function readExcalidrawFile(filePath) {
     const extension = path.extname(filePath).toLowerCase();
     if (extension === '.excalidraw' || extension === '.json') {
@@ -57,7 +58,16 @@ async function readExcalidrawFile(filePath) {
         throw new Error('No embedded Excalidraw data found in SVG');
     }
     if (extension === '.png') {
-        throw new Error('PNG embedded scene extraction not supported yet. Use .excalidraw or .svg files.');
+        const buffer = await fs.readFile(filePath);
+        try {
+            return (0, png_excalidraw_1.extractExcalidrawFromPng)(buffer);
+        }
+        catch (err) {
+            if (err.name === 'PngExtractionError') {
+                throw new Error(err.message);
+            }
+            throw err;
+        }
     }
     throw new Error(`Unsupported file type: ${extension}`);
 }

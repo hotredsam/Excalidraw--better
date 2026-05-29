@@ -28,6 +28,39 @@ electron_1.contextBridge.exposeInMainWorld('api', {
         readFile: (workspaceId, filePath) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.READ_FILE, { workspaceId, filePath }),
         readExcalidrawFile: (workspaceId, filePath) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.READ_EXCALIDRAW_FILE, { workspaceId, filePath }),
         writeFile: (workspaceId, filePath, content) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.WRITE_FILE, { workspaceId, filePath, content }),
+        writeBinaryFile: (workspaceId, filePath, base64) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.WRITE_BINARY_FILE, { workspaceId, filePath, base64 }),
         deleteFile: (workspaceId, filePath) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.DELETE_FILE, { workspaceId, filePath }),
+        renameFile: (workspaceId, filePath, newName) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.RENAME_FILE, { workspaceId, filePath, newName }),
+        moveFile: (workspaceId, filePath, destDir) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.MOVE_FILE, { workspaceId, filePath, destDir }),
+        copyFile: (workspaceId, filePath, destDir) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.COPY_FILE, { workspaceId, filePath, destDir }),
+        createFile: (workspaceId, dir, name) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.CREATE_FILE, { workspaceId, dir, name }),
+        createFolder: (workspaceId, dir, name) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.CREATE_FOLDER, { workspaceId, dir, name }),
+        search: (workspaceId, query) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.SEARCH, { workspaceId, query }),
+        getTags: (workspaceId) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.GET_TAGS, { workspaceId }),
+        setTags: (workspaceId, filePath, tags) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.SET_TAGS, { workspaceId, filePath, tags }),
+        exportFile: (workspaceId, filePath, format, data, scene) => electron_1.ipcRenderer.invoke(ipc_1.WORKSPACE_CHANNELS.EXPORT_FILE, { workspaceId, filePath, format, data, scene }),
+    },
+    plugins: {
+        list: () => electron_1.ipcRenderer.invoke(ipc_1.PLUGIN_CHANNELS.LIST),
+        getContributions: () => electron_1.ipcRenderer.invoke(ipc_1.PLUGIN_CHANNELS.GET_CONTRIBUTIONS),
+        installFromFolder: () => electron_1.ipcRenderer.invoke(ipc_1.PLUGIN_CHANNELS.INSTALL_FROM_FOLDER),
+        enable: (id) => electron_1.ipcRenderer.invoke(ipc_1.PLUGIN_CHANNELS.ENABLE, { id }),
+        disable: (id) => electron_1.ipcRenderer.invoke(ipc_1.PLUGIN_CHANNELS.DISABLE, { id }),
+        uninstall: (id) => electron_1.ipcRenderer.invoke(ipc_1.PLUGIN_CHANNELS.UNINSTALL, { id }),
+    },
+    ai: {
+        validate: (raw) => electron_1.ipcRenderer.invoke(ipc_1.AI_CHANNELS.VALIDATE, { raw }),
+        apply: (payload) => electron_1.ipcRenderer.invoke(ipc_1.AI_CHANNELS.APPLY, { payload }),
+    },
+    templates: {
+        list: () => electron_1.ipcRenderer.invoke(ipc_1.TEMPLATE_CHANNELS.LIST),
+        apply: (id) => electron_1.ipcRenderer.invoke(ipc_1.TEMPLATE_CHANNELS.APPLY, { id }),
+        save: (input) => electron_1.ipcRenderer.invoke(ipc_1.TEMPLATE_CHANNELS.SAVE, input),
+    },
+    // Menu/keyboard commands forwarded from the main process.
+    onMenuCommand: (cb) => {
+        const listener = (_e, cmd) => cb(cmd);
+        electron_1.ipcRenderer.on('menu:command', listener);
+        return () => electron_1.ipcRenderer.removeListener('menu:command', listener);
     },
 });

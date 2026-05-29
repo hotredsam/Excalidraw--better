@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="600" viewBox="0 0 560 600" font-family="Inter, system-ui, sans-serif">
+  <rect width="560" height="600" fill="#0F121A"/>
+  <g font-size="12" fill="#98A2B3">
+    <text x="24" y="36">⚙ Properties</text>
+    <text x="120" y="36">▦ Templates</text>
+    <text x="216" y="36">🧩 Plugins</text>
+    <text x="300" y="36" fill="#F2F3F5" font-weight="600">✨ AI Import</text>
+  </g>
+  <rect x="296" y="44" width="84" height="2" fill="#FF6A00"/>
+
+  <text x="24" y="74" font-size="12" fill="#98A2B3">Paste or drop an AI payload (JSON or TYPE: text).</text>
+  <text x="24" y="92" font-size="12" fill="#98A2B3">It is validated before anything is applied.</text>
+
+  <!-- drop zone with payload -->
+  <rect x="24" y="106" width="512" height="180" rx="14" fill="#0B0D12" stroke="#FF6A00" stroke-dasharray="5 4" stroke-width="1.5"/>
+  <g font-family="ui-monospace, monospace" font-size="12" fill="#C7CDD9">
+    <text x="40" y="132">{</text>
+    <text x="56" y="150">"type": "<tspan fill="#FF8A2A">template_pack</tspan>",</text>
+    <text x="56" y="168">"name": "<tspan fill="#2ECC71">UX Kit</tspan>",</text>
+    <text x="56" y="186">"templates": [</text>
+    <text x="72" y="204">{ "id": "user-flow", "title": "User Flow",</text>
+    <text x="88" y="222">"tags": ["ux","flow"] },</text>
+    <text x="72" y="240">{ "id": "wireframe", "title": "Wireframe" }</text>
+    <text x="56" y="258">]</text>
+    <text x="40" y="276">}</text>
+  </g>
+
+  <g font-size="12">
+    <rect x="24" y="300" width="100" height="28" rx="14" fill="#ffffff" fill-opacity="0.08"/><text x="44" y="318" fill="#F2F3F5">Load sample</text>
+    <rect x="132" y="300" width="64" height="28" rx="14" fill="#ffffff" fill-opacity="0.08"/><text x="150" y="318" fill="#F2F3F5">Clear</text>
+  </g>
+
+  <!-- validation result -->
+  <rect x="24" y="346" width="512" height="190" rx="14" fill="#151A24" stroke="#2ECC71"/>
+  <rect x="40" y="362" width="96" height="20" rx="10" fill="#FF7A1A" fill-opacity="0.16"/>
+  <text x="52" y="376" font-size="11" fill="#FF8A2A">template_pack</text>
+  <g font-size="12" fill="#C7CDD9">
+    <text x="44" y="408">• Template pack "UX Kit" v1.0.0</text>
+    <text x="44" y="430">• 2 template(s): User Flow, Wireframe</text>
+    <text x="44" y="452">• Installs templates into this profile.</text>
+  </g>
+  <rect x="40" y="474" width="480" height="36" rx="14" fill="#FF7A1A"/>
+  <text x="248" y="497" font-size="13" font-weight="700" fill="#0B0D12">Apply payload</text>
+
+  <text x="24" y="566" font-size="11" fill="#98A2B3">Nothing is written until you click Apply. All writes stay inside the profile.</text>
+</svg>

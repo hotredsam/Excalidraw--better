@@ -103,8 +103,12 @@ function createWindow() {
 
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
+  } else if (app.isPackaged) {
+    // Renderer is bundled into resources/ui via electron-builder extraResources.
+    mainWindow.loadFile(path.join(process.resourcesPath, 'ui', 'index.html'));
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../../ui/dist/index.html'));
+    // Running the compiled build locally against the monorepo's ui/dist.
+    mainWindow.loadFile(path.join(__dirname, '../../../ui/dist/index.html'));
   }
 
   // Security: deny in-app navigation and route external links to the OS browser.

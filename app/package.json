@@ -6,7 +6,9 @@
   "scripts": {
     "build": "tsc",
     "dev": "electron .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "dist": "electron-builder --config electron-builder.yml",
+    "dist:win": "electron-builder --win --config electron-builder.yml"
   },
   "dependencies": {
     "@excalibur/ipc": "workspace:*",

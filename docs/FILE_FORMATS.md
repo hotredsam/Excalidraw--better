@@ -14,13 +14,13 @@ The primary format for Excalidraw scenes. It is a JSON file containing all eleme
 Excalidraw allows exporting SVGs that contain the full scene data embedded within an XML comment.
 
 -   **Read Support:** Excalibur can extract the embedded JSON from `.excalidraw.svg` files and open them directly in the canvas.
--   **Write Support:** Currently, Excalibur treats SVGs as read-only for extraction. To save changes, you must save as a `.excalidraw` file or use the upcoming Export feature.
+-   **Write Support:** Export now produces SVGs with the scene embedded as a single-line `<!-- excalidraw-state: … -->` comment, so exported SVGs re-open in the editor. Exports land in `<workspace>/exports/`.
 
 ### 3. `.excalidraw.png` (Embedded Scene)
 Excalidraw PNGs contain the scene data in a metadata chunk.
 
 -   **Read Support:** Excalibur supports extracting embedded scene data from `.png` files. It looks for the `Excalidraw` or `comment` keyword in `tEXt` or `zTXt` (compressed) chunks.
--   **Write Support:** Currently read-only for extraction. Use the upcoming Export feature to generate new PNGs with embedded data.
+-   **Write Support:** Export embeds the scene into a `tEXt` chunk (keyword `excalidraw`) so exported PNGs round-trip back into the editor. Re-exporting replaces the existing chunk rather than duplicating it.
 
 ## Safety & Integrity
 

@@ -1,0 +1,44 @@
+appId: com.excalibur.app
+productName: Excalibur
+copyright: Copyright © 2026
+
+directories:
+  output: ../release
+  buildResources: build
+
+# The main process is compiled to app/dist; node_modules are resolved from the
+# pnpm workspace root. The renderer and first-party plugins are shipped as
+# unpacked resources so the main process can load them at runtime.
+files:
+  - dist/**/*
+  - package.json
+
+extraResources:
+  - from: ../ui/dist
+    to: ui
+  - from: ../plugins
+    to: plugins
+
+asar: true
+
+win:
+  target:
+    - nsis
+    - portable
+  artifactName: ${productName}-${version}-${arch}.${ext}
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+
+mac:
+  target:
+    - dmg
+  category: public.app-category.productivity
+
+linux:
+  target:
+    - AppImage
+  category: Graphics

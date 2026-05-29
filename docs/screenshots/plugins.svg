@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="600" viewBox="0 0 560 600" font-family="Inter, system-ui, sans-serif">
+  <rect width="560" height="600" fill="#0F121A"/>
+  <!-- tabs -->
+  <g font-size="12" fill="#98A2B3">
+    <text x="24" y="36">⚙ Properties</text>
+    <text x="120" y="36">▦ Templates</text>
+    <text x="216" y="36" fill="#F2F3F5" font-weight="600">🧩 Plugins</text>
+    <text x="300" y="36">✨ AI Import</text>
+  </g>
+  <rect x="210" y="44" width="74" height="2" fill="#FF6A00"/>
+
+  <text x="24" y="78" font-size="12" fill="#98A2B3">3 plugins · enabled per profile</text>
+  <rect x="380" y="62" width="156" height="26" rx="13" fill="#ffffff" fill-opacity="0.08"/>
+  <text x="396" y="79" font-size="12" fill="#F2F3F5">+ Install from folder</text>
+
+  <!-- plugin card 1 -->
+  <rect x="24" y="104" width="512" height="120" rx="16" fill="#151A24" stroke="#ffffff" stroke-opacity="0.1"/>
+  <text x="44" y="134" font-size="14" font-weight="700" fill="#F2F3F5">Quick Export Presets</text>
+  <text x="196" y="134" font-size="10" fill="#98A2B3">v0.1.0</text>
+  <rect x="236" y="123" width="56" height="16" rx="8" fill="#FF7A1A" fill-opacity="0.16"/><text x="246" y="135" font-size="10" fill="#FF8A2A">built-in</text>
+  <text x="44" y="156" font-size="12" fill="#98A2B3">One-click export presets for web, print and archival + batch export.</text>
+  <text x="44" y="186" font-size="11" fill="#F1C40F">◆ fs: workspace-only</text>
+  <text x="200" y="186" font-size="11" fill="#98A2B3">◆ net: none</text>
+  <!-- toggle on -->
+  <rect x="492" y="120" width="34" height="18" rx="9" fill="#2ECC71"/><circle cx="517" cy="129" r="7" fill="#fff"/>
+
+  <!-- plugin card 2 -->
+  <rect x="24" y="240" width="512" height="120" rx="16" fill="#151A24" stroke="#ffffff" stroke-opacity="0.1"/>
+  <text x="44" y="270" font-size="14" font-weight="700" fill="#F2F3F5">Templates &amp; Snippets</text>
+  <text x="196" y="270" font-size="10" fill="#98A2B3">v0.1.0</text>
+  <rect x="236" y="259" width="56" height="16" rx="8" fill="#FF7A1A" fill-opacity="0.16"/><text x="246" y="271" font-size="10" fill="#FF8A2A">built-in</text>
+  <text x="44" y="292" font-size="12" fill="#98A2B3">A gallery of reusable drawing templates; save current canvas as one.</text>
+  <text x="44" y="322" font-size="11" fill="#F1C40F">◆ fs: workspace-only</text>
+  <text x="200" y="322" font-size="11" fill="#98A2B3">◆ net: none</text>
+  <rect x="492" y="256" width="34" height="18" rx="9" fill="#2ECC71"/><circle cx="517" cy="265" r="7" fill="#fff"/>
+
+  <!-- plugin card 3 (user, disabled) -->
+  <rect x="24" y="376" width="512" height="130" rx="16" fill="#151A24" stroke="#ffffff" stroke-opacity="0.1"/>
+  <text x="44" y="406" font-size="14" font-weight="700" fill="#F2F3F5">Tag Auto-Indexer</text>
+  <text x="172" y="406" font-size="10" fill="#98A2B3">v0.1.0</text>
+  <text x="44" y="428" font-size="12" fill="#98A2B3">Scaffolded by AI Import — suggests tags from drawing text.</text>
+  <text x="44" y="458" font-size="11" fill="#F1C40F">◆ fs: workspace-only</text>
+  <text x="200" y="458" font-size="11" fill="#98A2B3">◆ net: none</text>
+  <text x="44" y="486" font-size="11" fill="#E74C3C">Uninstall</text>
+  <!-- toggle off -->
+  <rect x="492" y="392" width="34" height="18" rx="9" fill="#ffffff" fill-opacity="0.12"/><circle cx="501" cy="401" r="7" fill="#98A2B3"/>
+
+  <text x="24" y="548" font-size="11" fill="#98A2B3">Permissions are declared per plugin and enforced by the host.</text>
+</svg>

@@ -94,3 +94,4 @@ __exportStar(require("./collections"), exports);
 __exportStar(require("./datetime"), exports);
 __exportStar(require("./csv"), exports);
 __exportStar(require("./result"), exports);
+__exportStar(require("./pathlike"), exports);

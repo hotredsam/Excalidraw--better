@@ -100,3 +100,4 @@ export * from './csv';
 export * from './result';
 export * from './pathlike';
 export * from './random';
+export * from './units';

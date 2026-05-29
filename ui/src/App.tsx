@@ -36,7 +36,7 @@ function App() {
   const [contributions, setContributions] = useState<Contributions>(EMPTY_CONTRIB);
   const [sidebarReloadKey, setSidebarReloadKey] = useState(0);
   const [searchSignal, setSearchSignal] = useState(0);
-  const [refreshKeys, setRefreshKeys] = useState({ templates: 0, recents: 0, libraries: 0, stats: 0 });
+  const [refreshKeys, setRefreshKeys] = useState({ templates: 0, recents: 0, libraries: 0, stats: 0, snippets: 0 });
   const [settings, setSettings] = useState<Shared.Settings | null>(null);
   const [profileName, setProfileName] = useState('You');
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -279,6 +279,48 @@ function App() {
     }
   }, []);
 
+  const importSvg = useCallback(async () => {
+    try {
+      const res = await window.api.import.pickSvgAsElements();
+      if (!res) return;
+      const api = apiRef.current;
+      if (!api) return;
+      if (!res.elements.length) return toastInfo('No convertible shapes found in that SVG.');
+      api.updateScene({ elements: [...api.getSceneElements(), ...res.elements] });
+      setDirty(true);
+      toastSuccess(`Imported ${res.elements.length} element(s)${res.skipped ? ` (${res.skipped} skipped)` : ''}`);
+    } catch (e: any) {
+      toastError(e?.message || 'SVG import failed');
+    }
+  }, []);
+
+  const insertSnippet = useCallback(async (id: string) => {
+    try {
+      const snippet = await window.api.snippets.get(id);
+      const api = apiRef.current;
+      if (!api || !snippet.elements.length) return;
+      api.updateScene({ elements: [...api.getSceneElements(), ...snippet.elements] });
+      setDirty(true);
+      toastSuccess(`Inserted "${snippet.title}"`);
+    } catch (e: any) {
+      toastError(e?.message || 'Insert failed');
+    }
+  }, []);
+
+  const gatherSnippet = useCallback(async () => {
+    const api = apiRef.current;
+    if (!api) return null;
+    const selected = api.getAppState().selectedElementIds || {};
+    const els = api.getSceneElements().filter((e: any) => selected[e.id]);
+    if (!els.length) {
+      toastInfo('Select some elements on the canvas first.');
+      return null;
+    }
+    const title = prompt('Snippet name:');
+    if (!title) return null;
+    return { title, elements: els };
+  }, []);
+
   // ── Presentation ──────────────────────────────────────────────────────
   const gotoSlide = useCallback((deck: Shared.SlideDeck, i: number) => {
     const slide = deck.slides[i];
@@ -336,6 +378,18 @@ function App() {
           case 'core.toggle-ai': return openDrawer('ai');
           case 'core.presentation': return startPresentation();
           case 'core.import-image': return importImage();
+          case 'core.import-svg': return importSvg();
+          case 'core.command-palette': return setPaletteOpen(true);
+          case 'core.toggle-snippets': return openDrawer('snippets');
+          case 'core.save-snippet': {
+            const data = await gatherSnippet();
+            if (data) {
+              await window.api.snippets.save({ title: data.title, elements: data.elements });
+              bump('snippets');
+              toastSuccess(`Saved snippet "${data.title}"`);
+            }
+            return;
+          }
           case 'core.settings': return setIsSettingsOpen(true);
           case 'core.save-template': {
             const data = await gatherTemplate();
@@ -373,7 +427,7 @@ function App() {
         toastError(e?.message || 'Command failed');
       }
     },
-    [contributions, save, saveAs, newDrawing, exportMarkdown, exportPreset, gatherTemplate, startPresentation, importImage, refreshContributions],
+    [contributions, save, saveAs, newDrawing, exportMarkdown, exportPreset, gatherTemplate, startPresentation, importImage, importSvg, gatherSnippet, refreshContributions],
   );
 
   // ── Native menu + keyboard shortcuts ─────────────────────────────────
@@ -432,6 +486,30 @@ function App() {
     setSidebarReloadKey((k) => k + 1);
   }, [refreshContributions]);
 
+  // Autosave: periodically persist the open file when there are unsaved edits.
+  const saveRef = useRef(save);
+  saveRef.current = save;
+  useEffect(() => {
+    if (!settings?.autosave) return;
+    const ms = Math.max(2, settings.autosaveIntervalSeconds) * 1000;
+    const timer = setInterval(() => {
+      if (dirty && activeFile && activeWorkspace) saveRef.current();
+    }, ms);
+    return () => clearInterval(timer);
+  }, [settings?.autosave, settings?.autosaveIntervalSeconds, dirty, activeFile, activeWorkspace]);
+
+  // Apply the chosen theme to the shell (light/dark/system).
+  const resolvedTheme = (() => {
+    const t = settings?.theme ?? 'dark';
+    if (t === 'system') {
+      return typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    }
+    return t;
+  })();
+  useEffect(() => {
+    document.documentElement.dataset.theme = resolvedTheme;
+  }, [resolvedTheme]);
+
   const headerTab = (tab: DrawerTab, label: string) => (
     <button
       onClick={() => {
@@ -486,6 +564,7 @@ function App() {
             toolbarItems={contributions.toolbar}
             onToolbarAction={dispatchCommand}
             gridEnabled={settings?.showGrid}
+            theme={resolvedTheme}
           />
         </main>
         <RightDrawer
@@ -502,6 +581,8 @@ function App() {
           onOpenRecent={openRecent}
           onInsertLibrary={insertLibrary}
           onSaveSelectionToLibrary={saveSelectionToLibrary}
+          onInsertSnippet={insertSnippet}
+          onSaveSnippet={gatherSnippet}
           reviewAuthor={profileName}
           refreshKeys={refreshKeys}
           onAiApplied={onAiApplied}

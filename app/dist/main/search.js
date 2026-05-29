@@ -56,8 +56,10 @@ class SearchIndex {
     workspacePath;
     entries = [];
     built = false;
+    cacheFile;
     constructor(workspacePath) {
         this.workspacePath = workspacePath;
+        this.cacheFile = path.join(workspacePath, '.excalibur', 'index.json');
     }
     async ensureBuilt(force = false) {
         if (this.built && !force)
@@ -65,6 +67,32 @@ class SearchIndex {
         this.entries = [];
         await this.walk(this.workspacePath);
         this.built = true;
+        await this.persist().catch(() => undefined);
+    }
+    /** Persist the current index to disk for a fast warm start next launch. */
+    async persist() {
+        await fs.ensureDir(path.dirname(this.cacheFile));
+        await fs.writeJson(this.cacheFile, { builtAt: Date.now(), entries: this.entries });
+    }
+    /**
+     * Load a previously-persisted index as a warm start (marks the index built so
+     * searches answer immediately). Returns false if no usable cache exists.
+     * Callers may still `ensureBuilt(true)` afterwards to refresh in the
+     * background.
+     */
+    async loadCache() {
+        try {
+            const data = await fs.readJson(this.cacheFile);
+            if (Array.isArray(data?.entries)) {
+                this.entries = data.entries;
+                this.built = true;
+                return true;
+            }
+        }
+        catch {
+            /* no cache */
+        }
+        return false;
     }
     async walk(dir) {
         let items;

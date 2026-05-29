@@ -6,6 +6,7 @@ import { AIImportLane } from './AIImportLane';
 import { TemplatesPanel } from './TemplatesPanel';
 import { RecentsPanel } from './RecentsPanel';
 import { LibrariesPanel } from './LibrariesPanel';
+import { SnippetsPanel } from './SnippetsPanel';
 import { StatsPanel } from './StatsPanel';
 import { GitPanel } from './GitPanel';
 import { ReviewPanel } from './ReviewPanel';
@@ -17,6 +18,7 @@ export type DrawerTab =
   | 'ai'
   | 'recents'
   | 'libraries'
+  | 'snippets'
   | 'review'
   | 'stats'
   | 'git';
@@ -25,6 +27,7 @@ const TABS: { id: DrawerTab; label: string; icon: string }[] = [
   { id: 'properties', label: 'Properties', icon: '⚙' },
   { id: 'recents', label: 'Recent', icon: '🕘' },
   { id: 'templates', label: 'Templates', icon: '▦' },
+  { id: 'snippets', label: 'Snippets', icon: '✂' },
   { id: 'libraries', label: 'Libraries', icon: '📚' },
   { id: 'review', label: 'Review', icon: '💬' },
   { id: 'stats', label: 'Stats', icon: '📊' },
@@ -47,8 +50,10 @@ export interface RightDrawerProps {
   onOpenRecent: (r: RecentFile) => void;
   onInsertLibrary: (id: string) => void;
   onSaveSelectionToLibrary: (id: string) => void;
+  onInsertSnippet: (id: string) => void;
+  onSaveSnippet: () => Promise<{ title: string; elements: any[] } | null>;
   reviewAuthor: string;
-  refreshKeys: { templates: number; recents: number; libraries: number; stats: number };
+  refreshKeys: { templates: number; recents: number; libraries: number; stats: number; snippets: number };
   onAiApplied: () => void;
 }
 
@@ -92,6 +97,9 @@ export const RightDrawer: React.FC<RightDrawerProps> = (props) => {
         {props.tab === 'recents' && <RecentsPanel onOpenRecent={props.onOpenRecent} refreshKey={props.refreshKeys.recents} />}
         {props.tab === 'templates' && (
           <TemplatesPanel onUseTemplate={props.onUseTemplate} onSaveCurrent={props.onSaveCurrentTemplate} refreshKey={props.refreshKeys.templates} />
+        )}
+        {props.tab === 'snippets' && (
+          <SnippetsPanel onInsert={props.onInsertSnippet} onSaveSelection={props.onSaveSnippet} refreshKey={props.refreshKeys.snippets} />
         )}
         {props.tab === 'libraries' && (
           <LibrariesPanel onInsertLibrary={props.onInsertLibrary} onSaveSelection={props.onSaveSelectionToLibrary} refreshKey={props.refreshKeys.libraries} />

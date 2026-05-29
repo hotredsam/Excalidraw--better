@@ -108,6 +108,19 @@ electron_1.contextBridge.exposeInMainWorld('api', {
     },
     import: {
         pickImage: () => electron_1.ipcRenderer.invoke(ipc_1.IMPORT_CHANNELS.PICK_IMAGE),
+        pickSvgAsElements: () => electron_1.ipcRenderer.invoke(ipc_1.IMPORT_CHANNELS.PICK_SVG_AS_ELEMENTS),
+    },
+    snippets: {
+        list: () => electron_1.ipcRenderer.invoke(ipc_1.SNIPPET_CHANNELS.LIST),
+        get: (id) => electron_1.ipcRenderer.invoke(ipc_1.SNIPPET_CHANNELS.GET, { id }),
+        save: (input) => electron_1.ipcRenderer.invoke(ipc_1.SNIPPET_CHANNELS.SAVE, input),
+        remove: (id) => electron_1.ipcRenderer.invoke(ipc_1.SNIPPET_CHANNELS.REMOVE, { id }),
+        rename: (id, title) => electron_1.ipcRenderer.invoke(ipc_1.SNIPPET_CHANNELS.RENAME, { id, title }),
+    },
+    shortcuts: {
+        list: () => electron_1.ipcRenderer.invoke(ipc_1.SHORTCUT_CHANNELS.LIST),
+        set: (commandId, accelerator, force) => electron_1.ipcRenderer.invoke(ipc_1.SHORTCUT_CHANNELS.SET, { commandId, accelerator, force }),
+        reset: (commandId) => electron_1.ipcRenderer.invoke(ipc_1.SHORTCUT_CHANNELS.RESET, { commandId }),
     },
     // Menu/keyboard commands forwarded from the main process.
     onMenuCommand: (cb) => {

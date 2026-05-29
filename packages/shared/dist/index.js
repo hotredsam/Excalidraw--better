@@ -80,3 +80,5 @@ __exportStar(require("./search"), exports);
 __exportStar(require("./templates"), exports);
 __exportStar(require("./features"), exports);
 __exportStar(require("./feature-utils"), exports);
+__exportStar(require("./features2"), exports);
+__exportStar(require("./feature-utils2"), exports);

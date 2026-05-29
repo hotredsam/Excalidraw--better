@@ -103,6 +103,19 @@ export declare const MARKDOWN_CHANNELS: {
 };
 export declare const IMPORT_CHANNELS: {
     readonly PICK_IMAGE: "import:pick-image";
+    readonly PICK_SVG_AS_ELEMENTS: "import:pick-svg-elements";
+};
+export declare const SNIPPET_CHANNELS: {
+    readonly LIST: "snippets:list";
+    readonly GET: "snippets:get";
+    readonly SAVE: "snippets:save";
+    readonly REMOVE: "snippets:remove";
+    readonly RENAME: "snippets:rename";
+};
+export declare const SHORTCUT_CHANNELS: {
+    readonly LIST: "shortcuts:list";
+    readonly SET: "shortcuts:set";
+    readonly RESET: "shortcuts:reset";
 };
 export type AppChannels = typeof APP_CHANNELS[keyof typeof APP_CHANNELS];
 export type ProfileChannels = typeof PROFILE_CHANNELS[keyof typeof PROFILE_CHANNELS];

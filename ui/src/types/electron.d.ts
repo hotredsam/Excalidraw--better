@@ -32,6 +32,10 @@ import type {
   Command,
   BackupList,
   MarkdownOptions,
+  SnippetList,
+  Snippet,
+  SnippetSummary,
+  ShortcutBinding,
 } from '@excalibur/shared';
 
 type Ok = { success: boolean };
@@ -151,6 +155,19 @@ declare global {
       };
       import: {
         pickImage: () => Promise<{ file: { id: string; dataURL: string; mimeType: string; created: number }; element: any; mimeType: string } | null>;
+        pickSvgAsElements: () => Promise<{ elements: any[]; skipped: number } | null>;
+      };
+      snippets: {
+        list: () => Promise<SnippetList>;
+        get: (id: string) => Promise<Snippet>;
+        save: (input: { id?: string; title: string; description?: string; tags?: string[]; elements: any[] }) => Promise<SnippetSummary>;
+        remove: (id: string) => Promise<Ok>;
+        rename: (id: string, title: string) => Promise<SnippetSummary>;
+      };
+      shortcuts: {
+        list: () => Promise<{ bindings: ShortcutBinding[] }>;
+        set: (commandId: string, accelerator: string, force?: boolean) => Promise<{ bindings: ShortcutBinding[] }>;
+        reset: (commandId?: string) => Promise<{ bindings: ShortcutBinding[] }>;
       };
       onMenuCommand: (cb: (cmd: string) => void) => () => void;
     };

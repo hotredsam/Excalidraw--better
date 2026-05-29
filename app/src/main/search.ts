@@ -29,14 +29,44 @@ interface IndexEntry {
 export class SearchIndex {
   private entries: IndexEntry[] = [];
   private built = false;
+  private cacheFile: string;
 
-  constructor(private workspacePath: string) {}
+  constructor(private workspacePath: string) {
+    this.cacheFile = path.join(workspacePath, '.excalibur', 'index.json');
+  }
 
   async ensureBuilt(force = false): Promise<void> {
     if (this.built && !force) return;
     this.entries = [];
     await this.walk(this.workspacePath);
     this.built = true;
+    await this.persist().catch(() => undefined);
+  }
+
+  /** Persist the current index to disk for a fast warm start next launch. */
+  async persist(): Promise<void> {
+    await fs.ensureDir(path.dirname(this.cacheFile));
+    await fs.writeJson(this.cacheFile, { builtAt: Date.now(), entries: this.entries });
+  }
+
+  /**
+   * Load a previously-persisted index as a warm start (marks the index built so
+   * searches answer immediately). Returns false if no usable cache exists.
+   * Callers may still `ensureBuilt(true)` afterwards to refresh in the
+   * background.
+   */
+  async loadCache(): Promise<boolean> {
+    try {
+      const data = await fs.readJson(this.cacheFile);
+      if (Array.isArray(data?.entries)) {
+        this.entries = data.entries;
+        this.built = true;
+        return true;
+      }
+    } catch {
+      /* no cache */
+    }
+    return false;
   }
 
   private async walk(dir: string): Promise<void> {

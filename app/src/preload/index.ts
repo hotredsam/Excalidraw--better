@@ -18,6 +18,8 @@ import {
   BACKUP_CHANNELS,
   MARKDOWN_CHANNELS,
   IMPORT_CHANNELS,
+  SNIPPET_CHANNELS,
+  SHORTCUT_CHANNELS,
 } from '@excalibur/ipc';
 
 contextBridge.exposeInMainWorld('api', {
@@ -156,6 +158,20 @@ contextBridge.exposeInMainWorld('api', {
   },
   import: {
     pickImage: () => ipcRenderer.invoke(IMPORT_CHANNELS.PICK_IMAGE),
+    pickSvgAsElements: () => ipcRenderer.invoke(IMPORT_CHANNELS.PICK_SVG_AS_ELEMENTS),
+  },
+  snippets: {
+    list: () => ipcRenderer.invoke(SNIPPET_CHANNELS.LIST),
+    get: (id: string) => ipcRenderer.invoke(SNIPPET_CHANNELS.GET, { id }),
+    save: (input: any) => ipcRenderer.invoke(SNIPPET_CHANNELS.SAVE, input),
+    remove: (id: string) => ipcRenderer.invoke(SNIPPET_CHANNELS.REMOVE, { id }),
+    rename: (id: string, title: string) => ipcRenderer.invoke(SNIPPET_CHANNELS.RENAME, { id, title }),
+  },
+  shortcuts: {
+    list: () => ipcRenderer.invoke(SHORTCUT_CHANNELS.LIST),
+    set: (commandId: string, accelerator: string, force?: boolean) =>
+      ipcRenderer.invoke(SHORTCUT_CHANNELS.SET, { commandId, accelerator, force }),
+    reset: (commandId?: string) => ipcRenderer.invoke(SHORTCUT_CHANNELS.RESET, { commandId }),
   },
   // Menu/keyboard commands forwarded from the main process.
   onMenuCommand: (cb: (cmd: string) => void) => {

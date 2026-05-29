@@ -11,6 +11,7 @@ export interface CanvasShellProps {
   toolbarItems?: PluginCommand[];
   onToolbarAction?: (id: string) => void;
   gridEnabled?: boolean;
+  theme?: 'light' | 'dark';
 }
 
 export const CanvasShell: React.FC<CanvasShellProps> = ({
@@ -21,6 +22,7 @@ export const CanvasShell: React.FC<CanvasShellProps> = ({
   toolbarItems = [],
   onToolbarAction,
   gridEnabled,
+  theme = 'dark',
 }) => {
   const apiRef = useRef<any>(null);
 
@@ -46,7 +48,7 @@ export const CanvasShell: React.FC<CanvasShellProps> = ({
         }}
         initialData={initialData}
         onChange={() => onChange?.()}
-        theme="dark"
+        theme={theme}
       />
 
       <div

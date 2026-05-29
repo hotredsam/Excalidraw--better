@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.IMPORT_CHANNELS = exports.MARKDOWN_CHANNELS = exports.BACKUP_CHANNELS = exports.COMMAND_CHANNELS = exports.GIT_CHANNELS = exports.STATS_CHANNELS = exports.REVIEW_CHANNELS = exports.PRESENTATION_CHANNELS = exports.BULK_CHANNELS = exports.LIBRARY_CHANNELS = exports.RECENT_CHANNELS = exports.TEMPLATE_CHANNELS = exports.AI_CHANNELS = exports.PLUGIN_CHANNELS = exports.WORKSPACE_CHANNELS = exports.SETTINGS_CHANNELS = exports.PROFILE_CHANNELS = exports.APP_CHANNELS = void 0;
+exports.SHORTCUT_CHANNELS = exports.SNIPPET_CHANNELS = exports.IMPORT_CHANNELS = exports.MARKDOWN_CHANNELS = exports.BACKUP_CHANNELS = exports.COMMAND_CHANNELS = exports.GIT_CHANNELS = exports.STATS_CHANNELS = exports.REVIEW_CHANNELS = exports.PRESENTATION_CHANNELS = exports.BULK_CHANNELS = exports.LIBRARY_CHANNELS = exports.RECENT_CHANNELS = exports.TEMPLATE_CHANNELS = exports.AI_CHANNELS = exports.PLUGIN_CHANNELS = exports.WORKSPACE_CHANNELS = exports.SETTINGS_CHANNELS = exports.PROFILE_CHANNELS = exports.APP_CHANNELS = void 0;
 exports.APP_CHANNELS = {
     PING: 'app:ping',
 };
@@ -109,4 +109,17 @@ exports.MARKDOWN_CHANNELS = {
 };
 exports.IMPORT_CHANNELS = {
     PICK_IMAGE: 'import:pick-image',
+    PICK_SVG_AS_ELEMENTS: 'import:pick-svg-elements',
+};
+exports.SNIPPET_CHANNELS = {
+    LIST: 'snippets:list',
+    GET: 'snippets:get',
+    SAVE: 'snippets:save',
+    REMOVE: 'snippets:remove',
+    RENAME: 'snippets:rename',
+};
+exports.SHORTCUT_CHANNELS = {
+    LIST: 'shortcuts:list',
+    SET: 'shortcuts:set',
+    RESET: 'shortcuts:reset',
 };

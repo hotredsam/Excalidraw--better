@@ -123,6 +123,21 @@ export const MARKDOWN_CHANNELS = {
 
 export const IMPORT_CHANNELS = {
   PICK_IMAGE: 'import:pick-image',
+  PICK_SVG_AS_ELEMENTS: 'import:pick-svg-elements',
+} as const;
+
+export const SNIPPET_CHANNELS = {
+  LIST: 'snippets:list',
+  GET: 'snippets:get',
+  SAVE: 'snippets:save',
+  REMOVE: 'snippets:remove',
+  RENAME: 'snippets:rename',
+} as const;
+
+export const SHORTCUT_CHANNELS = {
+  LIST: 'shortcuts:list',
+  SET: 'shortcuts:set',
+  RESET: 'shortcuts:reset',
 } as const;
 
 export type AppChannels = typeof APP_CHANNELS[keyof typeof APP_CHANNELS];

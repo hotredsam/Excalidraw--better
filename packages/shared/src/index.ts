@@ -84,3 +84,5 @@ export * from './search';
 export * from './templates';
 export * from './features';
 export * from './feature-utils';
+export * from './features2';
+export * from './feature-utils2';

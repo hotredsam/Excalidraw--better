@@ -53,6 +53,24 @@
   --motion-normal: 180ms ease-out;
 }
 
+/* Light theme overrides (applied via <html data-theme="light">). */
+:root[data-theme='light'] {
+  --bg-0: #f6f7f9;
+  --bg-1: #ffffff;
+  --bg-2: #f0f2f5;
+  --bg-3: #e4e7ec;
+
+  --text-0: #0b0d12;
+  --text-1: #2b303b;
+  --text-2: #5b6472;
+
+  --border-0: rgba(0, 0, 0, 0.1);
+  --border-1: rgba(0, 0, 0, 0.16);
+
+  --shadow-1: 0 6px 18px rgba(0, 0, 0, 0.08);
+  --shadow-2: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
 * {
   box-sizing: border-box;
 }

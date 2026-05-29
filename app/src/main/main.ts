@@ -20,6 +20,8 @@ import {
   BACKUP_CHANNELS,
   MARKDOWN_CHANNELS,
   IMPORT_CHANNELS,
+  SNIPPET_CHANNELS,
+  SHORTCUT_CHANNELS,
 } from '@excalibur/ipc';
 import {
   AppPingSchema,
@@ -56,6 +58,9 @@ import { writeMarkdownBundle } from './markdown';
 import { buildImageInsertion } from './import-pack';
 import { bulkRename, bulkDelete, bulkMove } from './bulk-ops';
 import { buildCommandList } from './command-registry';
+import { SnippetStore } from './snippets';
+import { ShortcutStore } from './shortcuts';
+import { parseSvgToElements } from './svg-import';
 import { isPathWithin, isDangerousPath } from './path-utils';
 import { readExcalidrawFile } from './excalidraw-utils';
 import { getIndex } from './search';
@@ -71,6 +76,8 @@ let templateStore: TemplateStore;
 let recentsStore: RecentsStore;
 let libraryStore: LibraryStore;
 let backupManager: BackupManager;
+let snippetStore: SnippetStore;
+let shortcutStore: ShortcutStore;
 
 function builtinPluginsDir(): string {
   return app.isPackaged
@@ -97,6 +104,10 @@ async function bindProfile(profileId: string) {
   await libraryStore.init();
   backupManager = new BackupManager(profileDir, settings.backupsToKeep);
   await backupManager.init();
+  snippetStore = new SnippetStore(profileDir);
+  await snippetStore.init();
+  shortcutStore = new ShortcutStore(profileDir);
+  await shortcutStore.init();
 }
 
 async function initStores() {
@@ -605,6 +616,45 @@ ipcMain.handle(IMPORT_CHANNELS.PICK_IMAGE, async (event) => {
   });
   if (result.canceled || result.filePaths.length === 0) return null;
   return await buildImageInsertion(result.filePaths[0]);
+});
+
+ipcMain.handle(IMPORT_CHANNELS.PICK_SVG_AS_ELEMENTS, async (event) => {
+  const result = await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
+    properties: ['openFile'],
+    filters: [{ name: 'SVG', extensions: ['svg'] }],
+  });
+  if (result.canceled || result.filePaths.length === 0) return null;
+  const svg = await fs.readFile(result.filePaths[0], 'utf-8');
+  return parseSvgToElements(svg);
+});
+
+// ── Snippets ─────────────────────────────────────────────────────────────
+ipcMain.handle(SNIPPET_CHANNELS.LIST, async () => {
+  return { snippets: await snippetStore.list() };
+});
+ipcMain.handle(SNIPPET_CHANNELS.GET, async (_, { id }) => {
+  return await snippetStore.get(id);
+});
+ipcMain.handle(SNIPPET_CHANNELS.SAVE, async (_, input) => {
+  return await snippetStore.save(input);
+});
+ipcMain.handle(SNIPPET_CHANNELS.REMOVE, async (_, { id }) => {
+  await snippetStore.remove(id);
+  return { success: true };
+});
+ipcMain.handle(SNIPPET_CHANNELS.RENAME, async (_, { id, title }) => {
+  return await snippetStore.rename(id, title);
+});
+
+// ── Keyboard shortcuts ─────────────────────────────────────────────────────
+ipcMain.handle(SHORTCUT_CHANNELS.LIST, async () => {
+  return { bindings: shortcutStore.list() };
+});
+ipcMain.handle(SHORTCUT_CHANNELS.SET, async (_, { commandId, accelerator, force }) => {
+  return { bindings: await shortcutStore.set(commandId, accelerator, force) };
+});
+ipcMain.handle(SHORTCUT_CHANNELS.RESET, async (_, { commandId }) => {
+  return { bindings: await shortcutStore.reset(commandId) };
 });
 
 app.whenReady().then(async () => {

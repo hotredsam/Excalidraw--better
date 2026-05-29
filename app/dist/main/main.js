@@ -54,6 +54,9 @@ const markdown_1 = require("./markdown");
 const import_pack_1 = require("./import-pack");
 const bulk_ops_1 = require("./bulk-ops");
 const command_registry_1 = require("./command-registry");
+const snippets_1 = require("./snippets");
+const shortcuts_1 = require("./shortcuts");
+const svg_import_1 = require("./svg-import");
 const path_utils_1 = require("./path-utils");
 const excalidraw_utils_1 = require("./excalidraw-utils");
 const search_1 = require("./search");
@@ -68,6 +71,8 @@ let templateStore;
 let recentsStore;
 let libraryStore;
 let backupManager;
+let snippetStore;
+let shortcutStore;
 function builtinPluginsDir() {
     return electron_1.app.isPackaged
         ? path.join(process.resourcesPath, 'plugins')
@@ -91,6 +96,10 @@ async function bindProfile(profileId) {
     await libraryStore.init();
     backupManager = new backup_1.BackupManager(profileDir, settings.backupsToKeep);
     await backupManager.init();
+    snippetStore = new snippets_1.SnippetStore(profileDir);
+    await snippetStore.init();
+    shortcutStore = new shortcuts_1.ShortcutStore(profileDir);
+    await shortcutStore.init();
 }
 async function initStores() {
     profileStore = new profile_1.ProfileStore();
@@ -566,6 +575,43 @@ electron_1.ipcMain.handle(ipc_1.IMPORT_CHANNELS.PICK_IMAGE, async (event) => {
     if (result.canceled || result.filePaths.length === 0)
         return null;
     return await (0, import_pack_1.buildImageInsertion)(result.filePaths[0]);
+});
+electron_1.ipcMain.handle(ipc_1.IMPORT_CHANNELS.PICK_SVG_AS_ELEMENTS, async (event) => {
+    const result = await electron_1.dialog.showOpenDialog(electron_1.BrowserWindow.fromWebContents(event.sender), {
+        properties: ['openFile'],
+        filters: [{ name: 'SVG', extensions: ['svg'] }],
+    });
+    if (result.canceled || result.filePaths.length === 0)
+        return null;
+    const svg = await fs.readFile(result.filePaths[0], 'utf-8');
+    return (0, svg_import_1.parseSvgToElements)(svg);
+});
+// ── Snippets ─────────────────────────────────────────────────────────────
+electron_1.ipcMain.handle(ipc_1.SNIPPET_CHANNELS.LIST, async () => {
+    return { snippets: await snippetStore.list() };
+});
+electron_1.ipcMain.handle(ipc_1.SNIPPET_CHANNELS.GET, async (_, { id }) => {
+    return await snippetStore.get(id);
+});
+electron_1.ipcMain.handle(ipc_1.SNIPPET_CHANNELS.SAVE, async (_, input) => {
+    return await snippetStore.save(input);
+});
+electron_1.ipcMain.handle(ipc_1.SNIPPET_CHANNELS.REMOVE, async (_, { id }) => {
+    await snippetStore.remove(id);
+    return { success: true };
+});
+electron_1.ipcMain.handle(ipc_1.SNIPPET_CHANNELS.RENAME, async (_, { id, title }) => {
+    return await snippetStore.rename(id, title);
+});
+// ── Keyboard shortcuts ─────────────────────────────────────────────────────
+electron_1.ipcMain.handle(ipc_1.SHORTCUT_CHANNELS.LIST, async () => {
+    return { bindings: shortcutStore.list() };
+});
+electron_1.ipcMain.handle(ipc_1.SHORTCUT_CHANNELS.SET, async (_, { commandId, accelerator, force }) => {
+    return { bindings: await shortcutStore.set(commandId, accelerator, force) };
+});
+electron_1.ipcMain.handle(ipc_1.SHORTCUT_CHANNELS.RESET, async (_, { commandId }) => {
+    return { bindings: await shortcutStore.reset(commandId) };
 });
 electron_1.app.whenReady().then(async () => {
     await initStores();

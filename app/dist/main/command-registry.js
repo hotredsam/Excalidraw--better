@@ -7,6 +7,7 @@ exports.buildCommandList = buildCommandList;
  * contributions (commands + toolbar items) are merged on top at runtime.
  */
 exports.CORE_COMMANDS = [
+    { id: 'core.command-palette', title: 'Command palette', category: 'App', accelerator: 'Ctrl+K', source: 'core' },
     { id: 'core.save', title: 'Save', category: 'File', accelerator: 'Ctrl+S', source: 'core' },
     { id: 'core.save-as', title: 'Save As…', category: 'File', accelerator: 'Ctrl+Shift+S', source: 'core' },
     { id: 'core.new', title: 'New Drawing', category: 'File', accelerator: 'Ctrl+N', source: 'core' },
@@ -25,6 +26,9 @@ exports.CORE_COMMANDS = [
     { id: 'core.presentation', title: 'Start Presentation', category: 'View', source: 'core' },
     { id: 'core.save-template', title: 'Save canvas as template', category: 'Templates', source: 'core' },
     { id: 'core.import-image', title: 'Import image onto canvas', category: 'Insert', source: 'core' },
+    { id: 'core.import-svg', title: 'Import SVG as editable elements', category: 'Insert', source: 'core' },
+    { id: 'core.toggle-snippets', title: 'Show Snippets panel', category: 'View', source: 'core' },
+    { id: 'core.save-snippet', title: 'Save selection as snippet', category: 'Insert', source: 'core' },
     { id: 'core.settings', title: 'Open Settings', category: 'App', source: 'core' },
 ];
 /** Merge core commands with the contributions of enabled plugins. */

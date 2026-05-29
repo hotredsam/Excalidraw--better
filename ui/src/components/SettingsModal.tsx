@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Settings } from '@excalibur/shared';
+import { ShortcutsEditor } from './ShortcutsEditor';
 
 export const SettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -75,6 +76,9 @@ export const SettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> =
             <input type="checkbox" checked={settings.autoOpenLastWorkspace} onChange={(e) => update({ autoOpenLastWorkspace: e.target.checked })} />
           </Row>
         </div>
+
+        <h4 style={section}>Keyboard shortcuts</h4>
+        <ShortcutsEditor />
 
         <button onClick={onClose} style={{ marginTop: 'var(--s-xl)', width: '100%', padding: 'var(--s-md)', backgroundColor: 'var(--bg-2)', color: 'white' }}>
           Close

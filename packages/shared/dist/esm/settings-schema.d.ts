@@ -1,0 +1,41 @@
+import { z } from 'zod';
+export declare const ThemeSchema: z.ZodDefault<z.ZodEnum<["dark", "light", "system"]>>;
+export declare const SettingsSchema: z.ZodObject<{
+    autosave: z.ZodDefault<z.ZodBoolean>;
+    autosaveIntervalSeconds: z.ZodDefault<z.ZodNumber>;
+    showGrid: z.ZodDefault<z.ZodBoolean>;
+    theme: z.ZodDefault<z.ZodEnum<["dark", "light", "system"]>>;
+    defaultExportFormat: z.ZodDefault<z.ZodEnum<["png", "svg"]>>;
+    confirmOnDelete: z.ZodDefault<z.ZodBoolean>;
+    recentsLimit: z.ZodDefault<z.ZodNumber>;
+    keepBackups: z.ZodDefault<z.ZodBoolean>;
+    backupsToKeep: z.ZodDefault<z.ZodNumber>;
+    autoOpenLastWorkspace: z.ZodDefault<z.ZodBoolean>;
+    indexEmbeddedText: z.ZodDefault<z.ZodBoolean>;
+}, "strip", z.ZodTypeAny, {
+    autosave: boolean;
+    autosaveIntervalSeconds: number;
+    showGrid: boolean;
+    theme: "dark" | "light" | "system";
+    defaultExportFormat: "png" | "svg";
+    confirmOnDelete: boolean;
+    recentsLimit: number;
+    keepBackups: boolean;
+    backupsToKeep: number;
+    autoOpenLastWorkspace: boolean;
+    indexEmbeddedText: boolean;
+}, {
+    autosave?: boolean | undefined;
+    autosaveIntervalSeconds?: number | undefined;
+    showGrid?: boolean | undefined;
+    theme?: "dark" | "light" | "system" | undefined;
+    defaultExportFormat?: "png" | "svg" | undefined;
+    confirmOnDelete?: boolean | undefined;
+    recentsLimit?: number | undefined;
+    keepBackups?: boolean | undefined;
+    backupsToKeep?: number | undefined;
+    autoOpenLastWorkspace?: boolean | undefined;
+    indexEmbeddedText?: boolean | undefined;
+}>;
+export type Theme = z.infer<typeof ThemeSchema>;
+export type Settings = z.infer<typeof SettingsSchema>;

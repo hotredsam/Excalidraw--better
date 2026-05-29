@@ -8,6 +8,7 @@ export default defineConfig({
     alias: {
       '@excalibur/shared': path.resolve(__dirname, '../packages/shared/src/index.ts'),
       '@excalibur/ipc': path.resolve(__dirname, '../packages/ipc/src/index.ts'),
+      '@excalibur/core': path.resolve(__dirname, '../packages/core/src/index.ts'),
     },
   },
 });

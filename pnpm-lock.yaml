@@ -41,6 +41,9 @@ importers:
 
   app:
     dependencies:
+      '@excalibur/core':
+        specifier: workspace:*
+        version: link:../packages/core
       '@excalibur/ipc':
         specifier: workspace:*
         version: link:../packages/ipc
@@ -81,6 +84,43 @@ importers:
       electron-builder:
         specifier: ^24.9.1
         version: 24.13.3(electron-builder-squirrel-windows@24.13.3)
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+
+  packages/core:
+    dependencies:
+      '@excalibur/shared':
+        specifier: workspace:*
+        version: link:../shared
+      crc:
+        specifier: ^3.8.0
+        version: 3.8.0
+      fs-extra:
+        specifier: ^11.3.3
+        version: 11.3.3
+      nanoid:
+        specifier: ^5.1.6
+        version: 5.1.6
+      pako:
+        specifier: ^2.1.0
+        version: 2.1.0
+      png-chunk-text:
+        specifier: ^1.0.0
+        version: 1.0.0
+      png-chunks-extract:
+        specifier: ^1.0.0
+        version: 1.0.0
+    devDependencies:
+      '@types/fs-extra':
+        specifier: ^11.0.4
+        version: 11.0.4
+      '@types/node':
+        specifier: ^18.19.0
+        version: 18.19.130
+      '@types/pako':
+        specifier: ^2.0.4
+        version: 2.0.4
       typescript:
         specifier: ^5.0.0
         version: 5.9.3
@@ -4439,17 +4479,17 @@ snapshots:
   '@types/fs-extra@11.0.4':
     dependencies:
       '@types/jsonfile': 6.1.4
-      '@types/node': 25.3.2
+      '@types/node': 18.19.130
 
   '@types/fs-extra@9.0.13':
     dependencies:
-      '@types/node': 25.3.2
+      '@types/node': 18.19.130
 
   '@types/http-cache-semantics@4.2.0': {}
 
   '@types/jsonfile@6.1.4':
     dependencies:
-      '@types/node': 25.3.2
+      '@types/node': 18.19.130
 
   '@types/keyv@3.1.4':
     dependencies:
@@ -4468,12 +4508,13 @@ snapshots:
   '@types/node@25.3.2':
     dependencies:
       undici-types: 7.18.2
+    optional: true
 
   '@types/pako@2.0.4': {}
 
   '@types/plist@3.0.5':
     dependencies:
-      '@types/node': 25.3.2
+      '@types/node': 18.19.130
       xmlbuilder: 15.1.1
     optional: true
 
@@ -6796,7 +6837,8 @@ snapshots:
 
   undici-types@5.26.5: {}
 
-  undici-types@7.18.2: {}
+  undici-types@7.18.2:
+    optional: true
 
   unist-util-stringify-position@3.0.3:
     dependencies:

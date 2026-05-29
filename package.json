@@ -2,7 +2,7 @@
   "name": "excalibur-monorepo",
   "private": true,
   "scripts": {
-    "dev": "concurrently -n \"shared,ipc,ui,app-watch,app\" -c \"blue,green,magenta,cyan,yellow\" \"pnpm --filter @excalibur/shared dev\" \"pnpm --filter @excalibur/ipc dev\" \"pnpm --filter @excalibur/ui dev\" \"pnpm --filter @excalibur/app build --watch\" \"wait-on http://localhost:5173 && pnpm --filter @excalibur/app dev\"",
+    "dev": "concurrently -n \"shared,ipc,core,ui,app-watch,app\" -c \"blue,green,red,magenta,cyan,yellow\" \"pnpm --filter @excalibur/shared dev\" \"pnpm --filter @excalibur/ipc dev\" \"pnpm --filter @excalibur/core dev\" \"pnpm --filter @excalibur/ui dev\" \"pnpm --filter @excalibur/app build --watch\" \"wait-on http://localhost:5173 && pnpm --filter @excalibur/app dev\"",
     "build": "pnpm run --filter \"@excalibur/*\" build",
     "lint": "pnpm run --recursive lint",
     "test": "pnpm run --recursive test",

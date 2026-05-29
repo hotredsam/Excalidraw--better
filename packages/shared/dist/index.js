@@ -87,3 +87,4 @@ __exportStar(require("./colors"), exports);
 __exportStar(require("./frontmatter"), exports);
 __exportStar(require("./styles"), exports);
 __exportStar(require("./text"), exports);
+__exportStar(require("./validation"), exports);

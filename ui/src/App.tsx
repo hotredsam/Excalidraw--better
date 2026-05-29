@@ -471,6 +471,12 @@ function App() {
           case 'core.save-as': return saveAs();
           case 'core.new': return newDrawing();
           case 'core.daily-note': return dailyNote();
+          case 'core.duplicate': {
+            if (!activeWorkspace || !activeFile) return toastInfo('Open a saved drawing to duplicate it.');
+            await window.api.workspaces.copyFile(activeWorkspace.id, activeFile.path);
+            setSidebarReloadKey((k) => k + 1);
+            return toastSuccess('Duplicated ' + activeFile.name);
+          }
           case 'core.export': return setExportDialogOpen(true);
           case 'core.export-markdown': return exportMarkdown();
           case 'core.search': return setSearchSignal((s) => s + 1);

@@ -9,6 +9,7 @@ export const CORE_COMMANDS: Command[] = [
   { id: 'core.save', title: 'Save', category: 'File', accelerator: 'Ctrl+S', source: 'core' },
   { id: 'core.save-as', title: 'Save As…', category: 'File', accelerator: 'Ctrl+Shift+S', source: 'core' },
   { id: 'core.new', title: 'New Drawing', category: 'File', accelerator: 'Ctrl+N', source: 'core' },
+  { id: 'core.daily-note', title: "Open today's daily note", category: 'File', source: 'core' },
   { id: 'core.export', title: 'Export…', category: 'File', accelerator: 'Ctrl+P', source: 'core' },
   { id: 'core.export-markdown', title: 'Export as Markdown', category: 'File', source: 'core' },
   { id: 'core.search', title: 'Search files', category: 'Navigate', accelerator: 'Ctrl+F', source: 'core' },

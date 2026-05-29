@@ -205,6 +205,35 @@ function App() {
     toastInfo('New drawing — use Save As to store it.');
   }, []);
 
+  const dailyNote = useCallback(async () => {
+    if (!activeWorkspace) return toastError('Open a workspace first.');
+    const d = new Date();
+    const name = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const dir = `${activeWorkspace.path}/daily`;
+    try {
+      await window.api.workspaces.createFolder(activeWorkspace.id, null, 'daily');
+    } catch {
+      /* already exists */
+    }
+    let filePath = `${dir}/${name}.excalidraw`;
+    try {
+      const r = await window.api.workspaces.createFile(activeWorkspace.id, dir, name);
+      filePath = r.path;
+      toastSuccess(`Created daily note ${name}`);
+    } catch {
+      /* already exists — just open it */
+    }
+    await handleOpenFile(activeWorkspace, {
+      name: `${name}.excalidraw`,
+      path: filePath,
+      isDirectory: false,
+      size: 0,
+      mtime: Date.now(),
+      extension: '.excalidraw',
+    });
+    setSidebarReloadKey((k) => k + 1);
+  }, [activeWorkspace, handleOpenFile]);
+
   const openWorkspace = useCallback(async () => {
     const ws = await window.api.workspaces.add();
     if (ws) {
@@ -441,6 +470,7 @@ function App() {
           case 'core.save': return save();
           case 'core.save-as': return saveAs();
           case 'core.new': return newDrawing();
+          case 'core.daily-note': return dailyNote();
           case 'core.export': return setExportDialogOpen(true);
           case 'core.export-markdown': return exportMarkdown();
           case 'core.search': return setSearchSignal((s) => s + 1);
@@ -504,7 +534,7 @@ function App() {
         toastError(e?.message || 'Command failed');
       }
     },
-    [contributions, save, saveAs, newDrawing, exportMarkdown, exportPreset, gatherTemplate, startPresentation, importImage, importSvg, gatherSnippet, refreshContributions],
+    [contributions, save, saveAs, newDrawing, dailyNote, exportMarkdown, exportPreset, gatherTemplate, startPresentation, importImage, importSvg, gatherSnippet, refreshContributions],
   );
 
   // ── Native menu + keyboard shortcuts ─────────────────────────────────

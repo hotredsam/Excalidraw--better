@@ -27,6 +27,8 @@ describe('First-party plugins', () => {
       const parsed = PluginManifestSchema.safeParse(raw);
       expect(parsed.success, `${d.name} manifest valid: ${JSON.stringify(parsed.error?.issues)}`).toBe(true);
       expect(raw.id).toBe(d.name); // folder name matches id
+      // Every first-party plugin ships documentation.
+      expect(await fs.pathExists(path.join(PLUGINS_DIR, d.name, 'README.md')), `${d.name} has a README`).toBe(true);
     }
   });
 

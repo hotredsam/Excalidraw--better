@@ -7,10 +7,11 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "lint": "tsc --noEmit",
+    "lint": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
     "test": "vitest run"
   },
   "dependencies": {
+    "@excalibur/api-contract": "workspace:*",
     "@excalibur/ipc": "workspace:*",
     "@excalibur/shared": "workspace:*",
     "@excalidraw/excalidraw": "^0.18.0",

@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import type { ExcaliburApi } from '@excalibur/api-contract';
 import {
   APP_CHANNELS,
   PROFILE_CHANNELS,
@@ -24,7 +25,9 @@ import {
   STYLE_CHANNELS,
 } from '@excalibur/ipc';
 
-contextBridge.exposeInMainWorld('api', {
+// The exposed object is checked against the shared ExcaliburApi contract, so any
+// drift between the preload, the core handlers and the renderer is a compile error.
+const api = {
   app: {
     ping: () => ipcRenderer.invoke(APP_CHANNELS.PING),
   },
@@ -191,4 +194,6 @@ contextBridge.exposeInMainWorld('api', {
     ipcRenderer.on('menu:command', listener);
     return () => ipcRenderer.removeListener('menu:command', listener);
   },
-});
+} satisfies ExcaliburApi;
+
+contextBridge.exposeInMainWorld('api', api);

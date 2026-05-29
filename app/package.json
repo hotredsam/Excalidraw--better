@@ -12,6 +12,7 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "@excalibur/api-contract": "workspace:*",
     "@excalibur/core": "workspace:*",
     "@excalibur/ipc": "workspace:*",
     "@excalibur/shared": "workspace:*",

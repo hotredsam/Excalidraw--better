@@ -41,6 +41,9 @@ importers:
 
   app:
     dependencies:
+      '@excalibur/api-contract':
+        specifier: workspace:*
+        version: link:../packages/api-contract
       '@excalibur/core':
         specifier: workspace:*
         version: link:../packages/core
@@ -160,6 +163,9 @@ importers:
 
   ui:
     dependencies:
+      '@excalibur/api-contract':
+        specifier: workspace:*
+        version: link:../packages/api-contract
       '@excalibur/ipc':
         specifier: workspace:*
         version: link:../packages/ipc

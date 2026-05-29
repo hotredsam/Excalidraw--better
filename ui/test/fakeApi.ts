@@ -3,6 +3,7 @@
  * tests. Each builder returns a fresh, mutable backend so tests are isolated.
  */
 import { vi } from 'vitest';
+import type { ExcaliburApi } from '@excalibur/api-contract';
 
 export interface FakeState {
   profiles: any[];
@@ -87,11 +88,11 @@ export function makeFakeApi(overrides: Partial<FakeState> = {}) {
       list: vi.fn(async () => ({ workspaces: state.workspaces })),
       add: vi.fn(async () => state.workspaces[0]),
       remove: vi.fn(async () => ok),
-      setActive: vi.fn(async (id: string) => ((state.activeWorkspaceId = id), ok)),
+      setActive: vi.fn(async (id: string | null) => ((state.activeWorkspaceId = id), ok)),
       getActive: vi.fn(async () => state.workspaces.find((w) => w.id === state.activeWorkspaceId) || null),
       listFiles: vi.fn(async () => state.files),
       readFile: vi.fn(async () => '{}'),
-      readExcalidrawFile: vi.fn(async () => ({ type: 'excalidraw', version: 2, elements: [], appState: {}, files: {} })),
+      readExcalidrawFile: vi.fn(async (_w: string, _f: string) => ({ type: 'excalidraw', version: 2, elements: [], appState: {}, files: {} } as any)),
       writeFile: vi.fn(async () => ok),
       writeBinaryFile: vi.fn(async () => ok),
       deleteFile: vi.fn(async () => ok),
@@ -103,7 +104,7 @@ export function makeFakeApi(overrides: Partial<FakeState> = {}) {
       search: vi.fn(async (_w: string, q: string) => ({
         results: state.files
           .filter((f) => f.name.includes(q))
-          .map((f) => ({ name: f.name, path: f.path, extension: f.extension, mtime: 0, tags: [], matchedOn: ['name'] })),
+          .map((f) => ({ name: f.name, path: f.path, extension: f.extension, mtime: 0, tags: [], matchedOn: ['name'] as ('name' | 'text' | 'tag')[] })),
         indexed: state.files.length,
       })),
       getTags: vi.fn(async () => state.tags),
@@ -148,7 +149,7 @@ export function makeFakeApi(overrides: Partial<FakeState> = {}) {
     },
     libraries: {
       list: vi.fn(async () => ({ libraries: state.libraries })),
-      get: vi.fn(async () => ({ type: 'excalidrawlib', version: 2, libraryItems: [] })),
+      get: vi.fn(async (_id: string) => ({ type: 'excalidrawlib', version: 2, libraryItems: [] } as any)),
       import: vi.fn(async () => null),
       addItems: vi.fn(async () => ({ id: 'l1', name: 'l1', itemCount: 1, updatedAt: 1 })),
       remove: vi.fn(async () => ok),
@@ -224,7 +225,7 @@ export function makeFakeApi(overrides: Partial<FakeState> = {}) {
       remove: vi.fn(async (id: string) => (((state as any).styles = (((state as any).styles) || []).filter((x: any) => x.id !== id)), ok)),
     },
     onMenuCommand: vi.fn(() => () => undefined),
-  };
+  } satisfies ExcaliburApi;
   return { api, state };
 }
 

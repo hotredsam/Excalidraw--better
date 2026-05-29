@@ -37,6 +37,7 @@ import type {
   SnippetSummary,
   ShortcutBinding,
   WorkspaceConfig,
+  StylePreset,
 } from '@excalibur/shared';
 
 type Ok = { success: boolean };
@@ -173,6 +174,11 @@ declare global {
       workspaceConfig: {
         get: (workspaceId: string) => Promise<WorkspaceConfig>;
         update: (workspaceId: string, partial: Partial<WorkspaceConfig>) => Promise<WorkspaceConfig>;
+      };
+      styles: {
+        list: () => Promise<{ presets: StylePreset[] }>;
+        save: (input: Omit<StylePreset, 'id'> & { id?: string }) => Promise<StylePreset>;
+        remove: (id: string) => Promise<{ success: boolean }>;
       };
       onMenuCommand: (cb: (cmd: string) => void) => () => void;
     };

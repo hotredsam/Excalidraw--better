@@ -145,6 +145,12 @@ export const WORKSPACE_CONFIG_CHANNELS = {
   UPDATE: 'workspace-config:update',
 } as const;
 
+export const STYLE_CHANNELS = {
+  LIST: 'styles:list',
+  SAVE: 'styles:save',
+  REMOVE: 'styles:remove',
+} as const;
+
 export type AppChannels = typeof APP_CHANNELS[keyof typeof APP_CHANNELS];
 export type ProfileChannels = typeof PROFILE_CHANNELS[keyof typeof PROFILE_CHANNELS];
 export type SettingsChannels = typeof SETTINGS_CHANNELS[keyof typeof SETTINGS_CHANNELS];

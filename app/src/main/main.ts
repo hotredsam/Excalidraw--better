@@ -23,6 +23,7 @@ import {
   SNIPPET_CHANNELS,
   SHORTCUT_CHANNELS,
   WORKSPACE_CONFIG_CHANNELS,
+  STYLE_CHANNELS,
 } from '@excalibur/ipc';
 import {
   AppPingSchema,
@@ -63,6 +64,7 @@ import { SnippetStore } from './snippets';
 import { ShortcutStore } from './shortcuts';
 import { parseSvgToElements } from './svg-import';
 import { WorkspaceConfigStore } from './workspace-config';
+import { StylePresetStore } from './style-presets';
 import { isPathWithin, isDangerousPath } from './path-utils';
 import { readExcalidrawFile } from './excalidraw-utils';
 import { getIndex } from './search';
@@ -80,6 +82,7 @@ let libraryStore: LibraryStore;
 let backupManager: BackupManager;
 let snippetStore: SnippetStore;
 let shortcutStore: ShortcutStore;
+let stylePresetStore: StylePresetStore;
 
 function builtinPluginsDir(): string {
   return app.isPackaged
@@ -110,6 +113,8 @@ async function bindProfile(profileId: string) {
   await snippetStore.init();
   shortcutStore = new ShortcutStore(profileDir);
   await shortcutStore.init();
+  stylePresetStore = new StylePresetStore(profileDir);
+  await stylePresetStore.init();
 }
 
 async function initStores() {
@@ -672,6 +677,18 @@ ipcMain.handle(WORKSPACE_CONFIG_CHANNELS.UPDATE, async (_, { workspaceId, partia
   const next = await new WorkspaceConfigStore(workspace.path).update(partial);
   getIndex(workspace.path).setExcludes(next.excludeGlobs);
   return next;
+});
+
+// ── Style presets ──────────────────────────────────────────────────────────
+ipcMain.handle(STYLE_CHANNELS.LIST, async () => {
+  return { presets: stylePresetStore.list() };
+});
+ipcMain.handle(STYLE_CHANNELS.SAVE, async (_, input) => {
+  return await stylePresetStore.save(input);
+});
+ipcMain.handle(STYLE_CHANNELS.REMOVE, async (_, { id }) => {
+  await stylePresetStore.remove(id);
+  return { success: true };
 });
 
 app.whenReady().then(async () => {

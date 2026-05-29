@@ -21,6 +21,7 @@ import {
   SNIPPET_CHANNELS,
   SHORTCUT_CHANNELS,
   WORKSPACE_CONFIG_CHANNELS,
+  STYLE_CHANNELS,
 } from '@excalibur/ipc';
 
 contextBridge.exposeInMainWorld('api', {
@@ -178,6 +179,11 @@ contextBridge.exposeInMainWorld('api', {
     get: (workspaceId: string) => ipcRenderer.invoke(WORKSPACE_CONFIG_CHANNELS.GET, { workspaceId }),
     update: (workspaceId: string, partial: any) =>
       ipcRenderer.invoke(WORKSPACE_CONFIG_CHANNELS.UPDATE, { workspaceId, partial }),
+  },
+  styles: {
+    list: () => ipcRenderer.invoke(STYLE_CHANNELS.LIST),
+    save: (input: any) => ipcRenderer.invoke(STYLE_CHANNELS.SAVE, input),
+    remove: (id: string) => ipcRenderer.invoke(STYLE_CHANNELS.REMOVE, { id }),
   },
   // Menu/keyboard commands forwarded from the main process.
   onMenuCommand: (cb: (cmd: string) => void) => {

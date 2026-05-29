@@ -42,7 +42,7 @@ function App() {
   const [contributions, setContributions] = useState<Contributions>(EMPTY_CONTRIB);
   const [sidebarReloadKey, setSidebarReloadKey] = useState(0);
   const [searchSignal, setSearchSignal] = useState(0);
-  const [refreshKeys, setRefreshKeys] = useState({ templates: 0, recents: 0, libraries: 0, stats: 0, snippets: 0 });
+  const [refreshKeys, setRefreshKeys] = useState({ templates: 0, recents: 0, libraries: 0, stats: 0, snippets: 0, styles: 0 });
   const [settings, setSettings] = useState<Shared.Settings | null>(null);
   const [profileName, setProfileName] = useState('You');
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -346,6 +346,42 @@ function App() {
     } catch (e: any) {
       toastError(e?.message || 'Insert failed');
     }
+  }, []);
+
+  const applyStyle = useCallback((preset: Shared.StylePreset) => {
+    const api = apiRef.current;
+    if (!api) return;
+    api.updateScene({
+      appState: {
+        currentItemStrokeColor: preset.strokeColor,
+        currentItemBackgroundColor: preset.backgroundColor,
+        currentItemFillStyle: preset.fillStyle,
+        currentItemStrokeWidth: preset.strokeWidth,
+        currentItemStrokeStyle: preset.strokeStyle,
+        currentItemRoughness: preset.roughness,
+        ...(preset.fontFamily !== undefined ? { currentItemFontFamily: preset.fontFamily } : {}),
+      },
+    });
+  }, []);
+
+  const saveStyle = useCallback(async () => {
+    const api = apiRef.current;
+    if (!api) return;
+    const name = prompt('Style preset name:');
+    if (!name) return;
+    const a = api.getAppState();
+    await window.api.styles.save({
+      name,
+      strokeColor: a.currentItemStrokeColor ?? '#1e1e1e',
+      backgroundColor: a.currentItemBackgroundColor ?? 'transparent',
+      fillStyle: a.currentItemFillStyle ?? 'solid',
+      strokeWidth: a.currentItemStrokeWidth ?? 1,
+      strokeStyle: a.currentItemStrokeStyle ?? 'solid',
+      roughness: a.currentItemRoughness ?? 1,
+      fontFamily: a.currentItemFontFamily,
+    });
+    bump('styles');
+    toastSuccess(`Saved style "${name}"`);
   }, []);
 
   const gatherSnippet = useCallback(async () => {
@@ -659,6 +695,8 @@ function App() {
           onSaveSelectionToLibrary={saveSelectionToLibrary}
           onInsertSnippet={insertSnippet}
           onSaveSnippet={gatherSnippet}
+          onApplyStyle={applyStyle}
+          onSaveStyle={saveStyle}
           onOpenFile={handleOpenFile}
           reviewAuthor={profileName}
           refreshKeys={refreshKeys}

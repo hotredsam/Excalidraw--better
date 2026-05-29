@@ -58,6 +58,7 @@ const snippets_1 = require("./snippets");
 const shortcuts_1 = require("./shortcuts");
 const svg_import_1 = require("./svg-import");
 const workspace_config_1 = require("./workspace-config");
+const style_presets_1 = require("./style-presets");
 const path_utils_1 = require("./path-utils");
 const excalidraw_utils_1 = require("./excalidraw-utils");
 const search_1 = require("./search");
@@ -74,6 +75,7 @@ let libraryStore;
 let backupManager;
 let snippetStore;
 let shortcutStore;
+let stylePresetStore;
 function builtinPluginsDir() {
     return electron_1.app.isPackaged
         ? path.join(process.resourcesPath, 'plugins')
@@ -101,6 +103,8 @@ async function bindProfile(profileId) {
     await snippetStore.init();
     shortcutStore = new shortcuts_1.ShortcutStore(profileDir);
     await shortcutStore.init();
+    stylePresetStore = new style_presets_1.StylePresetStore(profileDir);
+    await stylePresetStore.init();
 }
 async function initStores() {
     profileStore = new profile_1.ProfileStore();
@@ -627,6 +631,17 @@ electron_1.ipcMain.handle(ipc_1.WORKSPACE_CONFIG_CHANNELS.UPDATE, async (_, { wo
     const next = await new workspace_config_1.WorkspaceConfigStore(workspace.path).update(partial);
     (0, search_1.getIndex)(workspace.path).setExcludes(next.excludeGlobs);
     return next;
+});
+// ── Style presets ──────────────────────────────────────────────────────────
+electron_1.ipcMain.handle(ipc_1.STYLE_CHANNELS.LIST, async () => {
+    return { presets: stylePresetStore.list() };
+});
+electron_1.ipcMain.handle(ipc_1.STYLE_CHANNELS.SAVE, async (_, input) => {
+    return await stylePresetStore.save(input);
+});
+electron_1.ipcMain.handle(ipc_1.STYLE_CHANNELS.REMOVE, async (_, { id }) => {
+    await stylePresetStore.remove(id);
+    return { success: true };
 });
 electron_1.app.whenReady().then(async () => {
     await initStores();

@@ -11,6 +11,8 @@ import { StatsPanel } from './StatsPanel';
 import { GitPanel } from './GitPanel';
 import { ReviewPanel } from './ReviewPanel';
 import { TagBrowser } from './TagBrowser';
+import { StylePresetsPanel } from './StylePresetsPanel';
+import type { StylePreset } from '@excalibur/shared';
 
 export type DrawerTab =
   | 'properties'
@@ -20,6 +22,7 @@ export type DrawerTab =
   | 'recents'
   | 'libraries'
   | 'snippets'
+  | 'styles'
   | 'tags'
   | 'review'
   | 'stats'
@@ -30,6 +33,7 @@ const TABS: { id: DrawerTab; label: string; icon: string }[] = [
   { id: 'recents', label: 'Recent', icon: '🕘' },
   { id: 'templates', label: 'Templates', icon: '▦' },
   { id: 'snippets', label: 'Snippets', icon: '✂' },
+  { id: 'styles', label: 'Styles', icon: '🎨' },
   { id: 'libraries', label: 'Libraries', icon: '📚' },
   { id: 'tags', label: 'Tags', icon: '🏷' },
   { id: 'review', label: 'Review', icon: '💬' },
@@ -55,9 +59,11 @@ export interface RightDrawerProps {
   onSaveSelectionToLibrary: (id: string) => void;
   onInsertSnippet: (id: string) => void;
   onSaveSnippet: () => Promise<{ title: string; elements: any[] } | null>;
+  onApplyStyle: (preset: StylePreset) => void;
+  onSaveStyle: () => Promise<void>;
   onOpenFile: (workspace: Workspace, file: FileInfo) => void;
   reviewAuthor: string;
-  refreshKeys: { templates: number; recents: number; libraries: number; stats: number; snippets: number };
+  refreshKeys: { templates: number; recents: number; libraries: number; stats: number; snippets: number; styles: number };
   onAiApplied: () => void;
 }
 
@@ -107,6 +113,9 @@ export const RightDrawer: React.FC<RightDrawerProps> = (props) => {
         )}
         {props.tab === 'libraries' && (
           <LibrariesPanel onInsertLibrary={props.onInsertLibrary} onSaveSelection={props.onSaveSelectionToLibrary} refreshKey={props.refreshKeys.libraries} />
+        )}
+        {props.tab === 'styles' && (
+          <StylePresetsPanel onApply={props.onApplyStyle} onSaveCurrent={props.onSaveStyle} refreshKey={props.refreshKeys.styles} />
         )}
         {props.tab === 'tags' && (
           <TagBrowser activeWorkspace={props.activeWorkspace} onOpenFile={props.onOpenFile} refreshKey={props.refreshKeys.stats} />

@@ -121,6 +121,11 @@ export declare const WORKSPACE_CONFIG_CHANNELS: {
     readonly GET: "workspace-config:get";
     readonly UPDATE: "workspace-config:update";
 };
+export declare const STYLE_CHANNELS: {
+    readonly LIST: "styles:list";
+    readonly SAVE: "styles:save";
+    readonly REMOVE: "styles:remove";
+};
 export type AppChannels = typeof APP_CHANNELS[keyof typeof APP_CHANNELS];
 export type ProfileChannels = typeof PROFILE_CHANNELS[keyof typeof PROFILE_CHANNELS];
 export type SettingsChannels = typeof SETTINGS_CHANNELS[keyof typeof SETTINGS_CHANNELS];

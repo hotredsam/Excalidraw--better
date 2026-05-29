@@ -206,6 +206,19 @@ export function makeFakeApi(overrides: Partial<FakeState> = {}) {
       }),
       reset: vi.fn(async () => ((state.shortcuts = []), { bindings: state.shortcuts })),
     },
+    workspaceConfig: {
+      get: vi.fn(async () => ({ defaultTags: [], excludeGlobs: [], autoIndex: true })),
+      update: vi.fn(async (_w: string, partial: any) => ({ defaultTags: [], excludeGlobs: [], autoIndex: true, ...partial })),
+    },
+    styles: {
+      list: vi.fn(async () => ({ presets: (state as any).styles || [] })),
+      save: vi.fn(async (input: any) => {
+        const p = { id: input.id || 'sp' + (((state as any).styles || []).length + 1), ...input };
+        (state as any).styles = [...(((state as any).styles) || []).filter((x: any) => x.id !== p.id), p];
+        return p;
+      }),
+      remove: vi.fn(async (id: string) => (((state as any).styles = (((state as any).styles) || []).filter((x: any) => x.id !== id)), ok)),
+    },
     onMenuCommand: vi.fn(() => () => undefined),
   };
   return { api, state };

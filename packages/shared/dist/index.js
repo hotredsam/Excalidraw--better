@@ -95,3 +95,4 @@ __exportStar(require("./datetime"), exports);
 __exportStar(require("./csv"), exports);
 __exportStar(require("./result"), exports);
 __exportStar(require("./pathlike"), exports);
+__exportStar(require("./random"), exports);

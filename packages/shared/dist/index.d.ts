@@ -192,3 +192,4 @@ export * from './datetime';
 export * from './csv';
 export * from './result';
 export * from './pathlike';
+export * from './random';

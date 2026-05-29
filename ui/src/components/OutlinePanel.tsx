@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Workspace, FileInfo, SlideDeck } from '@excalibur/shared';
+import { useApi } from '../api/ApiContext';
 
 /**
  * Document outline: lists the frames in the current drawing (the same ordering
@@ -12,6 +13,7 @@ export const OutlinePanel: React.FC<{
   onGoTo: (slideId: string) => void;
   refreshKey?: number;
 }> = ({ activeWorkspace, activeFile, getScene, onGoTo, refreshKey }) => {
+  const api = useApi();
   const [deck, setDeck] = useState<SlideDeck>({ slides: [] });
 
   const refresh = async () => {
@@ -20,7 +22,7 @@ export const OutlinePanel: React.FC<{
       setDeck({ slides: [] });
       return;
     }
-    setDeck(await window.api.presentation.getDeck(wsId, activeFile?.path || 'scratch', getScene()));
+    setDeck(await api.presentation.getDeck(wsId, activeFile?.path || 'scratch', getScene()));
   };
 
   useEffect(() => {

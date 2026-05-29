@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { InstalledPlugin } from '@excalibur/shared';
 import { toastError, toastSuccess } from '../lib/toast';
+import { useApi } from '../api/ApiContext';
 
 const permColor = (level: string) =>
   level === 'all' ? 'var(--danger)' : level === 'workspace-only' ? 'var(--warning)' : 'var(--text-2)';
 
 export const PluginManager: React.FC = () => {
+  const api = useApi();
   const [plugins, setPlugins] = useState<InstalledPlugin[]>([]);
   const [busy, setBusy] = useState(false);
 
   const refresh = async () => {
-    const { plugins } = await window.api.plugins.list();
+    const { plugins } = await api.plugins.list();
     setPlugins(plugins);
   };
 
@@ -21,8 +23,8 @@ export const PluginManager: React.FC = () => {
   const toggle = async (p: InstalledPlugin) => {
     setBusy(true);
     try {
-      if (p.enabled) await window.api.plugins.disable(p.id);
-      else await window.api.plugins.enable(p.id);
+      if (p.enabled) await api.plugins.disable(p.id);
+      else await api.plugins.enable(p.id);
       await refresh();
     } finally {
       setBusy(false);
@@ -32,7 +34,7 @@ export const PluginManager: React.FC = () => {
   const install = async () => {
     setBusy(true);
     try {
-      const installed = await window.api.plugins.installFromFolder();
+      const installed = await api.plugins.installFromFolder();
       if (installed) {
         toastSuccess(`Installed "${installed.name}"`);
         await refresh();
@@ -48,7 +50,7 @@ export const PluginManager: React.FC = () => {
     if (!confirm(`Uninstall "${p.name}"? This removes its folder from this profile.`)) return;
     setBusy(true);
     try {
-      await window.api.plugins.uninstall(p.id);
+      await api.plugins.uninstall(p.id);
       toastSuccess(`Uninstalled "${p.name}"`);
       await refresh();
     } catch (e: any) {

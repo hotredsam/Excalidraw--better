@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Workspace, FileInfo, SearchResult } from '@excalibur/shared';
 import { toastError, toastSuccess } from '../lib/toast';
+import { useApi } from '../api/ApiContext';
 
 const FILE_ICON: Record<string, string> = {
   '.excalidraw': '✎',
@@ -15,6 +16,7 @@ export const WorkspaceSidebar: React.FC<{
   onWorkspaceChange?: (ws: Workspace | null) => void;
   focusSignal?: number;
 }> = ({ onOpenFile, reloadKey, onWorkspaceChange, focusSignal }) => {
+  const api = useApi();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [activeWorkspace, setActiveWorkspace] = useState<Workspace | null>(null);
@@ -33,7 +35,7 @@ export const WorkspaceSidebar: React.FC<{
     setLoading(true);
     try {
       const rel = dir ? dir.slice(ws.path.length + 1) : '';
-      const list = await window.api.workspaces.listFiles(ws.id, rel);
+      const list = await api.workspaces.listFiles(ws.id, rel);
       setFiles(list);
     } catch (err: any) {
       toastError('Could not list files: ' + (err?.message || ''));
@@ -43,8 +45,8 @@ export const WorkspaceSidebar: React.FC<{
   }, []);
 
   const refresh = useCallback(async () => {
-    const { workspaces } = await window.api.workspaces.list();
-    const active = await window.api.workspaces.getActive();
+    const { workspaces } = await api.workspaces.list();
+    const active = await api.workspaces.getActive();
     setWorkspaces(workspaces);
     setActiveWorkspace(active);
     onWorkspaceChange?.(active);
@@ -69,21 +71,21 @@ export const WorkspaceSidebar: React.FC<{
       return;
     }
     debounce.current = setTimeout(async () => {
-      const res = await window.api.workspaces.search(activeWorkspace.id, query);
+      const res = await api.workspaces.search(activeWorkspace.id, query);
       setResults(res.results);
     }, 200);
   }, [query, activeWorkspace?.id]);
 
   const addWorkspace = async () => {
-    const ws = await window.api.workspaces.add();
+    const ws = await api.workspaces.add();
     if (ws) {
-      await window.api.workspaces.setActive(ws.id);
+      await api.workspaces.setActive(ws.id);
       await refresh();
     }
   };
 
   const switchWorkspace = async (id: string) => {
-    await window.api.workspaces.setActive(id);
+    await api.workspaces.setActive(id);
     await refresh();
   };
 
@@ -108,7 +110,7 @@ export const WorkspaceSidebar: React.FC<{
     const name = prompt('New drawing name:', 'untitled');
     if (!name) return;
     try {
-      const { path } = await window.api.workspaces.createFile(activeWorkspace.id, dirArg(), name);
+      const { path } = await api.workspaces.createFile(activeWorkspace.id, dirArg(), name);
       toastSuccess('Created ' + name);
       await loadFiles(activeWorkspace, currentDir);
       onOpenFile(activeWorkspace, {
@@ -129,7 +131,7 @@ export const WorkspaceSidebar: React.FC<{
     const name = prompt('New folder name:');
     if (!name) return;
     try {
-      await window.api.workspaces.createFolder(activeWorkspace.id, dirArg(), name);
+      await api.workspaces.createFolder(activeWorkspace.id, dirArg(), name);
       await loadFiles(activeWorkspace, currentDir);
     } catch (e: any) {
       toastError(e?.message || 'Create failed');
@@ -141,7 +143,7 @@ export const WorkspaceSidebar: React.FC<{
     const name = prompt('Rename to:', file.name);
     if (!name || name === file.name) return;
     try {
-      await window.api.workspaces.renameFile(activeWorkspace.id, file.path, name);
+      await api.workspaces.renameFile(activeWorkspace.id, file.path, name);
       await loadFiles(activeWorkspace, currentDir);
     } catch (e: any) {
       toastError(e?.message || 'Rename failed');
@@ -151,7 +153,7 @@ export const WorkspaceSidebar: React.FC<{
   const duplicate = async (file: FileInfo) => {
     if (!activeWorkspace) return;
     try {
-      await window.api.workspaces.copyFile(activeWorkspace.id, file.path);
+      await api.workspaces.copyFile(activeWorkspace.id, file.path);
       await loadFiles(activeWorkspace, currentDir);
     } catch (e: any) {
       toastError(e?.message || 'Copy failed');
@@ -162,7 +164,7 @@ export const WorkspaceSidebar: React.FC<{
     if (!activeWorkspace) return;
     if (!confirm(`Delete "${file.name}" to the Recycle Bin?`)) return;
     try {
-      await window.api.workspaces.deleteFile(activeWorkspace.id, file.path);
+      await api.workspaces.deleteFile(activeWorkspace.id, file.path);
       await loadFiles(activeWorkspace, currentDir);
     } catch (e: any) {
       toastError(e?.message || 'Delete failed');

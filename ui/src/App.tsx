@@ -15,6 +15,7 @@ import { ExportDialog } from './components/ExportDialog';
 import { ToastHost } from './components/ToastHost';
 import { toastError, toastInfo, toastSuccess } from './lib/toast';
 import { NavigationHistory } from './lib/history';
+import { useApi } from './api/ApiContext';
 import * as Shared from '@excalibur/shared';
 
 const BLANK_SCENE = { type: 'excalidraw', version: 2, source: 'excalibur', elements: [], appState: {}, files: {} };
@@ -32,6 +33,7 @@ function blobToBase64(blob: Blob): Promise<string> {
 }
 
 function App() {
+  const api = useApi();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [activeFile, setActiveFile] = useState<Shared.FileInfo | null>(null);
   const [activeWorkspace, setActiveWorkspace] = useState<Shared.Workspace | null>(null);
@@ -66,7 +68,7 @@ function App() {
 
   const refreshContributions = useCallback(async () => {
     try {
-      setContributions(await window.api.plugins.getContributions());
+      setContributions(await api.plugins.getContributions());
     } catch {
       setContributions(EMPTY_CONTRIB);
     }
@@ -74,23 +76,23 @@ function App() {
 
   useEffect(() => {
     refreshContributions();
-    window.api.settings.get().then(setSettings).catch(() => {});
-    window.api.profiles.getActive().then((p) => p && setProfileName(p.name)).catch(() => {});
+    api.settings.get().then(setSettings).catch(() => {});
+    api.profiles.getActive().then((p) => p && setProfileName(p.name)).catch(() => {});
   }, [refreshContributions]);
 
   // ── Scene helpers ────────────────────────────────────────────────────
   const buildScene = useCallback(() => {
-    const api = apiRef.current;
-    const elements = api ? api.getSceneElements() : canvasData?.elements ?? [];
-    const appState = api ? api.getAppState() : canvasData?.appState ?? {};
-    const files = api ? api.getFiles() : canvasData?.files ?? {};
+    const editor = apiRef.current;
+    const elements = editor ? editor.getSceneElements() : canvasData?.elements ?? [];
+    const appState = editor ? editor.getAppState() : canvasData?.appState ?? {};
+    const files = editor ? editor.getFiles() : canvasData?.files ?? {};
     const canonical = JSON.parse(serializeAsJSON(elements, appState, files, 'local'));
     return { ...(canvasData || {}), ...canonical };
   }, [canvasData]);
 
   const recordRecent = useCallback(async (workspace: Shared.Workspace, file: Shared.FileInfo) => {
     try {
-      await window.api.recents.add({
+      await api.recents.add({
         path: file.path,
         name: file.name,
         workspaceId: workspace.id,
@@ -106,7 +108,7 @@ function App() {
   const handleOpenFile = useCallback(
     async (workspace: Shared.Workspace, file: Shared.FileInfo) => {
       try {
-        const data = await window.api.workspaces.readExcalidrawFile(workspace.id, file.path);
+        const data = await api.workspaces.readExcalidrawFile(workspace.id, file.path);
         justLoaded.current = true;
         setActiveWorkspace(workspace);
         setActiveFile(file);
@@ -131,7 +133,7 @@ function App() {
 
   const openRecent = useCallback(
     async (r: Shared.RecentFile) => {
-      const { workspaces } = await window.api.workspaces.list();
+      const { workspaces } = await api.workspaces.list();
       const ws = workspaces.find((w) => w.id === r.workspaceId) || activeWorkspace;
       if (!ws) return toastError('Workspace for this file is no longer available.');
       await handleOpenFile(ws, {
@@ -167,7 +169,7 @@ function App() {
     if (!activeFile) return saveAs();
     try {
       const scene = buildScene();
-      await window.api.workspaces.writeFile(activeWorkspace.id, activeFile.path, JSON.stringify(scene, null, 2));
+      await api.workspaces.writeFile(activeWorkspace.id, activeFile.path, JSON.stringify(scene, null, 2));
       setCanvasData(scene);
       setDirty(false);
       toastSuccess('Saved ' + activeFile.name);
@@ -184,7 +186,7 @@ function App() {
       const scene = buildScene();
       const fileName = name.endsWith('.excalidraw') ? name : `${name}.excalidraw`;
       const dest = `${activeWorkspace.path}/${fileName}`;
-      await window.api.workspaces.writeFile(activeWorkspace.id, dest, JSON.stringify(scene, null, 2));
+      await api.workspaces.writeFile(activeWorkspace.id, dest, JSON.stringify(scene, null, 2));
       const file = { name: fileName, path: dest, isDirectory: false, size: 0, mtime: Date.now(), extension: '.excalidraw' };
       setActiveFile(file);
       setCanvasData(scene);
@@ -211,13 +213,13 @@ function App() {
     const name = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     const dir = `${activeWorkspace.path}/daily`;
     try {
-      await window.api.workspaces.createFolder(activeWorkspace.id, null, 'daily');
+      await api.workspaces.createFolder(activeWorkspace.id, null, 'daily');
     } catch {
       /* already exists */
     }
     let filePath = `${dir}/${name}.excalidraw`;
     try {
-      const r = await window.api.workspaces.createFile(activeWorkspace.id, dir, name);
+      const r = await api.workspaces.createFile(activeWorkspace.id, dir, name);
       filePath = r.path;
       toastSuccess(`Created daily note ${name}`);
     } catch {
@@ -235,9 +237,9 @@ function App() {
   }, [activeWorkspace, handleOpenFile]);
 
   const openWorkspace = useCallback(async () => {
-    const ws = await window.api.workspaces.add();
+    const ws = await api.workspaces.add();
     if (ws) {
-      await window.api.workspaces.setActive(ws.id);
+      await api.workspaces.setActive(ws.id);
       setActiveWorkspace(ws);
       setSidebarReloadKey((k) => k + 1);
     }
@@ -247,11 +249,11 @@ function App() {
   const exportPreset = useCallback(
     async (preset: Shared.ExportPreset) => {
       if (!activeWorkspace) throw new Error('Open a workspace first.');
-      const api = apiRef.current;
-      const elements = api ? api.getSceneElements() : canvasData?.elements ?? [];
-      const baseAppState = api ? api.getAppState() : canvasData?.appState ?? {};
+      const editor = apiRef.current;
+      const elements = editor ? editor.getSceneElements() : canvasData?.elements ?? [];
+      const baseAppState = editor ? editor.getAppState() : canvasData?.appState ?? {};
       const appState = { ...baseAppState, exportBackground: preset.background, exportScale: preset.scale };
-      const files = api ? api.getFiles() : canvasData?.files ?? {};
+      const files = editor ? editor.getFiles() : canvasData?.files ?? {};
       const scene = buildScene();
       const baseName = activeFile?.name?.replace(/\.[^.]+$/, '') || 'untitled';
       const fileName = (preset.nameTemplate || '{name}').replace('{name}', baseName).replace('{preset}', preset.id);
@@ -260,12 +262,12 @@ function App() {
 
       if (preset.format === 'png') {
         const blob = await exportToBlob({ elements, appState, files, mimeType: 'image/png' });
-        await window.api.workspaces.exportFile(activeWorkspace.id, dest, 'png', await blobToBase64(blob), scene);
+        await api.workspaces.exportFile(activeWorkspace.id, dest, 'png', await blobToBase64(blob), scene);
       } else if (preset.format === 'svg') {
         const svg = await exportToSvg({ elements, appState, files, exportPadding: 10 } as any);
-        await window.api.workspaces.exportFile(activeWorkspace.id, dest, 'svg', new XMLSerializer().serializeToString(svg), scene);
+        await api.workspaces.exportFile(activeWorkspace.id, dest, 'svg', new XMLSerializer().serializeToString(svg), scene);
       } else {
-        await window.api.workspaces.exportFile(activeWorkspace.id, dest, 'json', '', scene);
+        await api.workspaces.exportFile(activeWorkspace.id, dest, 'json', '', scene);
       }
       setSidebarReloadKey((k) => k + 1);
     },
@@ -274,15 +276,15 @@ function App() {
 
   const exportMarkdown = useCallback(async () => {
     if (!activeWorkspace) return toastError('Open a workspace first.');
-    const api = apiRef.current;
-    if (!api) return;
-    const elements = api.getSceneElements();
-    const files = api.getFiles();
-    const appState = { ...api.getAppState(), exportBackground: true };
+    const editor = apiRef.current;
+    if (!editor) return;
+    const elements = editor.getSceneElements();
+    const files = editor.getFiles();
+    const appState = { ...editor.getAppState(), exportBackground: true };
     const scene = buildScene();
     const baseName = activeFile?.name?.replace(/\.[^.]+$/, '') || 'drawing';
     const blob = await exportToBlob({ elements, appState, files, mimeType: 'image/png' });
-    await window.api.markdown.export(
+    await api.markdown.export(
       activeWorkspace.id,
       baseName,
       { includeFrontmatter: true, imageFormat: 'png', title: baseName, tags: [] },
@@ -310,12 +312,12 @@ function App() {
 
   const insertLibrary = useCallback(async (id: string) => {
     try {
-      const lib = await window.api.libraries.get(id);
+      const lib = await api.libraries.get(id);
       const els = lib.libraryItems.flatMap((it: any) => it.elements || []);
       if (!els.length) return toastInfo('That library has no items.');
-      const api = apiRef.current;
-      if (!api) return;
-      api.updateScene({ elements: [...api.getSceneElements(), ...els] });
+      const editor = apiRef.current;
+      if (!editor) return;
+      editor.updateScene({ elements: [...editor.getSceneElements(), ...els] });
       setDirty(true);
       toastSuccess(`Inserted ${els.length} element(s)`);
     } catch (e: any) {
@@ -324,24 +326,24 @@ function App() {
   }, []);
 
   const saveSelectionToLibrary = useCallback(async (id: string) => {
-    const api = apiRef.current;
-    if (!api) return;
-    const selected = api.getAppState().selectedElementIds || {};
-    const els = api.getSceneElements().filter((e: any) => selected[e.id]);
+    const editor = apiRef.current;
+    if (!editor) return;
+    const selected = editor.getAppState().selectedElementIds || {};
+    const els = editor.getSceneElements().filter((e: any) => selected[e.id]);
     if (!els.length) return toastInfo('Select some elements on the canvas first.');
-    await window.api.libraries.addItems(id, [{ elements: els, status: 'published', created: Date.now() }]);
+    await api.libraries.addItems(id, [{ elements: els, status: 'published', created: Date.now() }]);
     bump('libraries');
     toastSuccess(`Saved ${els.length} element(s) to library`);
   }, []);
 
   const importImage = useCallback(async () => {
     try {
-      const ins = await window.api.import.pickImage();
+      const ins = await api.import.pickImage();
       if (!ins) return;
-      const api = apiRef.current;
-      if (!api) return;
-      api.addFiles([ins.file]);
-      api.updateScene({ elements: [...api.getSceneElements(), ins.element] });
+      const editor = apiRef.current;
+      if (!editor) return;
+      editor.addFiles([ins.file]);
+      editor.updateScene({ elements: [...editor.getSceneElements(), ins.element] });
       setDirty(true);
       toastSuccess('Image inserted');
     } catch (e: any) {
@@ -351,12 +353,12 @@ function App() {
 
   const importSvg = useCallback(async () => {
     try {
-      const res = await window.api.import.pickSvgAsElements();
+      const res = await api.import.pickSvgAsElements();
       if (!res) return;
-      const api = apiRef.current;
-      if (!api) return;
+      const editor = apiRef.current;
+      if (!editor) return;
       if (!res.elements.length) return toastInfo('No convertible shapes found in that SVG.');
-      api.updateScene({ elements: [...api.getSceneElements(), ...res.elements] });
+      editor.updateScene({ elements: [...editor.getSceneElements(), ...res.elements] });
       setDirty(true);
       toastSuccess(`Imported ${res.elements.length} element(s)${res.skipped ? ` (${res.skipped} skipped)` : ''}`);
     } catch (e: any) {
@@ -366,10 +368,10 @@ function App() {
 
   const insertSnippet = useCallback(async (id: string) => {
     try {
-      const snippet = await window.api.snippets.get(id);
-      const api = apiRef.current;
-      if (!api || !snippet.elements.length) return;
-      api.updateScene({ elements: [...api.getSceneElements(), ...snippet.elements] });
+      const snippet = await api.snippets.get(id);
+      const editor = apiRef.current;
+      if (!editor || !snippet.elements.length) return;
+      editor.updateScene({ elements: [...editor.getSceneElements(), ...snippet.elements] });
       setDirty(true);
       toastSuccess(`Inserted "${snippet.title}"`);
     } catch (e: any) {
@@ -378,9 +380,9 @@ function App() {
   }, []);
 
   const applyStyle = useCallback((preset: Shared.StylePreset) => {
-    const api = apiRef.current;
-    if (!api) return;
-    api.updateScene({
+    const editor = apiRef.current;
+    if (!editor) return;
+    editor.updateScene({
       appState: {
         currentItemStrokeColor: preset.strokeColor,
         currentItemBackgroundColor: preset.backgroundColor,
@@ -394,12 +396,12 @@ function App() {
   }, []);
 
   const saveStyle = useCallback(async () => {
-    const api = apiRef.current;
-    if (!api) return;
+    const editor = apiRef.current;
+    if (!editor) return;
     const name = prompt('Style preset name:');
     if (!name) return;
-    const a = api.getAppState();
-    await window.api.styles.save({
+    const a = editor.getAppState();
+    await api.styles.save({
       name,
       strokeColor: a.currentItemStrokeColor ?? '#1e1e1e',
       backgroundColor: a.currentItemBackgroundColor ?? 'transparent',
@@ -414,10 +416,10 @@ function App() {
   }, []);
 
   const gatherSnippet = useCallback(async () => {
-    const api = apiRef.current;
-    if (!api) return null;
-    const selected = api.getAppState().selectedElementIds || {};
-    const els = api.getSceneElements().filter((e: any) => selected[e.id]);
+    const editor = apiRef.current;
+    if (!editor) return null;
+    const selected = editor.getAppState().selectedElementIds || {};
+    const els = editor.getSceneElements().filter((e: any) => selected[e.id]);
     if (!els.length) {
       toastInfo('Select some elements on the canvas first.');
       return null;
@@ -430,12 +432,12 @@ function App() {
   // ── Presentation ──────────────────────────────────────────────────────
   const gotoSlide = useCallback((deck: Shared.SlideDeck, i: number) => {
     const slide = deck.slides[i];
-    const api = apiRef.current;
-    if (slide && api?.scrollToContent) {
-      const el = api.getSceneElements().find((e: any) => e.id === slide.id);
+    const editor = apiRef.current;
+    if (slide && editor?.scrollToContent) {
+      const el = editor.getSceneElements().find((e: any) => e.id === slide.id);
       if (el) {
         try {
-          api.scrollToContent(el, { fitToViewport: true });
+          editor.scrollToContent(el, { fitToViewport: true });
         } catch {
           /* ignore */
         }
@@ -448,7 +450,7 @@ function App() {
     let deck: Shared.SlideDeck;
     if (activeWorkspace) {
       // The main process derives slides (from frames) and merges presenter notes.
-      deck = await window.api.presentation.getDeck(activeWorkspace.id, activeFile?.path || 'scratch', scene);
+      deck = await api.presentation.getDeck(activeWorkspace.id, activeFile?.path || 'scratch', scene);
     } else {
       deck = { slides: [] };
     }
@@ -473,7 +475,7 @@ function App() {
           case 'core.daily-note': return dailyNote();
           case 'core.duplicate': {
             if (!activeWorkspace || !activeFile) return toastInfo('Open a saved drawing to duplicate it.');
-            await window.api.workspaces.copyFile(activeWorkspace.id, activeFile.path);
+            await api.workspaces.copyFile(activeWorkspace.id, activeFile.path);
             setSidebarReloadKey((k) => k + 1);
             return toastSuccess('Duplicated ' + activeFile.name);
           }
@@ -497,7 +499,7 @@ function App() {
           case 'core.save-snippet': {
             const data = await gatherSnippet();
             if (data) {
-              await window.api.snippets.save({ title: data.title, elements: data.elements });
+              await api.snippets.save({ title: data.title, elements: data.elements });
               bump('snippets');
               toastSuccess(`Saved snippet "${data.title}"`);
             }
@@ -507,7 +509,7 @@ function App() {
           case 'core.save-template': {
             const data = await gatherTemplate();
             if (data) {
-              await window.api.templates.save({ title: data.title, scene: data.scene });
+              await api.templates.save({ title: data.title, scene: data.scene });
               bump('templates');
               toastSuccess(`Saved template "${data.title}"`);
             }
@@ -566,7 +568,7 @@ function App() {
   menuRef.current = menuHandler;
 
   useEffect(() => {
-    const unsub = window.api?.onMenuCommand?.((cmd) => menuRef.current(cmd));
+    const unsub = api?.onMenuCommand?.((cmd) => menuRef.current(cmd));
     const onKey = (e: KeyboardEvent) => {
       const mod = e.ctrlKey || e.metaKey;
       if (mod && e.key.toLowerCase() === 'k') {
@@ -735,11 +737,11 @@ function App() {
           onSaveStyle={saveStyle}
           getScene={buildScene}
           onGoToFrame={(slideId) => {
-            const api = apiRef.current;
-            const el = api?.getSceneElements?.().find((e: any) => e.id === slideId);
-            if (el && api?.scrollToContent) {
+            const editor = apiRef.current;
+            const el = editor?.getSceneElements?.().find((e: any) => e.id === slideId);
+            if (el && editor?.scrollToContent) {
               try {
-                api.scrollToContent(el, { fitToViewport: true });
+                editor.scrollToContent(el, { fitToViewport: true });
               } catch {
                 /* ignore */
               }
@@ -793,7 +795,7 @@ function App() {
         isOpen={isSettingsOpen}
         onClose={() => {
           setIsSettingsOpen(false);
-          window.api.settings.get().then(setSettings).catch(() => {});
+          api.settings.get().then(setSettings).catch(() => {});
         }}
       />
       <ToastHost />

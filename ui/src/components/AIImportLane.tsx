@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { useApi } from '../api/ApiContext';
 import { AiValidationResult } from '@excalibur/shared';
 import { toastError, toastSuccess } from '../lib/toast';
 import { diffObjects, formatValue, FieldChange } from '../lib/diff';
@@ -13,6 +14,7 @@ const SAMPLE = `{
 }`;
 
 export const AIImportLane: React.FC<{ onApplied?: () => void }> = ({ onApplied }) => {
+  const api = useApi();
   const [raw, setRaw] = useState('');
   const [result, setResult] = useState<AiValidationResult | null>(null);
   const [busy, setBusy] = useState(false);
@@ -23,7 +25,7 @@ export const AIImportLane: React.FC<{ onApplied?: () => void }> = ({ onApplied }
   useEffect(() => {
     (async () => {
       if (result?.ok && result.type === 'settings_bundle' && result.payload) {
-        const current = await window.api.settings.get();
+        const current = await api.settings.get();
         setSettingsDiff(diffObjects(current as any, (result.payload as any).settings || {}));
       } else {
         setSettingsDiff(null);
@@ -37,7 +39,7 @@ export const AIImportLane: React.FC<{ onApplied?: () => void }> = ({ onApplied }
       setResult(null);
       return;
     }
-    const res = await window.api.ai.validate(text);
+    const res = await api.ai.validate(text);
     setResult(res);
   }, []);
 
@@ -58,7 +60,7 @@ export const AIImportLane: React.FC<{ onApplied?: () => void }> = ({ onApplied }
     if (!result?.ok || !result.payload) return;
     setBusy(true);
     try {
-      const res = await window.api.ai.apply(result.payload);
+      const res = await api.ai.apply(result.payload);
       toastSuccess(res.message);
       setRaw('');
       setResult(null);

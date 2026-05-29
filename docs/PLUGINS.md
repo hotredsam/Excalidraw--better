@@ -60,3 +60,20 @@ enforces the workspace boundary regardless of what a plugin requests.
 `app/test/first-party-plugins.test.ts` validates that every shipped manifest
 parses against `PluginManifestSchema` and that the folder name matches the id.
 Run `pnpm --filter @excalibur/app test` after adding a plugin.
+
+## Programmatic / embedding API
+
+The plugin system is part of the framework-agnostic engine, so it works in any
+host (not just the Electron app). The public surface lives in the packages:
+
+- `@excalibur/shared` exports the schemas you build against:
+  `PluginManifestSchema`, `InstalledPluginSchema`, `PluginContributes`, and —
+  for the AI Import Lane — `AiPayloadSchema` / `validateRawPayload`.
+- `@excalibur/core` exports `PluginManager` (load/enable/disable/install/
+  uninstall, gather contributions) and the engine that owns it.
+- Through the `ExcaliburApi` contract a host calls `api.plugins.*`,
+  `api.commands.list()`, and `api.ai.{validate,apply}` — identical behaviour
+  whether the host is Electron, web, or headless.
+
+See [EMBEDDING.md](./EMBEDDING.md) for how to host the engine and editor
+elsewhere.

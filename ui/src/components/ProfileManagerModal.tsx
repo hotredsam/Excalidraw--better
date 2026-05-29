@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useApi } from '../api/ApiContext';
 import { Profile } from '@excalibur/shared';
 import { toastError, toastSuccess } from '../lib/toast';
 
@@ -8,11 +9,12 @@ import { toastError, toastSuccess } from '../lib/toast';
  * surface (Product Spec §5 — "create/delete/profile settings").
  */
 export const ProfileManagerModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+  const api = useApi();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const refresh = async () => {
-    const [list, active] = await Promise.all([window.api.profiles.list(), window.api.profiles.getActive()]);
+    const [list, active] = await Promise.all([api.profiles.list(), api.profiles.getActive()]);
     setProfiles(list.profiles);
     setActiveId(active?.id ?? null);
   };
@@ -26,7 +28,7 @@ export const ProfileManagerModal: React.FC<{ isOpen: boolean; onClose: () => voi
   const create = async () => {
     const name = prompt('New profile name:');
     if (!name) return;
-    await window.api.profiles.create(name);
+    await api.profiles.create(name);
     toastSuccess(`Created profile "${name}"`);
     refresh();
   };
@@ -34,7 +36,7 @@ export const ProfileManagerModal: React.FC<{ isOpen: boolean; onClose: () => voi
   const rename = async (p: Profile) => {
     const name = prompt('Rename profile:', p.name);
     if (!name || name === p.name) return;
-    await window.api.profiles.rename(p.id, name);
+    await api.profiles.rename(p.id, name);
     refresh();
   };
 
@@ -42,7 +44,7 @@ export const ProfileManagerModal: React.FC<{ isOpen: boolean; onClose: () => voi
     if (profiles.length <= 1) return toastError('You cannot delete the only profile.');
     if (!confirm(`Delete profile "${p.name}"? Its settings, vault, templates and plugins are removed.`)) return;
     try {
-      await window.api.profiles.delete(p.id);
+      await api.profiles.delete(p.id);
       toastSuccess(`Deleted "${p.name}"`);
       refresh();
     } catch (e: any) {
@@ -51,7 +53,7 @@ export const ProfileManagerModal: React.FC<{ isOpen: boolean; onClose: () => voi
   };
 
   const switchTo = async (p: Profile) => {
-    await window.api.profiles.setActive(p.id);
+    await api.profiles.setActive(p.id);
     window.location.reload();
   };
 

@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
+import { useApi } from '../api/ApiContext';
 import type { Command } from '@excalibur/shared';
 
 /** A '?'-triggered cheat-sheet of all commands that have an effective shortcut. */
 export const KeyboardHelpOverlay: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
+  const api = useApi();
   const [rows, setRows] = useState<{ title: string; category: string; acc: string }[]>([]);
 
   useEffect(() => {
     if (!open) return;
     (async () => {
       const [{ commands }, { bindings }] = await Promise.all([
-        window.api.commands.list(),
-        window.api.shortcuts.list(),
+        api.commands.list(),
+        api.shortcuts.list(),
       ]);
       const overrideFor = (id: string) => bindings.find((b) => b.commandId === id)?.accelerator;
       const list = (commands as Command[])

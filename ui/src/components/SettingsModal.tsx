@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Settings } from '@excalibur/shared';
 import { ShortcutsEditor } from './ShortcutsEditor';
+import { useApi } from '../api/ApiContext';
 
 export const SettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+  const api = useApi();
   const [settings, setSettings] = useState<Settings | null>(null);
 
   useEffect(() => {
-    if (isOpen) window.api.settings.get().then(setSettings);
+    if (isOpen) api.settings.get().then(setSettings);
   }, [isOpen]);
 
   if (!isOpen || !settings) return null;
 
-  const update = async (partial: Partial<Settings>) => setSettings(await window.api.settings.update(partial));
+  const update = async (partial: Partial<Settings>) => setSettings(await api.settings.update(partial));
 
   const Row = ({ label, children }: { label: string; children: React.ReactNode }) => (
     <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>

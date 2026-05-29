@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useApi } from '../api/ApiContext';
 import { Workspace, FileInfo, Review } from '@excalibur/shared';
 import { toastError } from '../lib/toast';
 
@@ -7,6 +8,7 @@ export const ReviewPanel: React.FC<{
   activeFile: FileInfo | null;
   author: string;
 }> = ({ activeWorkspace, activeFile, author }) => {
+  const api = useApi();
   const [review, setReview] = useState<Review>({ pins: [] });
   const [draft, setDraft] = useState('');
 
@@ -16,7 +18,7 @@ export const ReviewPanel: React.FC<{
       return;
     }
     try {
-      setReview(await window.api.review.get(activeWorkspace.id, activeFile.path));
+      setReview(await api.review.get(activeWorkspace.id, activeFile.path));
     } catch {
       setReview({ pins: [] });
     }
@@ -33,7 +35,7 @@ export const ReviewPanel: React.FC<{
   const addPin = async () => {
     if (!draft.trim()) return;
     try {
-      setReview(await window.api.review.addPin(activeWorkspace.id, activeFile.path, 0, 0, author, draft.trim()));
+      setReview(await api.review.addPin(activeWorkspace.id, activeFile.path, 0, 0, author, draft.trim()));
       setDraft('');
     } catch (e: any) {
       toastError(e?.message || 'Could not add comment');
@@ -43,7 +45,7 @@ export const ReviewPanel: React.FC<{
   const comment = async (pinId: string) => {
     const body = prompt('Reply:');
     if (!body) return;
-    setReview(await window.api.review.addComment(activeWorkspace.id, activeFile.path, pinId, author, body));
+    setReview(await api.review.addComment(activeWorkspace.id, activeFile.path, pinId, author, body));
   };
 
   const open = review.pins.filter((p) => !p.resolved);
@@ -59,10 +61,10 @@ export const ReviewPanel: React.FC<{
       ))}
       <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
         <button style={mini} onClick={() => comment(pin.id)}>Reply</button>
-        <button style={mini} onClick={async () => setReview(await window.api.review.setResolved(activeWorkspace.id, activeFile.path, pin.id, !pin.resolved))}>
+        <button style={mini} onClick={async () => setReview(await api.review.setResolved(activeWorkspace.id, activeFile.path, pin.id, !pin.resolved))}>
           {pin.resolved ? 'Reopen' : 'Resolve'}
         </button>
-        <button style={{ ...mini, color: 'var(--danger)' }} onClick={async () => setReview(await window.api.review.deletePin(activeWorkspace.id, activeFile.path, pin.id))}>
+        <button style={{ ...mini, color: 'var(--danger)' }} onClick={async () => setReview(await api.review.deletePin(activeWorkspace.id, activeFile.path, pin.id))}>
           Delete
         </button>
       </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Workspace, FileInfo, SearchResult } from '@excalibur/shared';
+import { useApi } from '../api/ApiContext';
 
 /**
  * Browse all tags in the active workspace with counts; selecting a tag lists the
@@ -10,6 +11,7 @@ export const TagBrowser: React.FC<{
   onOpenFile: (workspace: Workspace, file: FileInfo) => void;
   refreshKey?: number;
 }> = ({ activeWorkspace, onOpenFile, refreshKey }) => {
+  const api = useApi();
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [selected, setSelected] = useState<string | null>(null);
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -20,7 +22,7 @@ export const TagBrowser: React.FC<{
         setCounts({});
         return;
       }
-      const tags = await window.api.workspaces.getTags(activeWorkspace.id);
+      const tags = await api.workspaces.getTags(activeWorkspace.id);
       const c: Record<string, number> = {};
       for (const list of Object.values(tags)) for (const t of list) c[t] = (c[t] || 0) + 1;
       setCounts(c);
@@ -32,7 +34,7 @@ export const TagBrowser: React.FC<{
   const selectTag = async (tag: string) => {
     if (!activeWorkspace) return;
     setSelected(tag);
-    const res = await window.api.workspaces.search(activeWorkspace.id, tag);
+    const res = await api.workspaces.search(activeWorkspace.id, tag);
     setResults(res.results.filter((r) => r.tags.includes(tag)));
   };
 

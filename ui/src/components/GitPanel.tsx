@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useApi } from '../api/ApiContext';
 import { Workspace, GitStatus } from '@excalibur/shared';
 import { toastError, toastSuccess } from '../lib/toast';
 
 export const GitPanel: React.FC<{ activeWorkspace: Workspace | null }> = ({ activeWorkspace }) => {
+  const api = useApi();
   const [status, setStatus] = useState<GitStatus | null>(null);
   const [log, setLog] = useState<{ hash: string; subject: string; date: string }[]>([]);
   const [message, setMessage] = useState('');
@@ -10,9 +12,9 @@ export const GitPanel: React.FC<{ activeWorkspace: Workspace | null }> = ({ acti
 
   const refresh = useCallback(async () => {
     if (!activeWorkspace) return;
-    const st = await window.api.git.status(activeWorkspace.id);
+    const st = await api.git.status(activeWorkspace.id);
     setStatus(st);
-    if (st.isRepo) setLog((await window.api.git.log(activeWorkspace.id, 10)).entries);
+    if (st.isRepo) setLog((await api.git.log(activeWorkspace.id, 10)).entries);
   }, [activeWorkspace?.id]);
 
   useEffect(() => {
@@ -30,7 +32,7 @@ export const GitPanel: React.FC<{ activeWorkspace: Workspace | null }> = ({ acti
           className="btn-ghost"
           style={{ fontSize: 12 }}
           onClick={async () => {
-            await window.api.git.init(activeWorkspace.id);
+            await api.git.init(activeWorkspace.id);
             refresh();
           }}
         >
@@ -44,7 +46,7 @@ export const GitPanel: React.FC<{ activeWorkspace: Workspace | null }> = ({ acti
     if (!message.trim()) return;
     setBusy(true);
     try {
-      const res = await window.api.git.commit(activeWorkspace.id, message);
+      const res = await api.git.commit(activeWorkspace.id, message);
       toastSuccess('Committed: ' + res.output.split('\n')[0]);
       setMessage('');
       refresh();

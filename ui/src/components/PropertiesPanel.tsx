@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useApi } from '../api/ApiContext';
 import { FileInfo, Workspace, ExportPreset } from '@excalibur/shared';
 import { toastError, toastSuccess } from '../lib/toast';
 import { BackupsPanel } from './BackupsPanel';
@@ -15,6 +16,7 @@ export const PropertiesPanel: React.FC<{
   presets: ExportPreset[];
   onExport: (preset: ExportPreset) => Promise<void>;
 }> = ({ activeFile, activeWorkspace, presets, onExport }) => {
+  const api = useApi();
   const [tags, setTags] = useState<string[]>([]);
   const [draft, setDraft] = useState('');
   const [exporting, setExporting] = useState<string | null>(null);
@@ -29,7 +31,7 @@ export const PropertiesPanel: React.FC<{
         setTags([]);
         return;
       }
-      const all = await window.api.workspaces.getTags(activeWorkspace.id);
+      const all = await api.workspaces.getTags(activeWorkspace.id);
       setTags(all[relKey] || []);
     })();
   }, [activeWorkspace?.id, relKey]);
@@ -37,7 +39,7 @@ export const PropertiesPanel: React.FC<{
   const commitTags = async (next: string[]) => {
     if (!activeWorkspace || !activeFile) return;
     setTags(next);
-    await window.api.workspaces.setTags(activeWorkspace.id, activeFile.path, next);
+    await api.workspaces.setTags(activeWorkspace.id, activeFile.path, next);
   };
 
   const addTag = () => {

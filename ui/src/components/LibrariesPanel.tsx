@@ -1,22 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { LibrarySummary } from '@excalibur/shared';
 import { toastError, toastSuccess } from '../lib/toast';
+import { useApi } from '../api/ApiContext';
 
 export const LibrariesPanel: React.FC<{
   onInsertLibrary?: (id: string) => void;
   onSaveSelection?: (id: string) => void;
   refreshKey?: number;
 }> = ({ onInsertLibrary, onSaveSelection, refreshKey }) => {
+  const api = useApi();
   const [libraries, setLibraries] = useState<LibrarySummary[]>([]);
 
-  const refresh = async () => setLibraries((await window.api.libraries.list()).libraries);
+  const refresh = async () => setLibraries((await api.libraries.list()).libraries);
   useEffect(() => {
     refresh();
   }, [refreshKey]);
 
   const importLib = async () => {
     try {
-      const summary = await window.api.libraries.import();
+      const summary = await api.libraries.import();
       if (summary) {
         toastSuccess(`Imported library "${summary.name}"`);
         refresh();
@@ -28,7 +30,7 @@ export const LibrariesPanel: React.FC<{
 
   const remove = async (id: string) => {
     if (!confirm(`Remove library "${id}"?`)) return;
-    await window.api.libraries.remove(id);
+    await api.libraries.remove(id);
     refresh();
   };
 

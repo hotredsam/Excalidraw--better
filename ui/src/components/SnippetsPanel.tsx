@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useApi } from '../api/ApiContext';
 import { SnippetSummary } from '@excalibur/shared';
 import { toastError, toastSuccess } from '../lib/toast';
 
@@ -7,9 +8,10 @@ export const SnippetsPanel: React.FC<{
   onSaveSelection: () => Promise<{ title: string; elements: any[] } | null>;
   refreshKey?: number;
 }> = ({ onInsert, onSaveSelection, refreshKey }) => {
+  const api = useApi();
   const [snippets, setSnippets] = useState<SnippetSummary[]>([]);
 
-  const refresh = async () => setSnippets((await window.api.snippets.list()).snippets);
+  const refresh = async () => setSnippets((await api.snippets.list()).snippets);
   useEffect(() => {
     refresh();
   }, [refreshKey]);
@@ -18,13 +20,13 @@ export const SnippetsPanel: React.FC<{
     const data = await onSaveSelection();
     if (!data) return;
     if (!data.elements.length) return toastError('Select some elements first.');
-    await window.api.snippets.save({ title: data.title, elements: data.elements });
+    await api.snippets.save({ title: data.title, elements: data.elements });
     toastSuccess(`Saved snippet "${data.title}"`);
     refresh();
   };
 
   const remove = async (id: string) => {
-    await window.api.snippets.remove(id);
+    await api.snippets.remove(id);
     refresh();
   };
 

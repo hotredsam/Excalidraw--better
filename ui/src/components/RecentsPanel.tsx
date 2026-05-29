@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import { useApi } from '../api/ApiContext';
 import { RecentFile } from '@excalibur/shared';
 
 export const RecentsPanel: React.FC<{
   onOpenRecent: (r: RecentFile) => void;
   refreshKey?: number;
 }> = ({ onOpenRecent, refreshKey }) => {
+  const api = useApi();
   const [recents, setRecents] = useState<RecentFile[]>([]);
 
-  const refresh = async () => setRecents((await window.api.recents.list()).recents);
+  const refresh = async () => setRecents((await api.recents.list()).recents);
   useEffect(() => {
     refresh();
   }, [refreshKey]);
@@ -22,7 +24,7 @@ export const RecentsPanel: React.FC<{
           className="btn-ghost"
           style={{ fontSize: 11 }}
           onClick={async () => {
-            await window.api.recents.clear();
+            await api.recents.clear();
             refresh();
           }}
         >

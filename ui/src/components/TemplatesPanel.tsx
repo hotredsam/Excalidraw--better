@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useApi } from '../api/ApiContext';
 import { TemplateSummary, StoredTemplate } from '@excalibur/shared';
 import { toastError, toastSuccess } from '../lib/toast';
 
@@ -7,10 +8,11 @@ export const TemplatesPanel: React.FC<{
   onSaveCurrent: () => Promise<{ title: string; scene: any } | null>;
   refreshKey?: number;
 }> = ({ onUseTemplate, onSaveCurrent, refreshKey }) => {
+  const api = useApi();
   const [templates, setTemplates] = useState<TemplateSummary[]>([]);
 
   const refresh = async () => {
-    const { templates } = await window.api.templates.list();
+    const { templates } = await api.templates.list();
     setTemplates(templates);
   };
 
@@ -20,7 +22,7 @@ export const TemplatesPanel: React.FC<{
 
   const use = async (id: string) => {
     try {
-      const tpl = await window.api.templates.apply(id);
+      const tpl = await api.templates.apply(id);
       onUseTemplate(tpl);
       toastSuccess(`Inserted template "${tpl.title}"`);
     } catch (e: any) {
@@ -32,7 +34,7 @@ export const TemplatesPanel: React.FC<{
     const data = await onSaveCurrent();
     if (!data) return;
     try {
-      await window.api.templates.save({ title: data.title, scene: data.scene });
+      await api.templates.save({ title: data.title, scene: data.scene });
       toastSuccess(`Saved template "${data.title}"`);
       await refresh();
     } catch (e: any) {

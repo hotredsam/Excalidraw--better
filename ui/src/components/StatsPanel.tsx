@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Workspace, WorkspaceStats } from '@excalibur/shared';
+import { useApi } from '../api/ApiContext';
 
 const fmtBytes = (b: number) => (b > 1e6 ? `${(b / 1e6).toFixed(1)} MB` : `${(b / 1024).toFixed(1)} KB`);
 
@@ -7,6 +8,7 @@ export const StatsPanel: React.FC<{ activeWorkspace: Workspace | null; refreshKe
   activeWorkspace,
   refreshKey,
 }) => {
+  const api = useApi();
   const [stats, setStats] = useState<WorkspaceStats | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -18,7 +20,7 @@ export const StatsPanel: React.FC<{ activeWorkspace: Workspace | null; refreshKe
       }
       setLoading(true);
       try {
-        setStats(await window.api.stats.compute(activeWorkspace.id));
+        setStats(await api.stats.compute(activeWorkspace.id));
       } finally {
         setLoading(false);
       }

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useApi } from '../api/ApiContext';
 import type { StylePreset } from '@excalibur/shared';
 import { toastSuccess } from '../lib/toast';
 
@@ -8,15 +9,16 @@ export const StylePresetsPanel: React.FC<{
   onSaveCurrent: () => Promise<void>;
   refreshKey?: number;
 }> = ({ onApply, onSaveCurrent, refreshKey }) => {
+  const api = useApi();
   const [presets, setPresets] = useState<StylePreset[]>([]);
 
-  const refresh = async () => setPresets((await window.api.styles.list()).presets);
+  const refresh = async () => setPresets((await api.styles.list()).presets);
   useEffect(() => {
     refresh();
   }, [refreshKey]);
 
   const remove = async (id: string) => {
-    await window.api.styles.remove(id);
+    await api.styles.remove(id);
     refresh();
   };
 

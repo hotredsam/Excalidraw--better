@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Profile, ProfileList } from '@excalibur/shared';
+import { useApi } from '../api/ApiContext';
 
 export const ProfileSwitcher: React.FC<{ onManage?: () => void }> = ({ onManage }) => {
+  const api = useApi();
   const [activeProfile, setActiveProfile] = useState<Profile | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
   const loadData = async () => {
-    const active = await window.api.profiles.getActive();
-    const list = await window.api.profiles.list();
+    const active = await api.profiles.getActive();
+    const list = await api.profiles.list();
     setActiveProfile(active);
     setProfiles(list.profiles);
   };
@@ -18,7 +20,7 @@ export const ProfileSwitcher: React.FC<{ onManage?: () => void }> = ({ onManage 
   }, []);
 
   const handleSwitch = async (id: string) => {
-    await window.api.profiles.setActive(id);
+    await api.profiles.setActive(id);
     await loadData();
     window.location.reload(); // Simple way to reset app state on profile switch
   };
@@ -26,7 +28,7 @@ export const ProfileSwitcher: React.FC<{ onManage?: () => void }> = ({ onManage 
   const handleCreate = async () => {
     const name = prompt('Profile Name:');
     if (name) {
-      await window.api.profiles.create(name);
+      await api.profiles.create(name);
       await loadData();
     }
   };

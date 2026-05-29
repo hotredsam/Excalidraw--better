@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useApi } from '../api/ApiContext';
 import type { Command, ShortcutBinding } from '@excalibur/shared';
 import { normalizeAccelerator } from '../lib/shortcuts';
 import { toastError } from '../lib/toast';
@@ -9,14 +10,15 @@ import { toastError } from '../lib/toast';
  * user re-bind by pressing a key combination.
  */
 export const ShortcutsEditor: React.FC = () => {
+  const api = useApi();
   const [commands, setCommands] = useState<Command[]>([]);
   const [overrides, setOverrides] = useState<ShortcutBinding[]>([]);
   const [capturing, setCapturing] = useState<string | null>(null);
 
   const load = async () => {
     const [{ commands }, { bindings }] = await Promise.all([
-      window.api.commands.list(),
-      window.api.shortcuts.list(),
+      api.commands.list(),
+      api.shortcuts.list(),
     ]);
     setCommands(commands);
     setOverrides(bindings);
@@ -44,7 +46,7 @@ export const ShortcutsEditor: React.FC = () => {
     });
     if (['Ctrl', 'Alt', 'Shift', ''].includes(acc)) return;
     try {
-      const { bindings } = await window.api.shortcuts.set(commandId, acc);
+      const { bindings } = await api.shortcuts.set(commandId, acc);
       setOverrides(bindings);
       setCapturing(null);
     } catch (err: any) {
@@ -53,7 +55,7 @@ export const ShortcutsEditor: React.FC = () => {
   };
 
   const resetOne = async (commandId: string) => {
-    const { bindings } = await window.api.shortcuts.reset(commandId);
+    const { bindings } = await api.shortcuts.reset(commandId);
     setOverrides(bindings);
   };
 

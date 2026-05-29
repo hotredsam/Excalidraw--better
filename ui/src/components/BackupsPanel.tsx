@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useApi } from '../api/ApiContext';
 import { BackupEntry, FileInfo } from '@excalibur/shared';
 import { toastError, toastSuccess } from '../lib/toast';
 
@@ -7,6 +8,7 @@ export const BackupsPanel: React.FC<{ activeFile: FileInfo | null; onRestored?: 
   activeFile,
   onRestored,
 }) => {
+  const api = useApi();
   const [backups, setBackups] = useState<BackupEntry[]>([]);
 
   const refresh = async () => {
@@ -14,7 +16,7 @@ export const BackupsPanel: React.FC<{ activeFile: FileInfo | null; onRestored?: 
       setBackups([]);
       return;
     }
-    setBackups((await window.api.backups.list(activeFile.path)).backups);
+    setBackups((await api.backups.list(activeFile.path)).backups);
   };
 
   useEffect(() => {
@@ -26,7 +28,7 @@ export const BackupsPanel: React.FC<{ activeFile: FileInfo | null; onRestored?: 
   const restore = async (b: BackupEntry) => {
     if (!confirm(`Restore the version from ${new Date(b.createdAt).toLocaleString()}? This overwrites the current file.`)) return;
     try {
-      await window.api.backups.restore(b.id);
+      await api.backups.restore(b.id);
       toastSuccess('Restored backup');
       onRestored?.();
     } catch (e: any) {

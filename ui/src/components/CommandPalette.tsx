@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useApi } from '../api/ApiContext';
 import type { Command } from '@excalibur/shared';
 import { filterCommands } from '../lib/commands';
 
@@ -7,6 +8,7 @@ export const CommandPalette: React.FC<{
   onClose: () => void;
   onRun: (id: string) => void;
 }> = ({ open, onClose, onRun }) => {
+  const api = useApi();
   const [commands, setCommands] = useState<Command[]>([]);
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
@@ -14,7 +16,7 @@ export const CommandPalette: React.FC<{
 
   useEffect(() => {
     if (open) {
-      window.api.commands.list().then((r) => setCommands(r.commands));
+      api.commands.list().then((r) => setCommands(r.commands));
       setQuery('');
       setActive(0);
       setTimeout(() => inputRef.current?.focus(), 0);

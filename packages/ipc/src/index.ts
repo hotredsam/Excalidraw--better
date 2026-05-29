@@ -62,6 +62,69 @@ export const TEMPLATE_CHANNELS = {
   SAVE: 'templates:save',
 } as const;
 
+export const RECENT_CHANNELS = {
+  LIST: 'recents:list',
+  ADD: 'recents:add',
+  REMOVE: 'recents:remove',
+  CLEAR: 'recents:clear',
+} as const;
+
+export const LIBRARY_CHANNELS = {
+  LIST: 'libraries:list',
+  GET: 'libraries:get',
+  IMPORT: 'libraries:import',
+  ADD_ITEMS: 'libraries:add-items',
+  REMOVE: 'libraries:remove',
+  EXPORT: 'libraries:export',
+} as const;
+
+export const BULK_CHANNELS = {
+  RENAME: 'bulk:rename',
+  DELETE: 'bulk:delete',
+  MOVE: 'bulk:move',
+} as const;
+
+export const PRESENTATION_CHANNELS = {
+  GET_DECK: 'presentation:get-deck',
+  SET_NOTES: 'presentation:set-notes',
+} as const;
+
+export const REVIEW_CHANNELS = {
+  GET: 'review:get',
+  ADD_PIN: 'review:add-pin',
+  ADD_COMMENT: 'review:add-comment',
+  SET_RESOLVED: 'review:set-resolved',
+  DELETE_PIN: 'review:delete-pin',
+} as const;
+
+export const STATS_CHANNELS = {
+  COMPUTE: 'stats:compute',
+} as const;
+
+export const GIT_CHANNELS = {
+  STATUS: 'git:status',
+  COMMIT: 'git:commit',
+  LOG: 'git:log',
+  INIT: 'git:init',
+} as const;
+
+export const COMMAND_CHANNELS = {
+  LIST: 'commands:list',
+} as const;
+
+export const BACKUP_CHANNELS = {
+  LIST: 'backups:list',
+  RESTORE: 'backups:restore',
+} as const;
+
+export const MARKDOWN_CHANNELS = {
+  EXPORT: 'markdown:export',
+} as const;
+
+export const IMPORT_CHANNELS = {
+  PICK_IMAGE: 'import:pick-image',
+} as const;
+
 export type AppChannels = typeof APP_CHANNELS[keyof typeof APP_CHANNELS];
 export type ProfileChannels = typeof PROFILE_CHANNELS[keyof typeof PROFILE_CHANNELS];
 export type SettingsChannels = typeof SETTINGS_CHANNELS[keyof typeof SETTINGS_CHANNELS];

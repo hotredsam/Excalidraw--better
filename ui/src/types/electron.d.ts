@@ -18,6 +18,20 @@ import type {
   TemplateList,
   TemplateSummary,
   StoredTemplate,
+  RecentFileList,
+  RecentFile,
+  LibraryList,
+  Library,
+  LibrarySummary,
+  BulkResult,
+  BulkRenameOptions,
+  SlideDeck,
+  Review,
+  WorkspaceStats,
+  GitStatus,
+  Command,
+  BackupList,
+  MarkdownOptions,
 } from '@excalibur/shared';
 
 type Ok = { success: boolean };
@@ -85,6 +99,58 @@ declare global {
         list: () => Promise<TemplateList>;
         apply: (id: string) => Promise<StoredTemplate>;
         save: (input: { id?: string; title: string; description?: string; tags?: string[]; scene: any }) => Promise<TemplateSummary>;
+      };
+      recents: {
+        list: () => Promise<RecentFileList>;
+        add: (entry: RecentFile) => Promise<RecentFileList>;
+        remove: (filePath: string) => Promise<RecentFileList>;
+        clear: () => Promise<Ok>;
+      };
+      libraries: {
+        list: () => Promise<LibraryList>;
+        get: (id: string) => Promise<Library>;
+        import: () => Promise<LibrarySummary | null>;
+        addItems: (id: string, items: any[]) => Promise<LibrarySummary>;
+        remove: (id: string) => Promise<Ok>;
+        export: (id: string) => Promise<{ json: string }>;
+      };
+      bulk: {
+        rename: (workspaceId: string, files: string[], options: BulkRenameOptions) => Promise<BulkResult>;
+        delete: (workspaceId: string, files: string[]) => Promise<BulkResult>;
+        move: (workspaceId: string, files: string[], destDir: string) => Promise<BulkResult>;
+      };
+      presentation: {
+        getDeck: (workspaceId: string, filePath: string, scene: any) => Promise<SlideDeck>;
+        setNotes: (workspaceId: string, filePath: string, slideId: string, notes: string) => Promise<Ok>;
+      };
+      review: {
+        get: (workspaceId: string, filePath: string) => Promise<Review>;
+        addPin: (workspaceId: string, filePath: string, x: number, y: number, author: string, body: string) => Promise<Review>;
+        addComment: (workspaceId: string, filePath: string, pinId: string, author: string, body: string) => Promise<Review>;
+        setResolved: (workspaceId: string, filePath: string, pinId: string, resolved: boolean) => Promise<Review>;
+        deletePin: (workspaceId: string, filePath: string, pinId: string) => Promise<Review>;
+      };
+      stats: {
+        compute: (workspaceId: string) => Promise<WorkspaceStats>;
+      };
+      git: {
+        status: (workspaceId: string) => Promise<GitStatus>;
+        commit: (workspaceId: string, message: string, files?: string[]) => Promise<{ output: string }>;
+        log: (workspaceId: string, limit?: number) => Promise<{ entries: { hash: string; subject: string; date: string }[] }>;
+        init: (workspaceId: string) => Promise<Ok>;
+      };
+      commands: {
+        list: () => Promise<{ commands: Command[] }>;
+      };
+      backups: {
+        list: (originalPath?: string) => Promise<BackupList>;
+        restore: (id: string, destPath?: string) => Promise<{ path: string }>;
+      };
+      markdown: {
+        export: (workspaceId: string, baseName: string, options: MarkdownOptions, imageData: string, scene: any, bodyText?: string) => Promise<{ imagePath: string; markdownPath: string }>;
+      };
+      import: {
+        pickImage: () => Promise<{ file: { id: string; dataURL: string; mimeType: string; created: number }; element: any; mimeType: string } | null>;
       };
       onMenuCommand: (cb: (cmd: string) => void) => () => void;
     };

@@ -7,6 +7,17 @@ import {
   PLUGIN_CHANNELS,
   AI_CHANNELS,
   TEMPLATE_CHANNELS,
+  RECENT_CHANNELS,
+  LIBRARY_CHANNELS,
+  BULK_CHANNELS,
+  PRESENTATION_CHANNELS,
+  REVIEW_CHANNELS,
+  STATS_CHANNELS,
+  GIT_CHANNELS,
+  COMMAND_CHANNELS,
+  BACKUP_CHANNELS,
+  MARKDOWN_CHANNELS,
+  IMPORT_CHANNELS,
 } from '@excalibur/ipc';
 
 contextBridge.exposeInMainWorld('api', {
@@ -82,6 +93,69 @@ contextBridge.exposeInMainWorld('api', {
     list: () => ipcRenderer.invoke(TEMPLATE_CHANNELS.LIST),
     apply: (id: string) => ipcRenderer.invoke(TEMPLATE_CHANNELS.APPLY, { id }),
     save: (input: any) => ipcRenderer.invoke(TEMPLATE_CHANNELS.SAVE, input),
+  },
+  recents: {
+    list: () => ipcRenderer.invoke(RECENT_CHANNELS.LIST),
+    add: (entry: any) => ipcRenderer.invoke(RECENT_CHANNELS.ADD, entry),
+    remove: (filePath: string) => ipcRenderer.invoke(RECENT_CHANNELS.REMOVE, { path: filePath }),
+    clear: () => ipcRenderer.invoke(RECENT_CHANNELS.CLEAR),
+  },
+  libraries: {
+    list: () => ipcRenderer.invoke(LIBRARY_CHANNELS.LIST),
+    get: (id: string) => ipcRenderer.invoke(LIBRARY_CHANNELS.GET, { id }),
+    import: () => ipcRenderer.invoke(LIBRARY_CHANNELS.IMPORT),
+    addItems: (id: string, items: any[]) => ipcRenderer.invoke(LIBRARY_CHANNELS.ADD_ITEMS, { id, items }),
+    remove: (id: string) => ipcRenderer.invoke(LIBRARY_CHANNELS.REMOVE, { id }),
+    export: (id: string) => ipcRenderer.invoke(LIBRARY_CHANNELS.EXPORT, { id }),
+  },
+  bulk: {
+    rename: (workspaceId: string, files: string[], options: any) =>
+      ipcRenderer.invoke(BULK_CHANNELS.RENAME, { workspaceId, files, options }),
+    delete: (workspaceId: string, files: string[]) =>
+      ipcRenderer.invoke(BULK_CHANNELS.DELETE, { workspaceId, files }),
+    move: (workspaceId: string, files: string[], destDir: string) =>
+      ipcRenderer.invoke(BULK_CHANNELS.MOVE, { workspaceId, files, destDir }),
+  },
+  presentation: {
+    getDeck: (workspaceId: string, filePath: string, scene: any) =>
+      ipcRenderer.invoke(PRESENTATION_CHANNELS.GET_DECK, { workspaceId, filePath, scene }),
+    setNotes: (workspaceId: string, filePath: string, slideId: string, notes: string) =>
+      ipcRenderer.invoke(PRESENTATION_CHANNELS.SET_NOTES, { workspaceId, filePath, slideId, notes }),
+  },
+  review: {
+    get: (workspaceId: string, filePath: string) => ipcRenderer.invoke(REVIEW_CHANNELS.GET, { workspaceId, filePath }),
+    addPin: (workspaceId: string, filePath: string, x: number, y: number, author: string, body: string) =>
+      ipcRenderer.invoke(REVIEW_CHANNELS.ADD_PIN, { workspaceId, filePath, x, y, author, body }),
+    addComment: (workspaceId: string, filePath: string, pinId: string, author: string, body: string) =>
+      ipcRenderer.invoke(REVIEW_CHANNELS.ADD_COMMENT, { workspaceId, filePath, pinId, author, body }),
+    setResolved: (workspaceId: string, filePath: string, pinId: string, resolved: boolean) =>
+      ipcRenderer.invoke(REVIEW_CHANNELS.SET_RESOLVED, { workspaceId, filePath, pinId, resolved }),
+    deletePin: (workspaceId: string, filePath: string, pinId: string) =>
+      ipcRenderer.invoke(REVIEW_CHANNELS.DELETE_PIN, { workspaceId, filePath, pinId }),
+  },
+  stats: {
+    compute: (workspaceId: string) => ipcRenderer.invoke(STATS_CHANNELS.COMPUTE, { workspaceId }),
+  },
+  git: {
+    status: (workspaceId: string) => ipcRenderer.invoke(GIT_CHANNELS.STATUS, { workspaceId }),
+    commit: (workspaceId: string, message: string, files?: string[]) =>
+      ipcRenderer.invoke(GIT_CHANNELS.COMMIT, { workspaceId, message, files }),
+    log: (workspaceId: string, limit?: number) => ipcRenderer.invoke(GIT_CHANNELS.LOG, { workspaceId, limit }),
+    init: (workspaceId: string) => ipcRenderer.invoke(GIT_CHANNELS.INIT, { workspaceId }),
+  },
+  commands: {
+    list: () => ipcRenderer.invoke(COMMAND_CHANNELS.LIST),
+  },
+  backups: {
+    list: (originalPath?: string) => ipcRenderer.invoke(BACKUP_CHANNELS.LIST, { originalPath }),
+    restore: (id: string, destPath?: string) => ipcRenderer.invoke(BACKUP_CHANNELS.RESTORE, { id, destPath }),
+  },
+  markdown: {
+    export: (workspaceId: string, baseName: string, options: any, imageData: string, scene: any, bodyText?: string) =>
+      ipcRenderer.invoke(MARKDOWN_CHANNELS.EXPORT, { workspaceId, baseName, options, imageData, scene, bodyText }),
+  },
+  import: {
+    pickImage: () => ipcRenderer.invoke(IMPORT_CHANNELS.PICK_IMAGE),
   },
   // Menu/keyboard commands forwarded from the main process.
   onMenuCommand: (cb: (cmd: string) => void) => {

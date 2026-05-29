@@ -82,3 +82,5 @@ export * from './plugins';
 export * from './ai-import';
 export * from './search';
 export * from './templates';
+export * from './features';
+export * from './feature-utils';

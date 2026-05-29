@@ -23,14 +23,14 @@ export declare const ProfileSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     id: string;
     name: string;
-    createdAt: number;
     updatedAt: number;
+    createdAt: number;
     lastOpenedAt: number;
 }, {
     id: string;
     name: string;
-    createdAt: number;
     updatedAt: number;
+    createdAt: number;
     lastOpenedAt: number;
 }>;
 export declare const ProfileListSchema: z.ZodObject<{
@@ -43,30 +43,30 @@ export declare const ProfileListSchema: z.ZodObject<{
     }, "strip", z.ZodTypeAny, {
         id: string;
         name: string;
-        createdAt: number;
         updatedAt: number;
+        createdAt: number;
         lastOpenedAt: number;
     }, {
         id: string;
         name: string;
-        createdAt: number;
         updatedAt: number;
+        createdAt: number;
         lastOpenedAt: number;
     }>, "many">;
 }, "strip", z.ZodTypeAny, {
     profiles: {
         id: string;
         name: string;
-        createdAt: number;
         updatedAt: number;
+        createdAt: number;
         lastOpenedAt: number;
     }[];
 }, {
     profiles: {
         id: string;
         name: string;
-        createdAt: number;
         updatedAt: number;
+        createdAt: number;
         lastOpenedAt: number;
     }[];
 }>;
@@ -131,16 +131,16 @@ export declare const FileInfoSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     path: string;
     name: string;
+    size: number;
     mtime: number;
     isDirectory: boolean;
-    size: number;
     extension?: string | undefined;
 }, {
     path: string;
     name: string;
+    size: number;
     mtime: number;
     isDirectory: boolean;
-    size: number;
     extension?: string | undefined;
 }>;
 export declare const ExcalidrawFileSchema: z.ZodObject<{
@@ -175,3 +175,5 @@ export * from './plugins';
 export * from './ai-import';
 export * from './search';
 export * from './templates';
+export * from './features';
+export * from './feature-utils';

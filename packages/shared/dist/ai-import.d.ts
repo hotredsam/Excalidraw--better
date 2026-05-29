@@ -124,21 +124,39 @@ export declare const SettingsBundlePayloadSchema: z.ZodObject<{
     settings: z.ZodObject<{
         autosave: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
         autosaveIntervalSeconds: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
+        showGrid: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
+        theme: z.ZodOptional<z.ZodDefault<z.ZodEnum<["dark", "light", "system"]>>>;
         defaultExportFormat: z.ZodOptional<z.ZodDefault<z.ZodEnum<["png", "svg"]>>>;
         confirmOnDelete: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
-        showGrid: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
+        recentsLimit: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
+        keepBackups: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
+        backupsToKeep: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
+        autoOpenLastWorkspace: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
+        indexEmbeddedText: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
     }, "strip", z.ZodTypeAny, {
         autosave?: boolean | undefined;
         autosaveIntervalSeconds?: number | undefined;
+        showGrid?: boolean | undefined;
+        theme?: "dark" | "light" | "system" | undefined;
         defaultExportFormat?: "png" | "svg" | undefined;
         confirmOnDelete?: boolean | undefined;
-        showGrid?: boolean | undefined;
+        recentsLimit?: number | undefined;
+        keepBackups?: boolean | undefined;
+        backupsToKeep?: number | undefined;
+        autoOpenLastWorkspace?: boolean | undefined;
+        indexEmbeddedText?: boolean | undefined;
     }, {
         autosave?: boolean | undefined;
         autosaveIntervalSeconds?: number | undefined;
+        showGrid?: boolean | undefined;
+        theme?: "dark" | "light" | "system" | undefined;
         defaultExportFormat?: "png" | "svg" | undefined;
         confirmOnDelete?: boolean | undefined;
-        showGrid?: boolean | undefined;
+        recentsLimit?: number | undefined;
+        keepBackups?: boolean | undefined;
+        backupsToKeep?: number | undefined;
+        autoOpenLastWorkspace?: boolean | undefined;
+        indexEmbeddedText?: boolean | undefined;
     }>;
 }, "strip", z.ZodTypeAny, {
     type: "settings_bundle";
@@ -148,9 +166,15 @@ export declare const SettingsBundlePayloadSchema: z.ZodObject<{
     settings: {
         autosave?: boolean | undefined;
         autosaveIntervalSeconds?: number | undefined;
+        showGrid?: boolean | undefined;
+        theme?: "dark" | "light" | "system" | undefined;
         defaultExportFormat?: "png" | "svg" | undefined;
         confirmOnDelete?: boolean | undefined;
-        showGrid?: boolean | undefined;
+        recentsLimit?: number | undefined;
+        keepBackups?: boolean | undefined;
+        backupsToKeep?: number | undefined;
+        autoOpenLastWorkspace?: boolean | undefined;
+        indexEmbeddedText?: boolean | undefined;
     };
 }, {
     type: "settings_bundle";
@@ -158,9 +182,15 @@ export declare const SettingsBundlePayloadSchema: z.ZodObject<{
     settings: {
         autosave?: boolean | undefined;
         autosaveIntervalSeconds?: number | undefined;
+        showGrid?: boolean | undefined;
+        theme?: "dark" | "light" | "system" | undefined;
         defaultExportFormat?: "png" | "svg" | undefined;
         confirmOnDelete?: boolean | undefined;
-        showGrid?: boolean | undefined;
+        recentsLimit?: number | undefined;
+        keepBackups?: boolean | undefined;
+        backupsToKeep?: number | undefined;
+        autoOpenLastWorkspace?: boolean | undefined;
+        indexEmbeddedText?: boolean | undefined;
     };
     version?: string | undefined;
     applyTo?: "current_profile" | undefined;
@@ -272,21 +302,39 @@ export declare const AiPayloadSchema: z.ZodDiscriminatedUnion<"type", [z.ZodObje
     settings: z.ZodObject<{
         autosave: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
         autosaveIntervalSeconds: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
+        showGrid: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
+        theme: z.ZodOptional<z.ZodDefault<z.ZodEnum<["dark", "light", "system"]>>>;
         defaultExportFormat: z.ZodOptional<z.ZodDefault<z.ZodEnum<["png", "svg"]>>>;
         confirmOnDelete: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
-        showGrid: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
+        recentsLimit: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
+        keepBackups: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
+        backupsToKeep: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
+        autoOpenLastWorkspace: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
+        indexEmbeddedText: z.ZodOptional<z.ZodDefault<z.ZodBoolean>>;
     }, "strip", z.ZodTypeAny, {
         autosave?: boolean | undefined;
         autosaveIntervalSeconds?: number | undefined;
+        showGrid?: boolean | undefined;
+        theme?: "dark" | "light" | "system" | undefined;
         defaultExportFormat?: "png" | "svg" | undefined;
         confirmOnDelete?: boolean | undefined;
-        showGrid?: boolean | undefined;
+        recentsLimit?: number | undefined;
+        keepBackups?: boolean | undefined;
+        backupsToKeep?: number | undefined;
+        autoOpenLastWorkspace?: boolean | undefined;
+        indexEmbeddedText?: boolean | undefined;
     }, {
         autosave?: boolean | undefined;
         autosaveIntervalSeconds?: number | undefined;
+        showGrid?: boolean | undefined;
+        theme?: "dark" | "light" | "system" | undefined;
         defaultExportFormat?: "png" | "svg" | undefined;
         confirmOnDelete?: boolean | undefined;
-        showGrid?: boolean | undefined;
+        recentsLimit?: number | undefined;
+        keepBackups?: boolean | undefined;
+        backupsToKeep?: number | undefined;
+        autoOpenLastWorkspace?: boolean | undefined;
+        indexEmbeddedText?: boolean | undefined;
     }>;
 }, "strip", z.ZodTypeAny, {
     type: "settings_bundle";
@@ -296,9 +344,15 @@ export declare const AiPayloadSchema: z.ZodDiscriminatedUnion<"type", [z.ZodObje
     settings: {
         autosave?: boolean | undefined;
         autosaveIntervalSeconds?: number | undefined;
+        showGrid?: boolean | undefined;
+        theme?: "dark" | "light" | "system" | undefined;
         defaultExportFormat?: "png" | "svg" | undefined;
         confirmOnDelete?: boolean | undefined;
-        showGrid?: boolean | undefined;
+        recentsLimit?: number | undefined;
+        keepBackups?: boolean | undefined;
+        backupsToKeep?: number | undefined;
+        autoOpenLastWorkspace?: boolean | undefined;
+        indexEmbeddedText?: boolean | undefined;
     };
 }, {
     type: "settings_bundle";
@@ -306,9 +360,15 @@ export declare const AiPayloadSchema: z.ZodDiscriminatedUnion<"type", [z.ZodObje
     settings: {
         autosave?: boolean | undefined;
         autosaveIntervalSeconds?: number | undefined;
+        showGrid?: boolean | undefined;
+        theme?: "dark" | "light" | "system" | undefined;
         defaultExportFormat?: "png" | "svg" | undefined;
         confirmOnDelete?: boolean | undefined;
-        showGrid?: boolean | undefined;
+        recentsLimit?: number | undefined;
+        keepBackups?: boolean | undefined;
+        backupsToKeep?: number | undefined;
+        autoOpenLastWorkspace?: boolean | undefined;
+        indexEmbeddedText?: boolean | undefined;
     };
     version?: string | undefined;
     applyTo?: "current_profile" | undefined;

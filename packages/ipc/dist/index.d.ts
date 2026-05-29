@@ -52,6 +52,58 @@ export declare const TEMPLATE_CHANNELS: {
     readonly APPLY: "templates:apply";
     readonly SAVE: "templates:save";
 };
+export declare const RECENT_CHANNELS: {
+    readonly LIST: "recents:list";
+    readonly ADD: "recents:add";
+    readonly REMOVE: "recents:remove";
+    readonly CLEAR: "recents:clear";
+};
+export declare const LIBRARY_CHANNELS: {
+    readonly LIST: "libraries:list";
+    readonly GET: "libraries:get";
+    readonly IMPORT: "libraries:import";
+    readonly ADD_ITEMS: "libraries:add-items";
+    readonly REMOVE: "libraries:remove";
+    readonly EXPORT: "libraries:export";
+};
+export declare const BULK_CHANNELS: {
+    readonly RENAME: "bulk:rename";
+    readonly DELETE: "bulk:delete";
+    readonly MOVE: "bulk:move";
+};
+export declare const PRESENTATION_CHANNELS: {
+    readonly GET_DECK: "presentation:get-deck";
+    readonly SET_NOTES: "presentation:set-notes";
+};
+export declare const REVIEW_CHANNELS: {
+    readonly GET: "review:get";
+    readonly ADD_PIN: "review:add-pin";
+    readonly ADD_COMMENT: "review:add-comment";
+    readonly SET_RESOLVED: "review:set-resolved";
+    readonly DELETE_PIN: "review:delete-pin";
+};
+export declare const STATS_CHANNELS: {
+    readonly COMPUTE: "stats:compute";
+};
+export declare const GIT_CHANNELS: {
+    readonly STATUS: "git:status";
+    readonly COMMIT: "git:commit";
+    readonly LOG: "git:log";
+    readonly INIT: "git:init";
+};
+export declare const COMMAND_CHANNELS: {
+    readonly LIST: "commands:list";
+};
+export declare const BACKUP_CHANNELS: {
+    readonly LIST: "backups:list";
+    readonly RESTORE: "backups:restore";
+};
+export declare const MARKDOWN_CHANNELS: {
+    readonly EXPORT: "markdown:export";
+};
+export declare const IMPORT_CHANNELS: {
+    readonly PICK_IMAGE: "import:pick-image";
+};
 export type AppChannels = typeof APP_CHANNELS[keyof typeof APP_CHANNELS];
 export type ProfileChannels = typeof PROFILE_CHANNELS[keyof typeof PROFILE_CHANNELS];
 export type SettingsChannels = typeof SETTINGS_CHANNELS[keyof typeof SETTINGS_CHANNELS];

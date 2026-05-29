@@ -78,3 +78,5 @@ __exportStar(require("./plugins"), exports);
 __exportStar(require("./ai-import"), exports);
 __exportStar(require("./search"), exports);
 __exportStar(require("./templates"), exports);
+__exportStar(require("./features"), exports);
+__exportStar(require("./feature-utils"), exports);

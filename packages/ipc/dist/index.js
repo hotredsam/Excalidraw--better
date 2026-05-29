@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TEMPLATE_CHANNELS = exports.AI_CHANNELS = exports.PLUGIN_CHANNELS = exports.WORKSPACE_CHANNELS = exports.SETTINGS_CHANNELS = exports.PROFILE_CHANNELS = exports.APP_CHANNELS = void 0;
+exports.IMPORT_CHANNELS = exports.MARKDOWN_CHANNELS = exports.BACKUP_CHANNELS = exports.COMMAND_CHANNELS = exports.GIT_CHANNELS = exports.STATS_CHANNELS = exports.REVIEW_CHANNELS = exports.PRESENTATION_CHANNELS = exports.BULK_CHANNELS = exports.LIBRARY_CHANNELS = exports.RECENT_CHANNELS = exports.TEMPLATE_CHANNELS = exports.AI_CHANNELS = exports.PLUGIN_CHANNELS = exports.WORKSPACE_CHANNELS = exports.SETTINGS_CHANNELS = exports.PROFILE_CHANNELS = exports.APP_CHANNELS = void 0;
 exports.APP_CHANNELS = {
     PING: 'app:ping',
 };
@@ -57,4 +57,56 @@ exports.TEMPLATE_CHANNELS = {
     LIST: 'templates:list',
     APPLY: 'templates:apply',
     SAVE: 'templates:save',
+};
+exports.RECENT_CHANNELS = {
+    LIST: 'recents:list',
+    ADD: 'recents:add',
+    REMOVE: 'recents:remove',
+    CLEAR: 'recents:clear',
+};
+exports.LIBRARY_CHANNELS = {
+    LIST: 'libraries:list',
+    GET: 'libraries:get',
+    IMPORT: 'libraries:import',
+    ADD_ITEMS: 'libraries:add-items',
+    REMOVE: 'libraries:remove',
+    EXPORT: 'libraries:export',
+};
+exports.BULK_CHANNELS = {
+    RENAME: 'bulk:rename',
+    DELETE: 'bulk:delete',
+    MOVE: 'bulk:move',
+};
+exports.PRESENTATION_CHANNELS = {
+    GET_DECK: 'presentation:get-deck',
+    SET_NOTES: 'presentation:set-notes',
+};
+exports.REVIEW_CHANNELS = {
+    GET: 'review:get',
+    ADD_PIN: 'review:add-pin',
+    ADD_COMMENT: 'review:add-comment',
+    SET_RESOLVED: 'review:set-resolved',
+    DELETE_PIN: 'review:delete-pin',
+};
+exports.STATS_CHANNELS = {
+    COMPUTE: 'stats:compute',
+};
+exports.GIT_CHANNELS = {
+    STATUS: 'git:status',
+    COMMIT: 'git:commit',
+    LOG: 'git:log',
+    INIT: 'git:init',
+};
+exports.COMMAND_CHANNELS = {
+    LIST: 'commands:list',
+};
+exports.BACKUP_CHANNELS = {
+    LIST: 'backups:list',
+    RESTORE: 'backups:restore',
+};
+exports.MARKDOWN_CHANNELS = {
+    EXPORT: 'markdown:export',
+};
+exports.IMPORT_CHANNELS = {
+    PICK_IMAGE: 'import:pick-image',
 };

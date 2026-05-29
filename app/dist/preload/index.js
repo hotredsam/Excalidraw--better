@@ -57,6 +57,58 @@ electron_1.contextBridge.exposeInMainWorld('api', {
         apply: (id) => electron_1.ipcRenderer.invoke(ipc_1.TEMPLATE_CHANNELS.APPLY, { id }),
         save: (input) => electron_1.ipcRenderer.invoke(ipc_1.TEMPLATE_CHANNELS.SAVE, input),
     },
+    recents: {
+        list: () => electron_1.ipcRenderer.invoke(ipc_1.RECENT_CHANNELS.LIST),
+        add: (entry) => electron_1.ipcRenderer.invoke(ipc_1.RECENT_CHANNELS.ADD, entry),
+        remove: (filePath) => electron_1.ipcRenderer.invoke(ipc_1.RECENT_CHANNELS.REMOVE, { path: filePath }),
+        clear: () => electron_1.ipcRenderer.invoke(ipc_1.RECENT_CHANNELS.CLEAR),
+    },
+    libraries: {
+        list: () => electron_1.ipcRenderer.invoke(ipc_1.LIBRARY_CHANNELS.LIST),
+        get: (id) => electron_1.ipcRenderer.invoke(ipc_1.LIBRARY_CHANNELS.GET, { id }),
+        import: () => electron_1.ipcRenderer.invoke(ipc_1.LIBRARY_CHANNELS.IMPORT),
+        addItems: (id, items) => electron_1.ipcRenderer.invoke(ipc_1.LIBRARY_CHANNELS.ADD_ITEMS, { id, items }),
+        remove: (id) => electron_1.ipcRenderer.invoke(ipc_1.LIBRARY_CHANNELS.REMOVE, { id }),
+        export: (id) => electron_1.ipcRenderer.invoke(ipc_1.LIBRARY_CHANNELS.EXPORT, { id }),
+    },
+    bulk: {
+        rename: (workspaceId, files, options) => electron_1.ipcRenderer.invoke(ipc_1.BULK_CHANNELS.RENAME, { workspaceId, files, options }),
+        delete: (workspaceId, files) => electron_1.ipcRenderer.invoke(ipc_1.BULK_CHANNELS.DELETE, { workspaceId, files }),
+        move: (workspaceId, files, destDir) => electron_1.ipcRenderer.invoke(ipc_1.BULK_CHANNELS.MOVE, { workspaceId, files, destDir }),
+    },
+    presentation: {
+        getDeck: (workspaceId, filePath, scene) => electron_1.ipcRenderer.invoke(ipc_1.PRESENTATION_CHANNELS.GET_DECK, { workspaceId, filePath, scene }),
+        setNotes: (workspaceId, filePath, slideId, notes) => electron_1.ipcRenderer.invoke(ipc_1.PRESENTATION_CHANNELS.SET_NOTES, { workspaceId, filePath, slideId, notes }),
+    },
+    review: {
+        get: (workspaceId, filePath) => electron_1.ipcRenderer.invoke(ipc_1.REVIEW_CHANNELS.GET, { workspaceId, filePath }),
+        addPin: (workspaceId, filePath, x, y, author, body) => electron_1.ipcRenderer.invoke(ipc_1.REVIEW_CHANNELS.ADD_PIN, { workspaceId, filePath, x, y, author, body }),
+        addComment: (workspaceId, filePath, pinId, author, body) => electron_1.ipcRenderer.invoke(ipc_1.REVIEW_CHANNELS.ADD_COMMENT, { workspaceId, filePath, pinId, author, body }),
+        setResolved: (workspaceId, filePath, pinId, resolved) => electron_1.ipcRenderer.invoke(ipc_1.REVIEW_CHANNELS.SET_RESOLVED, { workspaceId, filePath, pinId, resolved }),
+        deletePin: (workspaceId, filePath, pinId) => electron_1.ipcRenderer.invoke(ipc_1.REVIEW_CHANNELS.DELETE_PIN, { workspaceId, filePath, pinId }),
+    },
+    stats: {
+        compute: (workspaceId) => electron_1.ipcRenderer.invoke(ipc_1.STATS_CHANNELS.COMPUTE, { workspaceId }),
+    },
+    git: {
+        status: (workspaceId) => electron_1.ipcRenderer.invoke(ipc_1.GIT_CHANNELS.STATUS, { workspaceId }),
+        commit: (workspaceId, message, files) => electron_1.ipcRenderer.invoke(ipc_1.GIT_CHANNELS.COMMIT, { workspaceId, message, files }),
+        log: (workspaceId, limit) => electron_1.ipcRenderer.invoke(ipc_1.GIT_CHANNELS.LOG, { workspaceId, limit }),
+        init: (workspaceId) => electron_1.ipcRenderer.invoke(ipc_1.GIT_CHANNELS.INIT, { workspaceId }),
+    },
+    commands: {
+        list: () => electron_1.ipcRenderer.invoke(ipc_1.COMMAND_CHANNELS.LIST),
+    },
+    backups: {
+        list: (originalPath) => electron_1.ipcRenderer.invoke(ipc_1.BACKUP_CHANNELS.LIST, { originalPath }),
+        restore: (id, destPath) => electron_1.ipcRenderer.invoke(ipc_1.BACKUP_CHANNELS.RESTORE, { id, destPath }),
+    },
+    markdown: {
+        export: (workspaceId, baseName, options, imageData, scene, bodyText) => electron_1.ipcRenderer.invoke(ipc_1.MARKDOWN_CHANNELS.EXPORT, { workspaceId, baseName, options, imageData, scene, bodyText }),
+    },
+    import: {
+        pickImage: () => electron_1.ipcRenderer.invoke(ipc_1.IMPORT_CHANNELS.PICK_IMAGE),
+    },
     // Menu/keyboard commands forwarded from the main process.
     onMenuCommand: (cb) => {
         const listener = (_e, cmd) => cb(cmd);

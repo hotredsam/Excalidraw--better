@@ -9,6 +9,17 @@ import {
   PLUGIN_CHANNELS,
   AI_CHANNELS,
   TEMPLATE_CHANNELS,
+  RECENT_CHANNELS,
+  LIBRARY_CHANNELS,
+  BULK_CHANNELS,
+  PRESENTATION_CHANNELS,
+  REVIEW_CHANNELS,
+  STATS_CHANNELS,
+  GIT_CHANNELS,
+  COMMAND_CHANNELS,
+  BACKUP_CHANNELS,
+  MARKDOWN_CHANNELS,
+  IMPORT_CHANNELS,
 } from '@excalibur/ipc';
 import {
   AppPingSchema,
@@ -22,12 +33,29 @@ import {
   AiPayloadSchema,
   TemplateListSchema,
   Workspace,
+  RecentFileListSchema,
+  LibraryListSchema,
+  LibrarySchema,
+  BulkRenameOptionsSchema,
+  WorkspaceStatsSchema,
+  MarkdownOptionsSchema,
 } from '@excalibur/shared';
 import { ProfileStore } from './profile';
 import { SettingsStore } from './settings';
 import { WorkspaceStore } from './workspace';
 import { PluginManager } from './plugins';
 import { TemplateStore } from './templates';
+import { RecentsStore } from './recents';
+import { LibraryStore } from './libraries';
+import { BackupManager } from './backup';
+import { ReviewStore } from './review';
+import { GitHelper } from './git-helper';
+import { computeStats } from './stats';
+import { getDeck, setSlideNotes } from './presentation';
+import { writeMarkdownBundle } from './markdown';
+import { buildImageInsertion } from './import-pack';
+import { bulkRename, bulkDelete, bulkMove } from './bulk-ops';
+import { buildCommandList } from './command-registry';
 import { isPathWithin, isDangerousPath } from './path-utils';
 import { readExcalidrawFile } from './excalidraw-utils';
 import { getIndex } from './search';
@@ -40,6 +68,9 @@ let settingsStore: SettingsStore;
 let workspaceStore: WorkspaceStore;
 let pluginManager: PluginManager;
 let templateStore: TemplateStore;
+let recentsStore: RecentsStore;
+let libraryStore: LibraryStore;
+let backupManager: BackupManager;
 
 function builtinPluginsDir(): string {
   return app.isPackaged
@@ -57,6 +88,15 @@ async function bindProfile(profileId: string) {
   await pluginManager.init();
   templateStore = new TemplateStore(profileDir);
   await templateStore.init();
+
+  const settings = settingsStore.get();
+  recentsStore = new RecentsStore(profileDir, settings.recentsLimit);
+  await recentsStore.init();
+  recentsStore.setLimit(settings.recentsLimit);
+  libraryStore = new LibraryStore(profileDir);
+  await libraryStore.init();
+  backupManager = new BackupManager(profileDir, settings.backupsToKeep);
+  await backupManager.init();
 }
 
 async function initStores() {
@@ -267,6 +307,10 @@ ipcMain.handle(WORKSPACE_CHANNELS.READ_FILE, async (_, { workspaceId, filePath }
 ipcMain.handle(WORKSPACE_CHANNELS.WRITE_FILE, async (_, { workspaceId, filePath, content }) => {
   const workspace = await getWorkspaceOrThrow(workspaceId);
   assertWritable(workspace, filePath);
+  // Snapshot the previous version before overwriting (if backups are enabled).
+  if (settingsStore.get().keepBackups) {
+    await backupManager.backup(filePath).catch(() => undefined);
+  }
   await fs.ensureDir(path.dirname(filePath));
   await fs.writeFile(filePath, content, 'utf-8');
   getIndex(workspace.path).invalidate();
@@ -403,6 +447,164 @@ ipcMain.handle(TEMPLATE_CHANNELS.APPLY, async (_, { id }) => {
 });
 ipcMain.handle(TEMPLATE_CHANNELS.SAVE, async (_, input) => {
   return await templateStore.save(input);
+});
+
+// ── Recent files ─────────────────────────────────────────────────────────
+ipcMain.handle(RECENT_CHANNELS.LIST, async () => {
+  return RecentFileListSchema.parse({ recents: await recentsStore.prune() });
+});
+ipcMain.handle(RECENT_CHANNELS.ADD, async (_, entry) => {
+  return RecentFileListSchema.parse({ recents: await recentsStore.add(entry) });
+});
+ipcMain.handle(RECENT_CHANNELS.REMOVE, async (_, { path: p }) => {
+  return RecentFileListSchema.parse({ recents: await recentsStore.remove(p) });
+});
+ipcMain.handle(RECENT_CHANNELS.CLEAR, async () => {
+  await recentsStore.clear();
+  return { success: true };
+});
+
+// ── Libraries ──────────────────────────────────────────────────────────────
+ipcMain.handle(LIBRARY_CHANNELS.LIST, async () => {
+  return LibraryListSchema.parse({ libraries: await libraryStore.list() });
+});
+ipcMain.handle(LIBRARY_CHANNELS.GET, async (_, { id }) => {
+  return LibrarySchema.parse(await libraryStore.get(id));
+});
+ipcMain.handle(LIBRARY_CHANNELS.IMPORT, async (event) => {
+  const result = await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
+    properties: ['openFile'],
+    filters: [{ name: 'Excalidraw Library', extensions: ['excalidrawlib', 'json'] }],
+  });
+  if (result.canceled || result.filePaths.length === 0) return null;
+  return await libraryStore.importFromFile(result.filePaths[0]);
+});
+ipcMain.handle(LIBRARY_CHANNELS.ADD_ITEMS, async (_, { id, items }) => {
+  return await libraryStore.addItems(id, items);
+});
+ipcMain.handle(LIBRARY_CHANNELS.REMOVE, async (_, { id }) => {
+  await libraryStore.remove(id);
+  return { success: true };
+});
+ipcMain.handle(LIBRARY_CHANNELS.EXPORT, async (_, { id }) => {
+  return { json: await libraryStore.exportJson(id) };
+});
+
+// ── Bulk operations ──────────────────────────────────────────────────────
+ipcMain.handle(BULK_CHANNELS.RENAME, async (_, { workspaceId, files, options }) => {
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  const res = await bulkRename(workspace.path, files, BulkRenameOptionsSchema.parse(options));
+  getIndex(workspace.path).invalidate();
+  return res;
+});
+ipcMain.handle(BULK_CHANNELS.DELETE, async (_, { workspaceId, files }) => {
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  const res = await bulkDelete(workspace.path, files, (p) => shell.trashItem(p));
+  getIndex(workspace.path).invalidate();
+  return res;
+});
+ipcMain.handle(BULK_CHANNELS.MOVE, async (_, { workspaceId, files, destDir }) => {
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  const res = await bulkMove(workspace.path, files, destDir);
+  getIndex(workspace.path).invalidate();
+  return res;
+});
+
+// ── Presentation ─────────────────────────────────────────────────────────
+ipcMain.handle(PRESENTATION_CHANNELS.GET_DECK, async (_, { workspaceId, filePath, scene }) => {
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  const rel = isPathWithin(workspace.path, filePath) ? path.relative(workspace.path, filePath) : 'scratch';
+  return await getDeck(workspace.path, rel, scene);
+});
+ipcMain.handle(PRESENTATION_CHANNELS.SET_NOTES, async (_, { workspaceId, filePath, slideId, notes }) => {
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  const rel = isPathWithin(workspace.path, filePath) ? path.relative(workspace.path, filePath) : 'scratch';
+  await setSlideNotes(workspace.path, rel, slideId, notes);
+  return { success: true };
+});
+
+// ── Review (comment pins) ──────────────────────────────────────────────────
+function reviewStore(workspace: Workspace) {
+  return new ReviewStore(workspace.path);
+}
+ipcMain.handle(REVIEW_CHANNELS.GET, async (_, { workspaceId, filePath }) => {
+  return await reviewStore(await getWorkspaceOrThrow(workspaceId)).get(filePath);
+});
+ipcMain.handle(REVIEW_CHANNELS.ADD_PIN, async (_, { workspaceId, filePath, x, y, author, body }) => {
+  return await reviewStore(await getWorkspaceOrThrow(workspaceId)).addPin(filePath, x, y, author, body);
+});
+ipcMain.handle(REVIEW_CHANNELS.ADD_COMMENT, async (_, { workspaceId, filePath, pinId, author, body }) => {
+  return await reviewStore(await getWorkspaceOrThrow(workspaceId)).addComment(filePath, pinId, author, body);
+});
+ipcMain.handle(REVIEW_CHANNELS.SET_RESOLVED, async (_, { workspaceId, filePath, pinId, resolved }) => {
+  return await reviewStore(await getWorkspaceOrThrow(workspaceId)).setResolved(filePath, pinId, resolved);
+});
+ipcMain.handle(REVIEW_CHANNELS.DELETE_PIN, async (_, { workspaceId, filePath, pinId }) => {
+  return await reviewStore(await getWorkspaceOrThrow(workspaceId)).deletePin(filePath, pinId);
+});
+
+// ── Workspace stats ──────────────────────────────────────────────────────
+ipcMain.handle(STATS_CHANNELS.COMPUTE, async (_, { workspaceId }) => {
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  const tags = await getIndex(workspace.path).getTags();
+  return WorkspaceStatsSchema.parse(await computeStats(workspace.path, tags));
+});
+
+// ── Git helper ─────────────────────────────────────────────────────────────
+function gitFor(workspace: Workspace) {
+  return new GitHelper(workspace.path);
+}
+ipcMain.handle(GIT_CHANNELS.STATUS, async (_, { workspaceId }) => {
+  return await gitFor(await getWorkspaceOrThrow(workspaceId)).status();
+});
+ipcMain.handle(GIT_CHANNELS.COMMIT, async (_, { workspaceId, message, files }) => {
+  return { output: await gitFor(await getWorkspaceOrThrow(workspaceId)).commit(message, files) };
+});
+ipcMain.handle(GIT_CHANNELS.LOG, async (_, { workspaceId, limit }) => {
+  return { entries: await gitFor(await getWorkspaceOrThrow(workspaceId)).log(limit) };
+});
+ipcMain.handle(GIT_CHANNELS.INIT, async (_, { workspaceId }) => {
+  await gitFor(await getWorkspaceOrThrow(workspaceId)).init();
+  return { success: true };
+});
+
+// ── Command palette ──────────────────────────────────────────────────────
+ipcMain.handle(COMMAND_CHANNELS.LIST, async () => {
+  const contributions = await pluginManager.getContributions();
+  return { commands: buildCommandList(contributions) };
+});
+
+// ── Backups ────────────────────────────────────────────────────────────────
+ipcMain.handle(BACKUP_CHANNELS.LIST, async (_, { originalPath }) => {
+  return { backups: backupManager.list(originalPath) };
+});
+ipcMain.handle(BACKUP_CHANNELS.RESTORE, async (_, { id, destPath }) => {
+  return { path: await backupManager.restore(id, destPath) };
+});
+
+// ── Markdown export ────────────────────────────────────────────────────────
+ipcMain.handle(MARKDOWN_CHANNELS.EXPORT, async (_, { workspaceId, baseName, options, imageData, scene, bodyText }) => {
+  const workspace = await getWorkspaceOrThrow(workspaceId);
+  const bundle = await writeMarkdownBundle(
+    workspace.path,
+    baseName,
+    MarkdownOptionsSchema.parse(options),
+    imageData,
+    scene,
+    bodyText || '',
+  );
+  getIndex(workspace.path).invalidate();
+  return bundle;
+});
+
+// ── Import image ─────────────────────────────────────────────────────────
+ipcMain.handle(IMPORT_CHANNELS.PICK_IMAGE, async (event) => {
+  const result = await dialog.showOpenDialog(BrowserWindow.fromWebContents(event.sender)!, {
+    properties: ['openFile'],
+    filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'] }],
+  });
+  if (result.canceled || result.filePaths.length === 0) return null;
+  return await buildImageInsertion(result.filePaths[0]);
 });
 
 app.whenReady().then(async () => {

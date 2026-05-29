@@ -13,15 +13,15 @@ export declare const SearchResultSchema: z.ZodObject<{
     path: string;
     name: string;
     tags: string[];
-    extension: string;
     mtime: number;
+    extension: string;
     matchedOn: ("name" | "tag" | "text")[];
     snippet?: string | undefined;
 }, {
     path: string;
     name: string;
-    extension: string;
     mtime: number;
+    extension: string;
     tags?: string[] | undefined;
     snippet?: string | undefined;
     matchedOn?: ("name" | "tag" | "text")[] | undefined;
@@ -41,15 +41,15 @@ export declare const SearchResultListSchema: z.ZodObject<{
         path: string;
         name: string;
         tags: string[];
-        extension: string;
         mtime: number;
+        extension: string;
         matchedOn: ("name" | "tag" | "text")[];
         snippet?: string | undefined;
     }, {
         path: string;
         name: string;
-        extension: string;
         mtime: number;
+        extension: string;
         tags?: string[] | undefined;
         snippet?: string | undefined;
         matchedOn?: ("name" | "tag" | "text")[] | undefined;
@@ -61,8 +61,8 @@ export declare const SearchResultListSchema: z.ZodObject<{
         path: string;
         name: string;
         tags: string[];
-        extension: string;
         mtime: number;
+        extension: string;
         matchedOn: ("name" | "tag" | "text")[];
         snippet?: string | undefined;
     }[];
@@ -71,8 +71,8 @@ export declare const SearchResultListSchema: z.ZodObject<{
     results: {
         path: string;
         name: string;
-        extension: string;
         mtime: number;
+        extension: string;
         tags?: string[] | undefined;
         snippet?: string | undefined;
         matchedOn?: ("name" | "tag" | "text")[] | undefined;

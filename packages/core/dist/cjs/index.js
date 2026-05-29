@@ -33,6 +33,7 @@ __exportStar(require("./markdown"), exports);
 __exportStar(require("./path-utils"), exports);
 __exportStar(require("./plugins"), exports);
 __exportStar(require("./png-excalidraw"), exports);
+__exportStar(require("./profile"), exports);
 __exportStar(require("./presentation"), exports);
 __exportStar(require("./recents"), exports);
 __exportStar(require("./review"), exports);

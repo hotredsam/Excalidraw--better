@@ -17,6 +17,7 @@ export * from './markdown';
 export * from './path-utils';
 export * from './plugins';
 export * from './png-excalidraw';
+export * from './profile';
 export * from './presentation';
 export * from './recents';
 export * from './review';

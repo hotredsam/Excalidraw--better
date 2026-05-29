@@ -77,6 +77,10 @@ const ws = await api.workspaces.add(); // uses host.pickDirectory()
 `api` is exactly an `ExcaliburApi`, so it can be handed straight to the React
 editor.
 
+> A runnable version of this lives at [`examples/headless-engine.cjs`](../examples/headless-engine.cjs)
+> (`node examples/headless-engine.cjs`): it creates a profile, adds a workspace,
+> and round-trips a drawing file with no Electron involved.
+
 ## Mounting the editor (any DOM host)
 
 ```tsx

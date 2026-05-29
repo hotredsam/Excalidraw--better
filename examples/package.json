@@ -1,0 +1,12 @@
+{
+  "name": "@excalibur/example-headless",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Runnable proof that the engine embeds without Electron.",
+  "scripts": {
+    "start": "node headless-engine.cjs"
+  },
+  "dependencies": {
+    "@excalibur/core": "workspace:*"
+  }
+}

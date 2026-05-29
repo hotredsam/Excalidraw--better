@@ -91,6 +91,12 @@ importers:
         specifier: ^5.0.0
         version: 5.9.3
 
+  examples:
+    dependencies:
+      '@excalibur/core':
+        specifier: workspace:*
+        version: link:../packages/core
+
   packages/api-contract:
     dependencies:
       '@excalibur/shared':

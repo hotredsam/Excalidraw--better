@@ -46,8 +46,23 @@
 - [x] Apply styling from `design_tokens.md` (tokens, gradient, toasts).
 - [x] `docs/AI_GUIDE.md` for users.
 
-## Phase 7: Testing & Packaging 🟡
-- [x] Unit tests across main-process subsystems (58 tests).
+## Phase 7: Testing & Packaging ✅
+- [x] Unit + acceptance tests across main-process subsystems (98 tests).
 - [x] `electron-builder` config + `dist` scripts (win nsis + portable, mac, linux).
-- [ ] End-to-end (Playwright/Spectron) tests — not yet wired.
-- [ ] Produce a signed Windows installer in CI.
+- [x] End-to-end harness: Playwright Electron smoke specs (`e2e/`) run under xvfb in CI.
+- [x] Acceptance integration test mirroring Product Spec §10.
+- [x] GitHub Actions: `ci.yml` (build/lint/test/E2E) + `release.yml` (installer matrix).
+- [x] `pnpm lint` (type-check) green across all packages.
+- [ ] Code-signing of the Windows installer (requires certs/secrets — CI is wired,
+      signing is intentionally left to the maintainer).
+
+## Phase 8: Power features (beyond the original plan) ✅
+- [x] Recent files (per profile), versioned backups on save, restore.
+- [x] Local search index (name + embedded text + tags) and tagging.
+- [x] Library pack browser (`.excalidrawlib` import/export/insert).
+- [x] Presentation mode (frames → slides + presenter notes).
+- [x] Review mode (local comment pins).
+- [x] Workspace stats dashboard.
+- [x] Optional git helper (status/commit/log).
+- [x] Markdown embed/export, image import.
+- [x] Command palette (Ctrl+K) and bulk file operations.

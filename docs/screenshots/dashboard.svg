@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="500" viewBox="0 0 560 500" font-family="Inter, system-ui, sans-serif">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FF3A00"/><stop offset="1" stop-color="#FF8A2A"/>
+    </linearGradient>
+  </defs>
+  <rect width="560" height="500" fill="#0F121A"/>
+  <g font-size="12" fill="#98A2B3">
+    <text x="24" y="34">⚙ Properties</text><text x="120" y="34">📚 Libraries</text>
+    <text x="210" y="34" fill="#F2F3F5" font-weight="600">📊 Stats</text><text x="270" y="34">⎇ Git</text>
+  </g>
+  <rect x="206" y="42" width="48" height="2" fill="#FF6A00"/>
+
+  <!-- stat cards -->
+  <g>
+    <rect x="24" y="60" width="160" height="74" rx="14" fill="#151A24" stroke="rgba(255,255,255,0.1)"/>
+    <text x="40" y="104" font-size="24" font-weight="800" fill="#FF8A2A">128</text>
+    <text x="40" y="122" font-size="11" fill="#98A2B3">Files</text>
+    <rect x="200" y="60" width="160" height="74" rx="14" fill="#151A24" stroke="rgba(255,255,255,0.1)"/>
+    <text x="216" y="104" font-size="24" font-weight="800" fill="#FF8A2A">3,540</text>
+    <text x="216" y="122" font-size="11" fill="#98A2B3">Elements</text>
+    <rect x="376" y="60" width="160" height="74" rx="14" fill="#151A24" stroke="rgba(255,255,255,0.1)"/>
+    <text x="392" y="104" font-size="24" font-weight="800" fill="#FF8A2A">18.4 MB</text>
+    <text x="392" y="122" font-size="11" fill="#98A2B3">Size</text>
+  </g>
+
+  <text x="24" y="172" font-size="11" letter-spacing="1" fill="#98A2B3">TOP TAGS</text>
+  <g font-size="11" fill="#C7CDD9">
+    <text x="24" y="196">architecture</text>
+    <rect x="24" y="202" width="430" height="6" rx="3" fill="#1B2230"/><rect x="24" y="202" width="430" height="6" rx="3" fill="url(#g)"/>
+    <text x="24" y="226">ux</text>
+    <rect x="24" y="232" width="300" height="6" rx="3" fill="#1B2230"/><rect x="24" y="232" width="300" height="6" rx="3" fill="url(#g)"/>
+    <text x="24" y="256">notes</text>
+    <rect x="24" y="262" width="180" height="6" rx="3" fill="#1B2230"/><rect x="24" y="262" width="180" height="6" rx="3" fill="url(#g)"/>
+    <text x="24" y="286">infra</text>
+    <rect x="24" y="292" width="120" height="6" rx="3" fill="#1B2230"/><rect x="24" y="292" width="120" height="6" rx="3" fill="url(#g)"/>
+  </g>
+
+  <text x="24" y="332" font-size="11" letter-spacing="1" fill="#98A2B3">BY TYPE</text>
+  <g font-size="12" fill="#C7CDD9">
+    <text x="24" y="356">.excalidraw</text><text x="536" y="356" text-anchor="end" fill="#98A2B3">104</text>
+    <text x="24" y="378">.png</text><text x="536" y="378" text-anchor="end" fill="#98A2B3">14</text>
+    <text x="24" y="400">.svg</text><text x="536" y="400" text-anchor="end" fill="#98A2B3">10</text>
+  </g>
+
+  <text x="280" y="468" font-size="12" fill="#98A2B3" text-anchor="middle">Workspace dashboard — counts, sizes, element totals &amp; tag histogram</text>
+</svg>

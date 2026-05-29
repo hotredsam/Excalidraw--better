@@ -77,3 +77,27 @@ We will build a custom React application (Renderer) and embed the `@excalidraw/e
   4. Presents a preview/diff to the user.
   5. Upon confirmation, sends via IPC to Main.
   6. Main process securely applies the payload within the active profile boundary.
+
+## 7. Power-feature subsystems
+
+Beyond the core, the main process hosts focused, independently-tested modules,
+each surfaced through an allowlisted IPC group and a renderer panel:
+
+| Module | Responsibility |
+|--------|----------------|
+| `recents.ts` | Per-profile recent files (dedupe, cap, prune) |
+| `libraries.ts` | `.excalidrawlib` import/export/append |
+| `backup.ts` | Versioned snapshots before overwrite; restore |
+| `search.ts` | Name + embedded-text + tag index with snippets |
+| `bulk-ops.ts` | Guardrailed bulk rename/move/delete |
+| `presentation.ts` | Frames → slide deck + presenter notes |
+| `review.ts` | Local comment pins per drawing |
+| `stats.ts` | Workspace dashboard aggregates |
+| `git-helper.ts` | Optional, `execFile`-based git status/commit/log |
+| `markdown.ts` / `import-pack.ts` | Markdown bundle export / image insertion |
+| `command-registry.ts` | Core command set merged with plugin contributions |
+
+Pure, side-effect-free helpers (rename templating, slide extraction, markdown
+generation, git porcelain parsing, fuzzy search) live in
+`packages/shared/feature-utils.ts` so they are testable in isolation and usable
+on both sides of the IPC boundary.

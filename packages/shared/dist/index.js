@@ -90,3 +90,4 @@ __exportStar(require("./text"), exports);
 __exportStar(require("./validation"), exports);
 __exportStar(require("./geometry"), exports);
 __exportStar(require("./scene-utils"), exports);
+__exportStar(require("./collections"), exports);

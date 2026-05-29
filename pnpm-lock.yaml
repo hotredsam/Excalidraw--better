@@ -88,8 +88,21 @@ importers:
         specifier: ^5.0.0
         version: 5.9.3
 
+  packages/api-contract:
+    dependencies:
+      '@excalibur/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+
   packages/core:
     dependencies:
+      '@excalibur/api-contract':
+        specifier: workspace:*
+        version: link:../api-contract
       '@excalibur/shared':
         specifier: workspace:*
         version: link:../shared

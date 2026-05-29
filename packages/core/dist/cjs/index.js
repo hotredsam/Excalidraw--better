@@ -17,6 +17,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // @excalibur/core — framework-agnostic engine: pure backend subsystems +
 // the HostServices seam for platform-specific capabilities.
 __exportStar(require("./host"), exports);
+__exportStar(require("./engine"), exports);
+__exportStar(require("./api-handlers"), exports);
 __exportStar(require("./ai-import"), exports);
 __exportStar(require("./backup"), exports);
 __exportStar(require("./bulk-ops"), exports);

@@ -1,6 +1,8 @@
 // @excalibur/core — framework-agnostic engine: pure backend subsystems +
 // the HostServices seam for platform-specific capabilities.
 export * from './host';
+export * from './engine';
+export * from './api-handlers';
 export * from './ai-import';
 export * from './backup';
 export * from './bulk-ops';

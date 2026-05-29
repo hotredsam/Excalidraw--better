@@ -1,5 +1,5 @@
 {
-  "name": "@excalibur/core",
+  "name": "@excalibur/api-contract",
   "version": "0.1.0",
   "private": true,
   "main": "./dist/cjs/index.js",
@@ -20,23 +20,12 @@
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "build": "pnpm clean && tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json && node ../../scripts/write-dual-markers.mjs",
     "dev": "tsc -p tsconfig.esm.json -w",
-    "lint": "tsc --noEmit",
-    "test": "vitest run"
+    "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@excalibur/api-contract": "workspace:*",
-    "@excalibur/shared": "workspace:*",
-    "crc": "^3.8.0",
-    "fs-extra": "^11.3.3",
-    "nanoid": "^5.1.6",
-    "pako": "^2.1.0",
-    "png-chunk-text": "^1.0.0",
-    "png-chunks-extract": "^1.0.0"
+    "@excalibur/shared": "workspace:*"
   },
   "devDependencies": {
-    "@types/fs-extra": "^11.0.4",
-    "@types/node": "^18.19.0",
-    "@types/pako": "^2.0.4",
     "typescript": "^5.0.0"
   }
 }

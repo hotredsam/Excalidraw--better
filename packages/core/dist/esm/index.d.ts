@@ -1,4 +1,6 @@
 export * from './host';
+export * from './engine';
+export * from './api-handlers';
 export * from './ai-import';
 export * from './backup';
 export * from './bulk-ops';

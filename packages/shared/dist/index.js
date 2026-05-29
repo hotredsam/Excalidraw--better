@@ -88,3 +88,4 @@ __exportStar(require("./frontmatter"), exports);
 __exportStar(require("./styles"), exports);
 __exportStar(require("./text"), exports);
 __exportStar(require("./validation"), exports);
+__exportStar(require("./geometry"), exports);
